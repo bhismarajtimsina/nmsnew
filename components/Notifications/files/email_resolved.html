@@ -1,0 +1,15 @@
+<html>
+<body>
+<h3 align="center" style="color: darkgreen">RESOLVED: {{event.description}}</h3>
+Severity: <b>{{event.severity}}</b><br>
+Name: <b>{{event.name}}</b><br>
+{% if event.device != null %}
+Device: <b>{{event.device.ip}} ({{event.device.name}})</b><br>
+{% endif %}
+<br>
+Labels: <br>
+{% for key, val in event.labels %}
+<li>{{key}}: {{ val }}</li>
+{% endfor %}
+</body>
+</html>

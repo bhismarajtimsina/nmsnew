@@ -1,0 +1,61 @@
+
+#Logger configuration
+logger:
+  level: trace
+
+
+#Prometheus configuration
+
+prometheus:
+  path: /metrics
+  enabled: true
+  port: 2112
+#Use live_recalc and recalc_estab_timeout for inc/dec established connection
+  live_recalc: true
+  recalc_estab_timeout: 5s
+
+#Profiler pprof. Must be disabled in production
+profiler:
+  port: 2155
+  path: /pprof
+  enabled: false
+
+
+system:
+  listener:
+    http:
+      enabled: true
+      listen: 8080
+      timeout: 60s
+    https:
+      enabled: false
+      listen: 8443
+      pem_path: ./
+      key_path: ./
+      timeout: 10s
+  support:
+    base_url: http://wca-nginx/api/v1
+    request_timeout: 10s
+    cache_timeout: 10m
+    read_cookie_name: Token
+    application_name_header: X-App-Name
+
+  proxy:
+    #Header for wrap host and request URI
+    wrap_host_header: X-Request-URL
+    http:
+      timeout: 300s
+      idle_timeout: 300s
+      conn_timeout: 10s
+    #Header for host wrapping must be dropped from request
+      drop_request_headers:
+        - X-Request-URL
+        - X-App-Name
+      drop_response_headers:
+        - X-Real-IP
+    #Proccess HTTP requests with redirect 301|302
+      process_redirects: false
+    socket:
+      conn_timeout: 3s
+      analize_stream_header: yes
+

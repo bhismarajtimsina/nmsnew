@@ -1,0 +1,17 @@
+search_device:
+  - param_name: SEARCH_DEVICE_SOURCES
+    type: input
+    regex: .*
+    default: history,device
+  - param_name: SEARCH_DEVICE_CHECK_ALL_SOURCES
+    type: checkbox
+    default: false
+  - param_name: SEARCH_DEVICE_HISTORY_ONLY_ACTIVE
+    type: checkbox
+    default: true
+  - param_name: SEARCH_DEVICE_IGNORE_TAG_PORTS
+    type: checkbox
+    default: true
+  - param_name: SEARCH_DEVICE_REQUEST_CONCURRENCY
+    type: number
+    default: 50

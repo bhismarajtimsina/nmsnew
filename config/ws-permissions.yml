@@ -1,0 +1,62 @@
+# Per-channel WebSocket subscribe permissions, enforced in
+# src/Console/WebSocketServerCommand.php's subscribe handler. Anything not
+# matched by a rule here is denied by default (closed, not open) — a
+# channel must be explicitly listed to be subscribable at all.
+#
+# `permission` is a single key or a list of keys (OR'd — the subscribing
+# user's role needs at least one), matching PermissionCheckMiddleware's own
+# array_intersect check. Picked to mirror the permission each channel's
+# equivalent REST read already requires (see each component's rules.yml).
+- permission: poller_info_by_device
+  allow_to_subscribe:
+    - "event:poller:*"
+
+- permission: device_show
+  allow_to_subscribe:
+    - "event:device:*"
+    - "event:pinger:*"
+    - "event:storage:c_pinger_statuses:*"
+    - "event:storage:device_models:*"
+
+- permission: system_logs_actions
+  allow_to_subscribe:
+    - "event:sys_action:added"
+
+- permission: log_switcher_core_actions
+  allow_to_subscribe:
+    - "event:storage:switcher_core_actions:*"
+
+- permission: [events_show]
+  allow_to_subscribe:
+    - "event:webhook:alertmanager"
+    - "event:storage:c_events:*"
+
+- permission: [macros_execute, macros_edit]
+  allow_to_subscribe:
+    - "event:storage:c_macros:*"
+
+- permission: links_view
+  allow_to_subscribe:
+    - "event:storage:c_links:*"
+
+- permission: [user_management, user_display]
+  allow_to_subscribe:
+    - "event:storage:users:*"
+    - "event:storage:user_roles:*"
+
+- permission: device_groups_management
+  allow_to_subscribe:
+    - "event:storage:device_groups:*"
+
+- permission: diag_interface
+  allow_to_subscribe:
+    - "event:storage:c_trap_logs:*"
+
+- permission: device_access_management
+  allow_to_subscribe:
+    - "event:device-access:*"
+    - "event:storage:device_accesses:*"
+
+- permission: schedule_reports
+  allow_to_subscribe:
+    - "event:storage:system_schedule_reports:*"

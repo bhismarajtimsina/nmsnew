@@ -1,0 +1,178 @@
+web_panel:
+  - param_name: DEFAULT_LANGUAGE
+    type: select
+    default: 'en'
+    variants: ['en', 'ru', 'ua']
+    rebuild_required: false
+  - param_name: APP_NAME
+    type: input
+    default: 'Support DMS'
+    rebuild_required: false
+  - param_name: EXTERNAL_HTTP_ADDRESS
+    type: input
+    default: 'http://127.0.0.1:8088'
+    rebuild_required: false
+  - param_name: LOGS_RETURN_RESULTS_LIMIT
+    type: number
+    regex: ^[0-9]{1,8}$
+    default: 500
+    rebuild_required: false
+  - param_name: MAP_COORDINATES
+    type: input
+    regex: ^[0-9]{1,3}(\.[0-9]{1,8})?,[0-9]{1,3}(\.[0-9]{1,8})?$
+    default: 27.7007,85.3001
+    rebuild_required: false
+  - param_name: MAP_TILE_LAYER
+    type: select
+    variants: ['Google (street)','Google (hybrid)','OpenStreetMap','OpenTopoMap', 'Satellite', 'Dark', 'Terrain']
+    default: Google (street)
+  - param_name: WEB_ZOOM_MAIN
+    type: input
+    regex: ^[0-9]{1,3}(\.[0-9]{1,8})?$
+    default: 1.0
+    rebuild_required: false
+  - param_name: WEB_ZOOM_IFRAME
+    type: input
+    regex: ^[0-9]{1,3}(\.[0-9]{1,8})?$
+    default: 1.0
+    rebuild_required: false
+  - param_name: SEARCH2_FILTER
+    type: select
+    variants: ['agreement', 'description', 'interface', 'ont_ident', 'fdb_history', 'device']
+    default: 'agreement'
+  - param_name: SEARCH2_ENABLED
+    type: checkbox
+    default: false
+
+system:
+  - param_name: PROMETHEUS_RETENTION_TIME
+    type: input
+    regex: ^[0-9]{1,8}(s|m|d|h)$
+    default: 30d
+    rebuild_required: true
+  - param_name: LOG_LEVEL
+    type: select
+    variants: [DEBUG,INFO,NOTICE,WARNING,ERROR,CRITICAL,ALERT,EMERGENCY]
+    default: WARNING
+    rebuild_required: false
+  - param_name: RR_NUM_WORKERS
+    type: number
+    regex: ^[0-9]{1,4}$
+    default: 20
+    rebuild_required: true
+  - param_name: POLLER_IGNORE_DOWN
+    type: checkbox
+    default: true
+    rebuild_required: true
+  - param_name: POLLER_COUNT_PROCS
+    type: number
+    regex: .*
+    default: 30
+    rebuild_required: true
+  - param_name: POLLER_DO_NOT_CLEAR_INTERFACES
+    type: checkbox
+    default: true
+    rebuild_required: false
+  - param_name: PROXY_ENABLED
+    type: checkbox
+    default: true
+    rebuild_required: false
+  - param_name: PROXY_REAL_IP_HEADER
+    type: input
+    regex: .*
+    default: X-Forwarded-For
+    rebuild_required: false
+
+security:
+  - param_name: API_KEY_EXPIRATION
+    type: number
+    regex: ^[0-9]{1,8}$
+    default: 864000
+    rebuild_required: false
+  - param_name: RATE_LIMITER_ENABLED
+    type: checkbox
+    default: true
+    rebuild_required: false
+  - param_name: RATE_LIMITER_TIME
+    type: number
+    regex: ^[0-9]{1,8}$
+    default: 3600
+    rebuild_required: false
+  - param_name: RATE_LIMITER_ATTEMPTS
+    type: number
+    regex: ^[0-9]{1,8}$
+    default: 3
+    rebuild_required: false
+  - param_name: SECURE_CHECK_PASSWORD_STRENGTH
+    type: checkbox
+    default: true
+    rebuild_required: false
+
+  - param_name: TRUSTED_HOST_NETWORK_LIST
+    regex: ^([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(\/[0-9]{1,2})?,?){1,160}$
+    type: input
+    default: ''
+    rebuild_required: false
+
+switcher_core:
+  - param_name: SWC_CHECK_ICMP_PING
+    type: checkbox
+    default: true
+    rebuild_required: false
+  - param_name: SWC_ENABLE_SPLITTING
+    type: checkbox
+    default: true
+    rebuild_required: false
+  - param_name: SWC_CONSOLE_CONN_TYPE
+    type: select
+    variants: [telnet, ssh]
+    default: telnet
+    rebuild_required: false
+  - param_name: SWC_CONSOLE_PORT
+    type: number
+    default: 23
+  - param_name: SWC_CONSOLE_TIMEOUT_SEC
+    type: number
+    default: 300
+    rebuild_required: false
+  - param_name: SWC_CONSOLE_WAIT_BYTE_SEC
+    type: number
+    default: 5
+    rebuild_required: false
+  - param_name: SWC_SNMP_REPEATS
+    type: number
+    regex: .*
+    default: 3
+    rebuild_required: false
+  - param_name: SWC_SNMP_VERSION
+    type: select
+    variants: [1, 2c]
+    default: 2c
+    rebuild_required: false
+  - param_name: SWC_SNMP_TIMEOUT_SEC
+    type: number
+    regex: .*
+    default: 3
+    rebuild_required: false
+  - param_name: SWC_SNMP_PORT
+    type: number
+    regex: .*
+    default: 161
+    rebuild_required: false
+  - param_name: SWC_MIKROTIK_API_PORT
+    type: number
+    regex: .*
+    default: 8728
+    rebuild_required: false
+  - param_name: SWC_CACHE_ACTUALIZE_TIMEOUT_SEC
+    type: number
+    regex: .*
+    default: 1800
+    rebuild_required: false
+
+provisioning:
+  - param_name: VLAN_INTERNET
+    type: number
+    regex: ^[0-9]{1,4}$
+    default: 100
+    rebuild_required: false

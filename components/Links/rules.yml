@@ -1,0 +1,12 @@
+- key: links_view
+  description: View links
+  logic_group: links
+  routes:
+    - ^(GET):/.*$
+    - (GET|PUT):/view
+    - (GET):/widgets
+- key: links_edit
+  description: Allow edit links
+  logic_group: links
+  routes:
+    - (GET|POST|PUT|DELETE):.*

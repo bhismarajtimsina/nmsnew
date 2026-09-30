@@ -1,0 +1,97 @@
+<table class="td_medium td_ok width100"  >
+    <thead>
+    <tr>
+        <td><b>Device</b></td>
+        <td><b>Interface</b></td>
+        <td ><b>Status</b></td>
+        <td><b>FDB (on interface)</b></td>
+        <td ><b>Diagnostic</b></td>
+        <td><b>Updated</b></td>
+    </tr>
+    </thead>
+    <tbody>
+        <tr>
+        <td  style="vertical-align: top">
+            <a href="{{ links.device }}" target="_blank">
+                {% if device.is_online %}
+                {{ device.name }}<br>
+                <small>({{ device.ip }})</small>
+                {% else %}
+                    <div style="color: darkred; font-weight: bold">
+                        {{ device.name }}<br>
+                        <small>({{ device.ip }})</small><br>
+                        DEVICE NOT AVALIABLE!
+                    </div>
+                {% endif %}
+            </a>
+        </td>
+        <td  style="vertical-align: top">
+            <a href="{{ links.interface }}" target="_blank">
+                {% if diagnostic.ident is defined %}
+                    <span title="{{ diagnostic.ident.type }}">{{ diagnostic.ident.value }}</span><br>
+                    <small>{{ iface.name }}</small>
+                {% else %}
+                    {{ iface.name }}
+                {% endif %}
+            </a>
+        </td>
+        <td  style="vertical-align: top; ">
+            {% if diagnostic.status.bind is defined and diagnostic.status.bind is not null %}
+                <div >{{ diagnostic.status.bind|capitalize}}</div>
+            {% elseif diagnostic.status.online is defined  %}
+                <div >{{ diagnostic.status.online|capitalize}}</div>
+            {% elseif diagnostic.link_info is defined and diagnostic.link_info is iterable %}
+                {% for link in diagnostic.link_info %}
+                    <div style="min-width: 90px;">
+                        {% if link.oper_status == 'Up' %}
+                            Link: Up<br>
+                            Speed: {{ link.nway_status }}
+                        {% else %}
+                            Link: Down<br>
+                            Admin state: {{ link.admin_state }}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <small>No data</small>
+            {% endif %}
+        </td>
+        <td  style="vertical-align: top">
+            {% if diagnostic.fdb is defined and diagnostic.fdb is iterable %}
+                {% for fdb in diagnostic.fdb %}
+                 {{ fdb.mac_address }}<br>
+                {% endfor %}
+            {% else %}
+                <small>No data</small>
+            {% endif %}
+        </td>
+        <td  style="vertical-align: top">
+            {% if diagnostic.optical is defined %}
+                <div style="min-width: 120px">
+               {% if diagnostic.optical.rx is not null %}RX: {{ diagnostic.optical.rx }}dBm<br>{% endif %}
+               {% if diagnostic.optical.olt_rx is not null %}OLT RX: {{ diagnostic.optical.olt_rx }}dBm<br>{% endif %}
+               {% if diagnostic.optical.tx is not null %}TX: {{ diagnostic.optical.tx }}dBm<br>{% endif %}
+                </div>
+            {% elseif diagnostic.cable_diag.pairs is defined and diagnostic.cable_diag.pairs is iterable %}
+                {% for pair in diagnostic.cable_diag.pairs %}
+                    <div>
+                    {% if pair.number is defined %}{{ pair.number }}: {% endif %}
+                    {% if pair.status is defined %}{{ pair.status }} {% endif %}
+                    {% if pair.length is defined and pair.length > 0 %} - {{ pair.length }}M {% endif %}
+                    </div>
+                {% endfor %}
+            {% elseif diagnostic.cable_diag  is defined %}
+                <div>
+                {% if diagnostic.cable_diag.status is defined %}{{ diagnostic.cable_diag.status }} {% endif %}
+                {% if diagnostic.cable_diag.length is defined and diagnostic.cable_diag.length > 0 %} - {{ diagnostic.cable_diag.length }}M {% endif %}
+                </div>
+            {% else %}
+                No data
+            {% endif %}
+        </td>
+        <td  style="vertical-align: top">
+            {{ last_seen }}
+        </td>
+        </tr>
+    </tbody>
+</table>

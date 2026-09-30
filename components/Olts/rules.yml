@@ -1,0 +1,5 @@
+- key: olts_info
+  description: Access to olts info
+  logic_group: olts
+  routes:
+    - ^(GET):/.*

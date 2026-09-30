@@ -1,0 +1,10 @@
+auto_topology:
+  - param_name: AUTO_TOPOLOGY_SCHEDULE_ENABLED
+    type: checkbox
+    default: true
+    rebuild_required: false
+  - param_name: AUTO_TOPOLOGY_THREADS
+    type: number
+    regex: "[0-9]{1,9}"
+    default: 10
+

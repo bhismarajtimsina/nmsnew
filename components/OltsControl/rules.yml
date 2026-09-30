@@ -1,0 +1,49 @@
+- key: olts_ctrl_dereg
+  description: Allow dereg ONT
+  logic_group: olts
+  routes:
+    - ^PUT:/ont/dereg/.*$
+
+- key: olts_ctrl_clear_pon
+  description: Allow bulk-deleting every ONT on a PON port at once
+  logic_group: olts
+  routes:
+    - ^PUT:/ont/clear-pon/.*$
+
+- key: olts_ctrl_reboot
+  description: Allow reboot ONT
+  logic_group: olts
+  routes:
+    - ^PUT:/ont/reboot/.*$
+- key: olts_ctrl_clear_counters
+  description: Allow to clear counters
+  logic_group: olts
+  routes:
+    - ^PUT:/ont/clear_counters/.*$
+
+- key: olts_ctrl_reset
+  description: Allow reset ONT
+  logic_group: olts
+  routes:
+    - ^PUT:/ont/reset/.*$
+- key: olts_ctrl_disable
+  description: Allow disable ONT
+  logic_group: olts
+  routes:
+    - ^PUT:/ont/disable/.*$
+- key: olts_ctrl_description
+  description: Allow description ONT
+  logic_group: olts
+  routes:
+    - ^PUT:/ont/description/.*$
+- key: olts_ctrl_port
+  description: Allow control PON/Physical ports
+  logic_group: olts
+  routes:
+    - ^PUT:/olt/reset-port/.*$
+    - ^(PUT|POST):/olt/interface/description/.*$
+- key: olts_ctrl_uni_ports
+  description: Allow control UNI ports
+  logic_group: olts
+  routes:
+    - ^PUT:/ont/uni-control/.*$

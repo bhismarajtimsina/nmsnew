@@ -1,0 +1,11 @@
+<html>
+<body>
+<h3 align="center" style="color: darkgreen">{{action.message}}</h3>
+Name: <b>{{action.action}}</b><br>
+User: <b>{{action.user.name}}</b><br>
+Status: <b>{{action.status}}</b><br>
+{% if action.device != null %}
+Device: <b>{{action.device.ip}} ({{action.device.name}})</b><br>
+{% endif %}
+</body>
+</html>

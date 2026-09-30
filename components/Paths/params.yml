@@ -1,0 +1,9 @@
+paths:
+  - param_name: PATHS_DEGRADED_LATENCY_MS
+    type: number
+    regex: ^[0-9]{1,5}$
+    default: 150
+  - param_name: PATHS_STATE_METRIC_TTL_SEC
+    type: number
+    regex: ^[0-9]{1,5}$
+    default: 300

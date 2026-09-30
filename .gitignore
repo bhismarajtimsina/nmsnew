@@ -1,0 +1,163 @@
+# CyberSathy-NMS repository ignore rules
+
+# Operating system and editor noise
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*.swn
+*~
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Local secrets and environment files
+.env
+.env.*
+!.env-example
+!.env.example
+!.env.cybersathy.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+.encrypt_passwd
+cybersathy.env
+
+# Keep separate/legacy application copy out of this repo
+CyberSathyisp/
+Cybersathyisp/
+
+# Backups, exports, archives, and local dumps
+backup/
+backups/
+nmsbackup/
+*.backup
+*.bak
+*.old
+*.orig
+*.tmp
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.7z
+*.rar
+*.sql
+*.sql.gz
+*.dump
+*.dmp
+*.csv
+*.xlsx
+
+# Logs and runtime files
+logs/
+log/
+*.log
+*.pid
+*.pid.lock
+*.sock
+*.socket
+*.lock
+tmp/
+temp/
+runtime/
+storage/
+
+# Docker and local service data
+var/docker/
+var/log/
+var/cache/
+var/tmp/
+var/run/
+docker-data/
+postgres-data/
+redis-data/
+mysql-data/
+prometheus-data/
+grafana-data/
+loki-data/
+
+# PHP / Composer
+vendor/
+composer.phar
+.phpunit.cache/
+.php-cs-fixer.cache
+coverage/
+htmlcov/
+
+# RoadRunner local binary/runtime artifacts
+rr
+.rr.local.yaml
+.rr.pid
+
+# Node / Vue / Vite
+node_modules/
+frontend/node_modules/
+dist/
+dist-ssr/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+frontend/.cache/
+frontend/coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.tsbuildinfo
+
+# Python / FastAPI
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+.hypothesis/
+.tox/
+.nox/
+pip-wheel-metadata/
+*.egg-info/
+build/
+
+# Alembic local/generated scratch files
+alembic.log
+
+# SNMP, polling, and trap runtime data
+*.pcap
+*.pcapng
+*.snmpwalk
+*.walk
+*.traplog
+traps/*.log
+polling-results/
+snmp-cache/
+mib-cache/
+
+# Generated reports and exports
+reports/generated/
+exports/
+downloads/
+uploads/
+public/uploads/
+public/reports/
+
+# Local AI/tooling state
+.claude/
+.agents/
+.npm-cache/
+.codex

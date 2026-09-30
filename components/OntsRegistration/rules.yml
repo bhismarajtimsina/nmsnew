@@ -1,0 +1,23 @@
+- key: unregistered_onts
+  description: Allow view and register ONT
+  logic_group: olts
+  routes:
+    - (GET|POST):/(execute|variables|by-device|by-ident|unregistered).*
+
+- key: unregistered_onts_preview
+  description: Allow preview commands
+  logic_group: olts
+  routes:
+    - (GET|POST):/(execute|variables).*
+
+- key: unregistered_onts_result_output
+  description: Allow view resulted commands
+  logic_group: olts
+  routes:
+    - (GET):/(execute|variables).*
+
+- key: unregistered_onts_config
+  description: Edit ONTs registration template
+  logic_group: olts
+  routes:
+    - (GET|PUT|POST|DELETE):/control.*

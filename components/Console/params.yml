@@ -1,0 +1,15 @@
+console:
+  - param_name: CONSOLE_ENABLE_WEB
+    type: checkbox
+    default: no
+    rebuild_required: yes
+  - param_name: CONSOLE_OPEN_AT
+    type: select
+    default: 'tab'
+    variants: ['tab', 'window']
+    rebuild_required: false
+  - param_name: CONSOLE_FONT_SIZE
+    type: input
+    regex: ^[0-9]{1,4}$
+    default: 14
+    rebuild_required: true

@@ -1,0 +1,20 @@
+nodeny_plus:
+  - param_name: NODENY_URL
+    type: input
+    regex: .*
+    default: ''
+  - param_name: NODENY_DATABASE_DSN
+    type: input
+    regex: .*
+    default: ''
+  - param_name: NODENY_DATABASE_USERNAME
+    type: input
+    regex: .*
+    default: ''
+  - param_name: NODENY_DATABASE_PASSWORD
+    type: input
+    regex: .*
+    default: ''
+  - param_name: NODENY_COMPARISON_DESCRIPTION_REQUIRED
+    type: checkbox
+    default: false

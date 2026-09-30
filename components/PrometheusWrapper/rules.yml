@@ -1,0 +1,5 @@
+- key: prom_chart_info
+  description: Prometheus optical information
+  logic_group: prom_wrapper
+  routes:
+    - ^(POST):/chart-.*$

@@ -1,0 +1,24 @@
+- key: diag_arp_ping
+  description: ARP ping diagnostic
+  logic_group: diag
+  routes:
+    - ^(POST):/arp-ping$
+- key: diag_icmp_ping
+  description: ICMP ping
+  logic_group: diag
+  routes:
+    - ^(POST):/arp-ping$
+
+- key: diag_traceroute
+  description: Traceroute
+  logic_group: diag
+  routes:
+    - ^(POST):/traceroute$
+
+- key: diag_interface
+  description: Interface diagnostic for billing
+  logic_group: diag
+  routes:
+    - ^(POST):/interface-diag$
+    - ^(GET):/interface/.*$
+

@@ -1,0 +1,17 @@
+- key: external_apps_console
+  description: Allow auth console
+  logic_group: console
+  routes:
+    - ^(GET):/.*$
+- key: external_apps_console_with_auto_auth
+  description: Allow auth console
+  logic_group: console
+  routes:
+    - ^(GET):/.*$
+- key: external_apps_console_view_logs
+  description: Allow view logs
+  logic_group: console
+  routes:
+    - ^(POST):/logs
+    - ^(GET):/logs/
+

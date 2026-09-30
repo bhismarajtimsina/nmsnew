@@ -1,0 +1,6 @@
+- key: router_os_info
+  description: Get information from router OS
+  logic_group: router_os
+  routes:
+    - ^(GET):/device/.*?/.*
+    - ^(GET):/tab-stats/.*

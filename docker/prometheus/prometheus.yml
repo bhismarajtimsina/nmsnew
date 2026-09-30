@@ -1,0 +1,218 @@
+global:
+  scrape_interval: 60s
+  scrape_timeout: 60s
+  evaluation_interval: 30s
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+      monitor: 'docker-host-alpha'
+
+# Load and evaluate rules in this file every 'evaluation_interval' seconds.
+rule_files:
+  - "/opt/prometheus/custom.rules.yml"
+  - "alert.rules.yml"
+
+
+scrape_config_files:
+  - /opt/prometheus/scrape.d/*.yml
+
+# A scrape configuration containing exactly one endpoint to scrape.
+scrape_configs:
+  - job_name: 'nodeexporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['wca-nodeexporter:9100']
+
+  - job_name: 'cadvisor'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['wca-cadvisor:8080']
+
+  - job_name: 'prometheus'
+    scrape_interval: 10s
+    metrics_path: /prometheus/metrics
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'snmp-exporter'
+    scrape_interval: 1m
+    metrics_path: /snmp
+    file_sd_configs:
+      - files:
+          - /opt/prometheus/targets/snmp.yml
+    params:
+      module: [if_mib]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: wca-snmp-exporter:9116
+
+  - job_name: 'blackbox-http'
+    scrape_interval: 30s
+    metrics_path: /probe
+    file_sd_configs:
+      - files:
+          - /opt/prometheus/targets/blackbox-http.yml
+    params:
+      module: [http_2xx]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: wca-blackbox-exporter:9115
+
+  - job_name: 'blackbox-tcp'
+    scrape_interval: 30s
+    metrics_path: /probe
+    file_sd_configs:
+      - files:
+          - /opt/prometheus/targets/blackbox-tcp.yml
+    params:
+      module: [tcp_connect]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: wca-blackbox-exporter:9115
+
+  - job_name: 'blackbox-icmp'
+    scrape_interval: 30s
+    metrics_path: /probe
+    file_sd_configs:
+      - files:
+          - /opt/prometheus/targets/blackbox-icmp.yml
+    params:
+      module: [icmp]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: wca-blackbox-exporter:9115
+
+  - job_name: 'blackbox-exporter'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['wca-blackbox-exporter:9115']
+
+  - job_name: 'snmp-exporter-self'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['wca-snmp-exporter:9116']
+
+  - job_name: 'loki'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['wca-loki:3100']
+
+  - job_name: 'alloy'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['wca-alloy:12345']
+
+  - job_name: 'goflow2'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['wca-goflow2:8080']
+
+  - job_name: 'wca-iface-statistics-in'
+    scrape_interval: 1m
+    metrics_path: /metrics/iface_stat_in
+    static_configs:
+      - targets: ['wca-nginx:80']
+
+  - job_name: 'wca-iface-statistics-out'
+    scrape_interval: 1m
+    metrics_path: /metrics/iface_stat_out
+    static_configs:
+      - targets: ['wca-nginx:80']
+
+  - job_name: 'wca-devices-info'
+    scrape_interval: 60s
+    metrics_path: /metrics/device
+    static_configs:
+      - targets: ['wca-nginx:80']
+
+  - job_name: 'wca-router'
+    scrape_interval: 30s
+    metrics_path: /metrics/router
+    static_configs:
+      - targets: ['wca-nginx:80']
+
+  - job_name: 'wca-pinger'
+    scrape_interval: 30s
+    metrics_path: /metrics/pinger
+    static_configs:
+      - targets: ['wca-nginx:80']
+
+  - job_name: 'wca-optical-info'
+    scrape_interval: 5m
+    metrics_path: /metrics/optical
+    static_configs:
+      - targets: ['wca-nginx:80']
+
+  - job_name: 'wca-system'
+    scrape_interval: 1m
+    metrics_path: /metrics/system
+    static_configs:
+      - targets: ['wca-nginx:80']
+
+  - job_name: 'wca-pon-boxes'
+    scrape_interval: 1m
+    metrics_path: /metrics/pon_box
+    static_configs:
+      - targets: ['wca-nginx:80']
+
+  - job_name: 'wca-pon-ports'
+    scrape_interval: 1m
+    metrics_path: /metrics/pon_port
+    static_configs:
+      - targets: ['wca-nginx:80']
+
+  - job_name: 'wca-storage'
+    scrape_interval: 2m
+    metrics_path: /metrics/storage
+    static_configs:
+      - targets: ['wca-nginx:80']
+
+  - job_name: 'wca-card-status'
+    scrape_interval: 30s
+    metrics_path: /metrics/card_status
+    static_configs:
+      - targets: ['wca-nginx:80']
+
+  - job_name: 'wca-analytics'
+    scrape_interval: 1m
+    metrics_path: /metrics/analytics
+    static_configs:
+      - targets: ['wca-nginx:80']
+
+  - job_name: 'wca-unregistered'
+    scrape_interval: 30s
+    metrics_path: /metrics/unregistered
+    static_configs:
+      - targets: ['wca-nginx:80']
+
+  - job_name: 'wca-link-utilization'
+    scrape_interval: 1m
+    metrics_path: /metrics/link_utilization
+    static_configs:
+      - targets: ['wca-nginx:80']
+
+
+alerting:
+  alertmanagers:
+  - scheme: http
+    path_prefix: /alertmanager
+    static_configs:
+    - targets: 
+      - 'wca-alertmanager:9093'

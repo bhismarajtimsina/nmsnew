@@ -1,0 +1,62 @@
+---
+username: username
+password: password
+model: junos
+resolve_dns: false
+interval: ${OXIDIZED_INTERVAL}
+use_syslog: false
+debug: true
+threads: ${OXIDIZED_THREADS}
+use_max_threads: True
+timeout: ${OXIDIZED_TIMEOUT}
+retries: 3
+prompt: !ruby/regexp /^([\w.@-]+[#>]\s?)$/
+rest: 0.0.0.0:8888/oxidized
+next_adds_job: false
+vars:
+  auth_methods: [ "password", "keyboard-interactive" ]
+groups: {}
+group_map: {}
+models: {}
+pid: "/home/oxidized/.config/oxidized/pid"
+crash:
+  directory: "/home/oxidized/.config/oxidized/crashes"
+  hostnames: false
+stats:
+  history_size: 50
+input:
+  default: telnet, ssh
+  debug: true
+  ssh:
+    secure: false
+  ftp:
+    passive: true
+  utf8_encoded: true
+output:
+  default: git
+  file:
+    directory: "/home/oxidized/.config/oxidized/configs"
+  git:
+    user: Wildcore
+    email: system@wildcore
+    repo: "/home/oxidized/.config/oxidized/configs.git"
+source:
+  default: http
+  http:
+    url: http://wca-nginx/api/v1/component/oxidized/internal/devices-list
+    scheme: http
+    delimiter: !ruby/regexp /:/
+    read_timeout: 120
+    map:
+      ip: ip
+      name: name
+      model: model
+      username: login
+      password: password
+      input: input
+      full_name: full_name
+    vars_map:
+      enable: enable
+      telnet_port: telnet_port
+      ssh_port: ssh_port
+      remove_secret: remove_secret

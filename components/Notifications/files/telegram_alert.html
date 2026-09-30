@@ -1,0 +1,11 @@
+<b>{{event.severity}}: {{event.description}}</b>
+
+Name: <b>{{event.name}}</b>
+{% if event.device != null %}
+Device: <b>{{event.device.ip}} ({{event.device.name}})</b>
+{% endif %}
+Labels:
+{% for key, label in event.labels %}
+<i> - {{key}}: {{ label }}</i>
+{% endfor %}
+

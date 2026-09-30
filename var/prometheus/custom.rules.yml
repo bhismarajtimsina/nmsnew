@@ -1,0 +1,297 @@
+---
+groups:
+- name: router
+  rules:
+  - alert: bgp_session_down
+    expr: router_bgp_session_state_established == 0 and router_bgp_session_state_disabled
+      == 0
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: BGP Session Down
+      description: BGP session with AS num {{ $labels.remote_as }} ({{ $labels.remote_address
+        }}) on router {{ $labels.router_ip }} DOWN
+  - alert: bgp_session_restarted
+    expr: router_bgp_session_uptime < 300 and router_bgp_session_state_established
+      == 1
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: BGP Session reloaded
+      description: BGP session with AS num {{ $labels.remote_as }} ({{ $labels.remote_address
+        }}) on router {{ $labels.router_ip }} RELOADED
+- name: interfaces
+  rules:
+  - alert: favorite_interface_down
+    expr: (device_interface_status == 0 and device_interface_admin_state == 1) * on(iface_id,
+      iface_name, iface_type, ip, dev_id) storage_iface_favorite
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: Marked interface is DOWN
+      description: Interface {{ $labels.iface_name }} DOWN on host {{ $labels.ip }}
+  - alert: iface_increase_in_errors
+    expr: delta(iface_stat_in_errors[15m]) > 30
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: Errors increased
+      description: Errors increased on {{ $labels.iface_name }} on host {{ $labels.ip
+        }} more than {{ humanize $value }} per 15minutes
+  - alert: iface_increase_out_errors
+    expr: delta(iface_stat_out_errors[15m]) > 30
+    for: 30m
+    labels:
+      severity: warning
+    annotations:
+      summary: Errors increased
+      description: Errors increased on {{ $labels.iface_name }} on host {{ $labels.ip
+        }} more than {{ humanize $value }} per 15minutes
+  - alert: interface_is_down
+    expr: device_interface_status{iface_type=~"ETH|FE|GE|TGE|LACP"} == 0 and device_interface_admin_state{iface_type=~"ETH|FE|GE|TGE|LACP"}
+      == 1
+    for: 5m
+    labels:
+      severity: info
+    annotations:
+      summary: Port down
+      description: Port {{ $labels.iface_name }} on {{ $labels.ip }} is administratively
+        up but operationally down
+  - alert: mass_interfaces_down
+    expr: round(delta(count(device_interface_status{iface_type=~"ETH|FE|GE|TGE|LACP"}
+      == 0) by (dev_id, ip)[15m:])) >= 3
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: Several ports down at once
+      description: Three or more ports went down within fifteen minutes on {{ $labels.ip
+        }}
+  - alert: pon_box_status
+    expr: pon_box_status == 0
+    for: 1m
+    labels:
+      severity: info
+    annotations:
+      summary: PON box down
+      description: PON box with name {{ $labels.pon_iface }} on device {{ $labels.ip
+        }}, port {{ $labels.pon_iface }} is DOWN
+- name: device_resources
+  rules:
+  - alert: high_memory_load
+    expr: device_resources_memory_util > 80
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: High memory load
+      description: Memory use on {{ $labels.ip }} has been above 80 per cent for ten
+        minutes
+  - alert: sys_cpu_highload
+    expr: device_resources_cpu_util > 80
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: CPU highload
+      description: CPU on device {{ $labels.ip }} highload, value {{humanize $value}}
+- name: links
+  rules:
+  - alert: link_down
+    expr: link_status == 0
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: Link down
+      description: Link between {{ $labels.src_device_name }} {{ $labels.src_iface_name
+        }} and {{ $labels.dest_device_name }} {{ $labels.dest_iface_name }} is down
+  - alert: high_link_utilization
+    expr: max_over_time(link_utilization_prc[15m]) > 85
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: High link utilization
+      description: 'Link {{ $labels.src_device_ip }} -> {{ $labels.dest_device_ip
+        }} utilization is too high in one direction - {{ humanize $value }}% '
+- name: optical
+  rules:
+  - alert: olt_rx_signal_deteriorated
+    expr: avg_over_time(optical_olt_rx[1d:1h]) - avg_over_time(optical_olt_rx[30m])
+      > 2
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: OLT RX signal deteriorated
+      description: OLT RX signal deteriorated on ONU {{ $labels.iface_name }}, OLT
+        {{ $labels.ip }}
+  - alert: rx_signal_deteriorated
+    expr: avg_over_time(optical_rx[1d:1h]) - avg_over_time(optical_rx[30m]) > 2
+    for: 30m
+    labels:
+      severity: warning
+    annotations:
+      summary: RX signal deteriorated
+      description: RX signal deteriorated on ONU {{ $labels.iface_name }}, OLT {{
+        $labels.ip }}
+- name: pinger
+  rules:
+  - alert: pinger_host_down
+    expr: pinger_host_status <= 0
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: Device is down by ICMP
+      description: Device {{ $labels.ip }} is DOWN
+- name: pon
+  rules:
+  - alert: pon_mass_onts_down
+    expr: round(delta(count( (label_replace(device_interface_status{iface_name=~".*:.*"},
+      "pon_port", "$1", "iface_name", "^(.*):[0-9]{1,4}$") == 0) or (label_replace(device_interface_status{iface_name=~".*:.*"},
+      "pon_port", "$1", "iface_name", "^(.*):[0-9]{1,4}$") == -2) ) by (dev_id, ip,
+      pon_port)[15m:])) >= 3
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: Several ONTs down on one PON port
+      description: Three or more ONTs on {{ $labels.pon_port }} at {{ $labels.ip }}
+        went offline or lost signal within fifteen minutes
+  - alert: pon_mass_onts_power_loss
+    expr: round(delta(count( label_replace(device_interface_status{iface_name=~".*:.*"},
+      "pon_port", "$1", "iface_name", "^(.*):[0-9]{1,4}$") == -1 ) by (dev_id, ip,
+      pon_port)[15m:])) >= 3
+    for: 10m
+    labels:
+      severity: info
+    annotations:
+      summary: Several ONTs lost power on one PON port
+      description: Three or more ONTs on {{ $labels.pon_port }} at {{ $labels.ip }}
+        reported their own power off within fifteen minutes
+  - alert: pon_ports_is_full
+    expr: pon_port_current_onts_count / pon_port_max_onts_count * 100 > 90
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: PON port is full
+      description: Port {{ $labels.iface_name }} on host {{ $labels.ip }} loaded to
+        {{ humanize $value }}%
+- name: sensors
+  rules:
+  - alert: sensor_test_alert
+    expr: device_sensor{name="Temperature"} > 18
+    for: 10m
+    labels:
+      severity: info
+    annotations:
+      summary: High temperature
+      description: High temp - {{$value}},  on sensor {{$labels.ip}}
+  - alert: sensors_low_battery_level
+    expr: 'device_sensor{type="analog_line", name="Battery"}  < 44  '
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: Low battery level
+      description: Battery voltage {{humanize $value}} on sensor {{$labels.ip}} is
+        very low
+  - alert: sensors_no_power_supply
+    expr: device_sensor{type="power_sensor"} == 0
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: No power supply
+      description: No power on sensor {{ $labels.ip }}
+- name: system
+  rules:
+  - alert: system_not_enough_pollers
+    expr: avg_over_time(system_poller_procs_busy_count[10m]) / avg_over_time(system_poller_procs_all_count[10m])
+      * 100 >= 99
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: System problem
+      description: Not anough processes for pollers. Current pollers load is  {{ humanize
+        $value }}% (You can increase parameter POLLER_COUNT_PROCS in .env or system
+        configuration)
+- name: analytics
+  rules:
+  - alert: bad_optical_level_olt_rx
+    expr: optical_olt_rx{iface_type="ONU"} > -10 or optical_olt_rx{iface_type="ONU"}
+      < -28
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: Signal Level Issues
+      description: The OLT RX signal level on OLT for ONU {{ $labels.iface_name }},
+        OLT {{ $labels.ip }} has exceeded the limit - {{ humanize $value }}dBm
+  - alert: bad_optical_level_rx
+    expr: optical_rx{iface_type="ONU"} > -10 or optical_rx{iface_type="ONU"} < -28
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: Signal Level Issues
+      description: The RX signal level on ONU {{ $labels.iface_name }}, OLT {{ $labels.ip
+        }} has exceeded the limit - {{ humanize $value }}dBm
+  - alert: bad_optical_sfp_rx
+    expr: optical_rx{iface_type != "ONU"} > 5 or optical_rx{iface_type != "ONU"} <
+      -15
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: Bad SFP signal
+      description: The RX signal level on SFP {{ $labels.iface_name }}, IP {{ $labels.ip
+        }} has exceeded the limit - {{ humanize $value }}dBm
+- name: paths
+  rules:
+  - alert: path_degraded
+    expr: path_state == 0.5
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: Transport path is degraded
+      description: Path {{ $labels.path_name }} is up but latency on at least one
+        hop is above the configured threshold.
+  - alert: path_down
+    expr: path_state == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: Transport path is down
+      description: Path {{ $labels.path_name }} ({{ $labels.endpoint_a_name }} ->
+        {{ $labels.endpoint_b_name }}) is down.
+  - alert: path_group_outage
+    expr: path_group_up_count == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: All paths in group are down
+      description: Every path in group {{ $labels.group_key }} is down - the destination
+        is unreachable.
+  - alert: path_group_unprotected
+    expr: path_group_protected == 0 and path_group_up_count > 0
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: Redundancy lost - group is unprotected
+      description: 'Group {{ $labels.group_key }} still carries traffic but has lost
+        redundancy: {{ $labels.group_key }} has {{ $value }} protected state. A further
+        failure will cause an outage.'
+...

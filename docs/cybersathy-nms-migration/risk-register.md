@@ -1,0 +1,31 @@
+# Risk Register
+
+Ranked by likelihood × impact for a production ISP network. Each risk has an owner plan, a mitigation that is part of that plan's acceptance checks, and a trigger that tells you it is happening.
+
+Scale: Likelihood and Impact are L / M / H.
+
+| ID | Risk | L | I | Mitigation (where it is enforced) | Trigger / early signal |
+|---|---|---|---|---|---|
+| K-01 | **Two systems poll the same device**, doubling SNMP load and overloading an access switch or OLT | H | H | `polling_owner` per device, one owner at a time, shared per-device budget (Plans 11, 34, D-06) | Rising SNMP timeouts on a device group after enabling the new poller |
+| K-02 | **Unbounded walk** in a new profile (full FDB, full ONU optical, private-enterprise tree) | M | H | Profile import rejects walks without `max_rows` and `timeout`; fake-transport unit tests count rows (Plans 6, 11, 13, 18) | `snmp_walk_rows` metric spikes; device CPU alarms |
+| K-03 | **Reseller data leak** through a query that forgets scope | M | H | Mandatory scoped repository, CI route-guard, per-endpoint leak tests, RLS spike (Plans 4, 33, D-11) | A leak test fails; a route has no scope declaration |
+| K-04 | **Cutover without rollback**, discovering a parity gap after PostgreSQL is authoritative | M | H | Read-only window, reverse export for 72 hours, rehearsed on a production copy (Plan 34, [cutover-runbook.md](cutover-runbook.md), D-22) | Poll-result diff above threshold during observe |
+| K-05 | **Credentials exposed**: tracked `.env`, SNMP communities in logs or audit payloads | H | H | Plan 35 (untrack, rotate), Plan 36 (encryption, write-only, redaction), fixture credential scanner (Plan 33) | Secret pattern found in git, logs or Loki |
+| K-06 | **Frontend or integrations break** because the API contract changed | H | M | Compatibility shim, contract tests from recorded responses, service tokens (Plans 36, 41) | 401/404 from known callers after deployment |
+| K-07 | **Dangerous action run by mistake** (reboot, disable port, bulk ONU action) | M | H | Fine-grained permission + Dangerous flag + scope + single-use confirmation token + audit + caps on bulk (Plans 26, 38) | Action executed without a matching confirmation record |
+| K-08 | **Wrong optical scale** hides bad signal | M | M | Scale rules in the OID registry with fixture-based tests per vendor (Plans 6, 14–17) | Optical distribution shifts after import |
+| K-09 | **Model ambiguity** runs the wrong poller on a device (BDCOM switch vs OLT) (mitigated for BDCOM, Huawei, ZTE: cross-type ambiguity refused, verified against every real model in the legacy config; most other vendors not yet imported) | L | H | Explicit switch/OLT split, ambiguous match → "unknown" runs nothing (Plan 8) | Device typed differently by legacy and new detection |
+| K-10 | **Job duplication or unbounded retry** amplifies device load (mitigated in code: idempotent publish, atomic job claim, backoff, retry cap, locks; verified with a fake transport) | L | H | Idempotency key, per-device lock, retry cap and circuit breaker (Plan 12, D-07) | Duplicate job IDs in `polling_jobs`; dead-letter growth |
+| K-11 | **Redis restart drops jobs** and events | H (currently) | M | AOF persistence, stream trimming policy, reclaim of pending entries (Plans 1, 12, defect F-09) | Missing results after a Redis restart |
+| K-12 | **Timescale growth** exhausts disk before retention is tuned | M | M | Retention and compression defaults, capacity model, alerts on disk (Plan 40, [data-model.md](data-model.md)) | Chunk count and disk growth exceed the model |
+| K-13 | **Stale history** pollutes new dashboards | M | L | Import windows, data-quality checks, validation of ranges (Plan 32) | Dashboards show impossible values |
+| K-14 | **Notification storm** during a large outage | M | M | Dedup, grouping, rate limits, maintenance windows (Plans 20, 29) | Messages per minute above the channel limit |
+| K-15 | **Trap flood** from one noisy device | M | M | Source allow-list, per-source rate limit, unknown-trap sampling (Plan 21) | Trap queue length grows |
+| K-16 | **Client IP wrong** behind the proxy, breaking trusted-IP, IP-strict, audit | H (currently) | M | Proxy headers configured and tested (Plan 1, defect F-06) | Audit rows all show the proxy address |
+| K-17 | **Missing legacy behavior** discovered late (2FA, IP-strict, cross-auth, schedule, integrations) | M | H | [parity-inventory.md](parity-inventory.md) must be fully dispositioned before cutover (Plan 34) | A parity row is still `Open` at go/no-go |
+| K-18 | **Everything at once**: backend rewrite, database change and poller rewrite together | M | H | Phased order, each phase independently deployable and reversible ([README](README.md#phases)) | A phase touches more than one of the three |
+| K-19 | **Scope creep from the parallel ISP-solution app** into NMS schema decisions | L | M | Out of scope by decision D-10 and D-14; revisit at Plan 28 | Requests to change NMS tables for that app |
+| K-20 | **Unverified device behavior** shipped because there was no fixture | M | H | Fixture per model family, hardware sign-off as a separate explicit step ([policy](safety-and-verification-policy.md)) | A parser has no fixture |
+| K-23 | **A `git push` publishes credentials.** The repository is rooted at the home directory and tracks tool credential files and `.env` files in unpushed local commits (R-05) | M | H | Do not push; create a repository rooted at `nms/`; rotate everything ever committed; secret scanner in CI (Plan 35, Plan 33) | Any push from `/root`; a secret scanner hit |
+| K-21 | **Our own replacements are new code on the critical path** (pinger, trap receiver, console gateway, config backup) and may behave differently from the legacy ones | M | H | Each ships behind an ownership switch, runs in observe mode first, has fixture or fake-transport tests, and is compared with the legacy result during Gate A ([own-components.md](own-components.md)) | Up/down or trap counts differ from legacy for the same devices |
+| K-22 | **Devices keep sending traps to the old listener address** after cutover | M | M | The new receiver takes over the legacy address and port; no device reconfiguration (Plan 21, [cutover-runbook.md](cutover-runbook.md)) | Trap counts drop to zero at cutover |

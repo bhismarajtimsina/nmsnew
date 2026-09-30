@@ -1,0 +1,40 @@
+topology:
+  build_by_fdb: true
+  build_by_lldp: true
+  # После построения всех связей, если остаются порты с более 1 мак-адресом - исключить устройства с ранее установленными аплинками (внесенные вручную или автоматически)
+  split_by_vlans: true #Данный параметр имеет смысл применять, если есть роутеры, на которых маршрутится железо
+  build_all: true # Пытается собрать по всем устройствам
+  exclude_not_responded_devices: false
+
+
+logger:
+  level: trace
+input: support
+output: support
+
+inputs:
+  support:
+    base_url: "${AUTO_TOPOLOGY_SUPPORT_ADDR:http://wca-nginx}"
+outputs:
+  # Складывается в файлы, в формате CSV.
+  # Device-IP - IP устройтва
+  # Формат - DeviceID;DeviceIP;DevicePortName;DevicePortID;NeighborIP;NeighborPortName;NeighborPortID;NeighborType;DetectMethodType
+  files:
+    path: /tmp/links.csv
+  support:
+    base_url: "${AUTO_TOPOLOGY_SUPPORT_ADDR:http://wca-nginx}"
+
+# Должен использоваться API switcher core
+# https://github.com/meklis/switcher-core-api
+# или подобное API
+switcher_core:
+  threads: ${AUTO_TOPOLOGY_THREADS:10}
+  timeout: 300s
+  base_url: "${AUTO_TOPOLOGY_SUPPORT_ADDR:http://wca-nginx}"
+  methods:
+    # Для форматирования линков используется шаблонизатор text/template
+    network_settings: "/api/v1/switcher-core/cache/net_settings/{{.ID}}"
+    lldp_info: "/api/v1/switcher-core/cache/lldp_info/{{.ID}}"
+    fdb: "/api/v1/switcher-core/cache/fdb/{{.ID}}"
+    arps: "/api/v1/switcher-core/cache/arps/{{.ID}}"
+

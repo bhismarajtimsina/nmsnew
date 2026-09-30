@@ -1,0 +1,50 @@
+#!/usr/bin/env php
+<?php
+use WCAA\App;
+use WCAA\Models\User\User;
+use Symfony\Component\Console\Application;
+
+try {
+    require __DIR__ . '/app/init.php';
+    $container = App::getInstance()->getContainer();
+    $config = App::getInstance()->conf('console');
+
+//Config logger
+    $logger = $container->get(\Monolog\Logger::class);
+    $logger->setHandlers([new \Monolog\Handler\StreamHandler(
+            App::getInstance()->conf('logger.path') . '/console.log',
+            App::getInstance()->conf('logger.level')
+        )]
+    );
+    $container->set(\Monolog\Logger::class, $logger);
+    $app = new Application();
+    $app->setName($config['name']);
+    $app->setVersion(_env('VERSION', '0.0.0'));
+
+    try {
+        $userStorage = $container->get(\WCAA\Storage\UserStorage::class);
+        $user = $userStorage->fill(new User($config['user_id']));
+    } catch (\Exception $e) {
+        $user = new User();
+    }
+
+    App::getInstance()->getContainer()->set(User::class, $user);
+
+
+    foreach ($config['handlers'] as $handler) {
+        try {
+            $app->add($container->get($handler));
+        } catch (\Throwable $e) {
+            throw $e;
+            $logger->error("ERROR LOADING COMMAND - $handler\n");
+            $logger->error("\t{$e->getMessage()}\n");
+        }
+    }
+    $app->run();
+} catch (\Throwable $e) {
+    echo "{$e->getFile()}({$e->getLine()}): {$e->getMessage()}\n";
+    echo "\n";
+    echo $e->getTraceAsString();
+    exit(1);
+}
+

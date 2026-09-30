@@ -1,0 +1,499 @@
+{
+    "lg": [
+        {
+            "x": 22,
+            "y": 0,
+            "w": 2,
+            "h": 11,
+            "i": 17,
+            "widget": "high_link_utilization",
+            "moved": false
+        },
+        {
+            "h": 11,
+            "i": 16,
+            "w": 2,
+            "x": 20,
+            "y": 0,
+            "moved": false,
+            "widget": "bad_ont_signal"
+        },
+        {
+            "h": 14,
+            "i": 15,
+            "w": 11,
+            "x": 0,
+            "y": 47,
+            "moved": false,
+            "widget": "unregistered_onts"
+        },
+        {
+            "h": 12,
+            "i": 14,
+            "w": 6,
+            "x": 6,
+            "y": 0,
+            "moved": false,
+            "widget": "ont_statuses_pie"
+        },
+        {
+            "h": 14,
+            "i": 13,
+            "w": 9,
+            "x": 11,
+            "y": 12,
+            "moved": false,
+            "widget": "device_status_chart"
+        },
+        {
+            "h": 14,
+            "i": 12,
+            "w": 11,
+            "x": 0,
+            "y": 12,
+            "moved": false,
+            "widget": "online_onts_chart"
+        },
+        {
+            "h": 12,
+            "i": 11,
+            "w": 8,
+            "x": 12,
+            "y": 0,
+            "moved": false,
+            "widget": "ont_signal_bar"
+        },
+        {
+            "h": 21,
+            "i": 10,
+            "w": 13,
+            "x": 11,
+            "y": 26,
+            "moved": false,
+            "widget": "last_user_activity"
+        },
+        {
+            "h": 21,
+            "i": 7,
+            "w": 11,
+            "x": 0,
+            "y": 26,
+            "moved": false,
+            "widget": "device_calling_errors_stat"
+        },
+        {
+            "h": 11,
+            "i": 6,
+            "w": 11,
+            "x": 0,
+            "y": 71,
+            "moved": false,
+            "widget": "system_stat"
+        },
+        {
+            "h": 32,
+            "i": 4,
+            "w": 13,
+            "x": 11,
+            "y": 47,
+            "moved": false,
+            "widget": "events_table"
+        },
+        {
+            "h": 10,
+            "i": 3,
+            "w": 11,
+            "x": 0,
+            "y": 61,
+            "moved": false,
+            "widget": "events_stat_by_name"
+        },
+        {
+            "h": 14,
+            "i": 2,
+            "w": 4,
+            "x": 20,
+            "y": 11,
+            "moved": false,
+            "widget": "events_stat"
+        },
+        {
+            "h": 12,
+            "i": 1,
+            "w": 6,
+            "x": 0,
+            "y": 0,
+            "moved": false,
+            "widget": "pinger_stat"
+        }
+    ],
+    "md": [
+        {
+            "x": 10,
+            "y": 0,
+            "w": 2,
+            "h": 13,
+            "i": 17,
+            "widget": "high_link_utilization",
+            "moved": false
+        },
+        {
+            "h": 15,
+            "i": 16,
+            "w": 7,
+            "x": 0,
+            "y": 27,
+            "moved": false,
+            "widget": "device_status_chart"
+        },
+        {
+            "h": 13,
+            "i": 15,
+            "w": 2,
+            "x": 8,
+            "y": 0,
+            "moved": false,
+            "widget": "bad_ont_signal"
+        },
+        {
+            "h": 13,
+            "i": 14,
+            "w": 3,
+            "x": 3,
+            "y": 0,
+            "moved": false,
+            "widget": "ont_statuses_pie"
+        },
+        {
+            "h": 14,
+            "i": 13,
+            "w": 6,
+            "x": 6,
+            "y": 13,
+            "moved": false,
+            "widget": "online_onts_chart"
+        },
+        {
+            "h": 14,
+            "i": 12,
+            "w": 6,
+            "x": 0,
+            "y": 13,
+            "moved": false,
+            "widget": "ont_signal_bar"
+        },
+        {
+            "h": 22,
+            "i": 10,
+            "w": 12,
+            "x": 0,
+            "y": 42,
+            "moved": false,
+            "widget": "events_table"
+        },
+        {
+            "h": 15,
+            "i": 9,
+            "w": 5,
+            "x": 7,
+            "y": 27,
+            "moved": false,
+            "widget": "events_stat_by_name"
+        },
+        {
+            "h": 13,
+            "i": 8,
+            "w": 2,
+            "x": 6,
+            "y": 0,
+            "moved": false,
+            "widget": "events_stat"
+        },
+        {
+            "h": 13,
+            "i": 7,
+            "w": 3,
+            "x": 0,
+            "y": 0,
+            "moved": false,
+            "widget": "pinger_stat"
+        },
+        {
+            "h": 19,
+            "i": 6,
+            "w": 5,
+            "x": 0,
+            "y": 64,
+            "moved": false,
+            "widget": "device_calling_errors_stat"
+        },
+        {
+            "h": 19,
+            "i": 5,
+            "w": 7,
+            "x": 5,
+            "y": 64,
+            "moved": false,
+            "widget": "last_user_activity"
+        }
+    ],
+    "sm": [
+        {
+            "x": 0,
+            "y": 23,
+            "w": 1,
+            "h": 10,
+            "i": 17,
+            "widget": "high_link_utilization",
+            "moved": false
+        },
+        {
+            "h": 10,
+            "i": 16,
+            "w": 1,
+            "x": 0,
+            "y": 13,
+            "moved": false,
+            "widget": "bad_ont_signal"
+        },
+        {
+            "h": 13,
+            "i": 15,
+            "w": 2,
+            "x": 2,
+            "y": 0,
+            "moved": false,
+            "widget": "ont_statuses_pie"
+        },
+        {
+            "h": 13,
+            "i": 14,
+            "w": 2,
+            "x": 0,
+            "y": 0,
+            "moved": false,
+            "widget": "pinger_stat"
+        },
+        {
+            "h": 12,
+            "i": 11,
+            "w": 8,
+            "x": 0,
+            "y": 65,
+            "moved": false,
+            "widget": "device_status_chart"
+        },
+        {
+            "h": 16,
+            "i": 10,
+            "w": 6,
+            "x": 0,
+            "y": 49,
+            "moved": false,
+            "widget": "online_onts_chart"
+        },
+        {
+            "h": 16,
+            "i": 9,
+            "w": 6,
+            "x": 0,
+            "y": 33,
+            "moved": false,
+            "widget": "ont_signal_bar"
+        },
+        {
+            "h": 13,
+            "i": 8,
+            "w": 2,
+            "x": 4,
+            "y": 0,
+            "moved": false,
+            "widget": "events_stat"
+        },
+        {
+            "h": 20,
+            "i": 7,
+            "w": 5,
+            "x": 1,
+            "y": 13,
+            "moved": false,
+            "widget": "events_table"
+        },
+        {
+            "h": 17,
+            "i": 6,
+            "w": 6,
+            "x": 0,
+            "y": 77,
+            "moved": false,
+            "widget": "device_calling_errors_stat"
+        },
+        {
+            "h": 28,
+            "i": 5,
+            "w": 6,
+            "x": 0,
+            "y": 94,
+            "moved": false,
+            "widget": "last_user_activity"
+        }
+    ],
+    "xs": [
+        {
+            "h": 14,
+            "i": 12,
+            "w": 6,
+            "x": 0,
+            "y": 14,
+            "moved": false,
+            "widget": "unregistered_onts"
+        },
+        {
+            "h": 14,
+            "i": 11,
+            "w": 3,
+            "x": 3,
+            "y": 0,
+            "moved": false,
+            "widget": "ont_statuses_pie"
+        },
+        {
+            "h": 15,
+            "i": 10,
+            "w": 6,
+            "x": 0,
+            "y": 28,
+            "moved": false,
+            "widget": "ont_signal_bar"
+        },
+        {
+            "h": 14,
+            "i": 9,
+            "w": 6,
+            "x": 0,
+            "y": 43,
+            "moved": false,
+            "widget": "online_onts_chart"
+        },
+        {
+            "h": 11,
+            "i": 8,
+            "w": 6,
+            "x": 0,
+            "y": 57,
+            "moved": false,
+            "widget": "events_stat_by_name"
+        },
+        {
+            "h": 14,
+            "i": 7,
+            "w": 3,
+            "x": 0,
+            "y": 0,
+            "moved": false,
+            "widget": "pinger_stat"
+        },
+        {
+            "h": 13,
+            "i": 6,
+            "w": 6,
+            "x": 0,
+            "y": 68,
+            "moved": false,
+            "widget": "device_calling_errors_stat"
+        },
+        {
+            "h": 22,
+            "i": 3,
+            "w": 6,
+            "x": 0,
+            "y": 81,
+            "moved": false,
+            "widget": "last_user_activity"
+        }
+    ],
+    "xss": [],
+    "xxs": [
+        {
+            "x": 0,
+            "y": 35,
+            "w": 2,
+            "h": 10,
+            "i": 9,
+            "widget": "bad_ont_signal",
+            "moved": false
+        },
+        {
+            "x": 0,
+            "y": 25,
+            "w": 1,
+            "h": 10,
+            "i": 8,
+            "widget": "high_link_utilization",
+            "moved": false
+        },
+        {
+            "h": 12,
+            "i": 7,
+            "w": 1,
+            "x": 0,
+            "y": 84,
+            "moved": false,
+            "widget": "events_stat_by_name"
+        },
+        {
+            "h": 13,
+            "i": 6,
+            "w": 1,
+            "x": 0,
+            "y": 12,
+            "moved": false,
+            "widget": "ont_statuses_pie"
+        },
+        {
+            "h": 11,
+            "i": 5,
+            "w": 1,
+            "x": 0,
+            "y": 73,
+            "moved": false,
+            "widget": "system_stat"
+        },
+        {
+            "h": 12,
+            "i": 4,
+            "w": 8,
+            "x": 0,
+            "y": 96,
+            "moved": false,
+            "widget": "online_onts_chart"
+        },
+        {
+            "h": 13,
+            "i": 3,
+            "w": 1,
+            "x": 0,
+            "y": 60,
+            "moved": false,
+            "widget": "ont_signal_bar"
+        },
+        {
+            "h": 15,
+            "i": 2,
+            "w": 1,
+            "x": 0,
+            "y": 45,
+            "moved": false,
+            "widget": "events_stat"
+        },
+        {
+            "h": 12,
+            "i": 1,
+            "w": 1,
+            "x": 0,
+            "y": 0,
+            "moved": false,
+            "widget": "pinger_stat"
+        }
+    ]
+}

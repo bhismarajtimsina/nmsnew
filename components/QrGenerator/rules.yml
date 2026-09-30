@@ -1,0 +1,10 @@
+- key: view_qr_codes
+  description: View QRs
+  logic_group: qr_generator
+  routes:
+    - (GET):/.*
+- key: view_mass_qr_codes
+  description: View mass QRs
+  logic_group: qr_generator
+  routes:
+    - (GET):/.*

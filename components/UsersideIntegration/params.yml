@@ -1,0 +1,29 @@
+userside:
+  - param_name: USERSIDE_WEB_ADDRESS
+    type: input
+    regex: .*
+    default: 'https://billing.org'
+  - param_name: USERSIDE_API_KEY
+    type: input
+    regex: .*
+    default: ''
+  - param_name: USERSIDE_SYNC_DATA
+    type: multiselect
+    default: ['devices']
+    variants: ['devices']
+    rebuild_required: false
+
+  - param_name: USERSIDE_ADD_NEW_DEVICES_TO_GROUP_ID
+    type: number
+    regex: .*
+    default: -1
+    rebuild_required: false
+  - param_name: USERSIDE_DELETE_NOT_EXISTED_DEVICES
+    type: checkbox
+    default: no
+    rebuild_required: false
+  - param_name: USERSIDE_UPDATE_DEVICES_FIELDS
+    type: multiselect
+    default: ['coordinates', 'name', 'location', 'comment', ]
+    variants: ['coordinates', 'name', 'location', 'comment', ]
+    rebuild_required: false

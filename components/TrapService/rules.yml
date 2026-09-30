@@ -1,0 +1,5 @@
+- key: diag_interface
+  description: Interface diagnostic for billing
+  logic_group: diag
+  routes:
+    - (GET|POST):/trapservice/.*$

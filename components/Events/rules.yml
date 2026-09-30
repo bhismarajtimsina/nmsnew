@@ -1,0 +1,23 @@
+- key: events_show
+  description: List of events
+  logic_group: events
+  routes:
+    - ^(GET|POST):.*$
+
+- key: events_resolve
+  description: Allow to resolve event
+  logic_group: events
+  routes:
+    - ^(PUT):/[0-9]{1,}/resolve$
+    - ^(PUT):/resolve-all$
+
+- key: events_configuration
+  description: Allow to configure events
+  logic_group: events
+  routes:
+    - ^(GET|PUT):/alertmanager.*
+
+- key: events_see_all
+  description: Allow to see all events
+  logic_group: events
+  routes: []

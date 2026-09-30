@@ -1,0 +1,1 @@
+import{G as e}from"./vue-styled-components.es-DCAh8igK.js";var t=e(`success`,`processing`,`error`,`default`,`warning`),n=e(`pink`,`red`,`yellow`,`orange`,`cyan`,`green`,`blue`,`purple`,`geekblue`,`magenta`,`volcano`,`gold`,`lime`);export{t as n,n as t};

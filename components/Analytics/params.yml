@@ -1,0 +1,33 @@
+analytics:
+  - param_name: ANALYTICS_IGNORE_IFACES_WITH_MORE_THAN
+    type: number
+    regex: .*
+    default: 10
+  - param_name: ANALYTICS_SHOW_ACTIVE_MORE_THAN
+    type: number
+    regex: .*
+    default: 1800
+  - param_name: ANALYTICS_MIN_RX_SIGNAL
+    type: number
+    regex: .*
+    default: -28
+  - param_name: ANALYTICS_MAX_RX_SIGNAL
+    type: number
+    regex: .*
+    default: -10
+  - param_name: ANALYTICS_MIN_OLT_RX_SIGNAL
+    type: number
+    regex: .*
+    default: -28
+  - param_name: ANALYTICS_MAX_OLT_RX_SIGNAL
+    type: number
+    regex: .*
+    default: -10
+  - param_name: ANALYTICS_MIN_SFP_RX_SIGNAL
+    type: number
+    regex: .*
+    default: -15
+  - param_name: ANALYTICS_MAX_SFP_RX_SIGNAL
+    type: number
+    regex: .*
+    default: 5

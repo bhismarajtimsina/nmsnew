@@ -1,0 +1,1 @@
+import{g as t,h as o,j as r,t as a}from"./index-DULVLRUP.js";const n={align:"center",style:{margin:"50px"}},p={__name:"DeviceNotSupportedByAgent",props:["deviceStore"],setup(e){return(c,s)=>(t(),o("div",null,[r("h4",n,"Device "+a(e.deviceStore.device.model.name)+" not supported by your agent!",1)]))}};export{p as default};

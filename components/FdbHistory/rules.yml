@@ -1,0 +1,12 @@
+- key: fdb_history_by_interface
+  description: Fdb history by interface
+  logic_group: fdb_history
+  routes:
+    - ^(GET):/.*$
+
+# Return all interface information
+#- key: fdb_history_search
+#  description: Allow work with searching page
+#  logic_group: fdb_history
+#  routes:
+#    - ^(POST):/.*$ #Return all interface information

@@ -1,0 +1,6 @@
+FROM meklis/php-wca:7.4-28
+MAINTAINER support.local <dev@support.local>
+ADD docker-entrypoint.sh /docker-entrypoint.sh
+ADD php-debug.ini /usr/local/etc/php/conf.d/40-custom.ini
+
+RUN chmod +x /docker-entrypoint.sh

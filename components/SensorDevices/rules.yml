@@ -1,0 +1,17 @@
+- key: sensor_devices_view
+  description: Return sensor status
+  logic_group: sensor_devices
+  routes:
+    - ^(GET):/([0-9]{1,5})/.*$
+    - ^(GET):/tab-stats/.*$
+    - ^(POST):/([0-9]{1,5})/.*$
+- key: sensor_devices_allow_switch_modes
+  description: Allow toggle sensors
+  logic_group: sensor_devices
+  routes:
+    - ^(PUT):/([0-9]{1,5})/toggle/.*$
+- key: sensor_devices_configure
+  description: Allow control sensors
+  logic_group: sensor_devices
+  routes:
+    - ^(PUT):/([0-9]{1,5})/.*$

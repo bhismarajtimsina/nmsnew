@@ -1,0 +1,374 @@
+name: support
+
+x-defaults: &defaults
+  restart: always
+  networks:
+    - wca-network
+  logging:
+    driver: json-file
+    options:
+      max-size: "50m"
+      max-file: "5"
+
+#Image versions
+x-api: &api_image "meklis/wca-roadrunner:0.30.39"
+x-ws: &ws_image "meklis/wca-ws:0.30.39"
+x-schedule: &schedule_image "meklis/wca-schedule-executor:0.30.39"
+x-eap: &eap_image "meklis/wca-eap:0.30.39"
+x-pinger: &pinger_image "meklis/wca-icmp-pinger:0.30.39"
+x-snmptrap: &snmptrap_image "meklis/wca-traplistener:0.30.39"
+x-ttyd: &ttyd_image "meklis/wca-ttyd:0.30.39"
+x-oxidized: &oxidized_image "meklis/wca-oxidized:0.25-2"
+
+services:
+  wca-swagger-ui:
+    container_name: wca-swagger-ui
+    image: swaggerapi/swagger-ui
+    volumes:
+      - "./var/openapi/openapi.yaml:/usr/share/nginx/html/openapi.yaml:ro"
+    environment:
+      URL: /swagger/openapi.yaml
+    networks:
+      - wca-network
+    restart: always
+  wca-db:
+    <<: *defaults
+    build:
+      context: ./docker/mysql
+    image: support-db
+    container_name: wca-db
+    cap_add:
+      - SYS_NICE  # CAP_SYS_NICE
+    command: --default-authentication-plugin=mysql_native_password --innodb_buffer_pool_size=${MYSQL_INNODB_BUFFER_POOL_SIZE:-1G} --key_buffer_size=${MYSQL_KEY_BUFFER_SIZE:-256M}
+    ports:
+      - "${MYSQL_EXPOSE}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWD}
+      MYSQL_DATABASE: ${DATABASE_NAME}
+    volumes:
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./var/docker/mysql/datadir:/var/lib/mysql"
+  wca-db-admin:
+    <<: *defaults
+    build:
+      context: ./docker/phpmyadmin
+    image: support-db-admin
+    container_name: wca-db-admin
+    environment:
+      PMA_HOST: wca-db
+      PMA_ARBITRARY: 1
+      PMA_USER: root
+      # Same source of truth as the database itself - rotating DATABASE_PASSWD
+      # now updates this too, instead of leaving a stale literal in the repo.
+      PMA_PASSWORD: ${DATABASE_PASSWD}
+  wca-memcached:
+    <<: *defaults
+    container_name: wca-memcached
+    command: -m 4096 -c 4096 -I 15M
+    image: memcached:latest
+  wca-ws:
+    <<: *defaults
+    environment:
+      COMPOSER_CACHE_DIR: /tmp/cache
+      PHP_IDE_CONFIG: "serverName=wca-ws"
+    container_name: wca-ws
+    image: *ws_image
+    volumes:
+      - "/var/lib/dbus:/var/lib/dbus:ro"
+      - "/etc/machine-id:/etc/machine-id:ro"
+      - "/etc/hosts:/etc/hosts:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./:/www"
+      - "./var/logs:/log"
+  wca:
+    <<: *defaults
+    user: root
+    environment:
+      COMPOSER_CACHE_DIR: /tmp/cache
+      COMPOSER_NO_INTERACTION: 1
+      RR_CONFIG: /www/.rr.yaml
+      RR_NUM_WORKERS: ${RR_NUM_WORKERS:-50}
+      RR_MAX_WORKER_MEMORY: ${RR_MAX_WORKER_MEMORY:-128}
+    container_name: wca
+    build:
+      context: ./docker/roadrunner
+    image: support-wca-roadrunner
+    volumes:
+      - "/var/lib/dbus:/var/lib/dbus:ro"
+      - "/etc/machine-id:/etc/machine-id:ro"
+      - "/etc/hosts:/etc/hosts:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./:/www"
+      - "./var/logs:/log"
+    env_file:
+      - .version
+  wca-schedule-executor:
+    <<: *defaults
+    user: root
+    environment:
+      COMPOSER_CACHE_DIR: /tmp/cache
+    container_name: wca-schedule-executor
+    build:
+      context: ./docker/schedule-executor
+    image: support-wca-schedule-executor
+    volumes:
+      - "/var/lib/dbus:/var/lib/dbus:ro"
+      - "/etc/machine-id:/etc/machine-id:ro"
+      - "/etc/hosts:/etc/hosts:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - ".:/www"
+      - "./var/logs:/log"
+    env_file:
+      - .version
+  wca-nginx:
+    <<: *defaults
+    container_name: wca-nginx
+    build:
+      context: ./docker/nginx
+    image: support-nginx
+    volumes:
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./:/www"
+    ports:
+      - "${NGINX_EXPOSE}:80"
+    env_file:
+      - .version
+  wca-redis:
+    <<: *defaults
+    image: redis:7.0-alpine3.18
+    container_name: wca-redis
+    command: 'redis-server --save "" --appendonly no'
+  wca-icmp-pinger:
+    <<: *defaults
+    image: *pinger_image
+    container_name: wca-icmp-pinger
+  wca-eap:
+    <<: *defaults
+    image: *eap_image
+    container_name: wca-eap
+  wca-prometheus:
+    <<: *defaults
+    build:
+      context: docker/prometheus
+    image: support-prometheus
+    container_name: wca-prometheus
+    ports:
+      - "${PROMETHEUS_EXPOSE:-127.0.0.1:9090}:9090"
+    volumes:
+      - "./var/prometheus:/opt/prometheus:ro"
+      - "prometheus_data:/prometheus"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=${PROMETHEUS_RETENTION_TIME:-200h}'
+      - '--web.enable-lifecycle'
+      - '--web.external-url=/prometheus/'
+      - '--web.enable-admin-api'
+    expose:
+      - 9090
+    labels:
+      org.label-schema.group: "monitoring"
+  wca-snmp-exporter:
+    <<: *defaults
+    image: prom/snmp-exporter:latest
+    container_name: wca-snmp-exporter
+    command:
+      - '--config.file=/etc/snmp_exporter/snmp.yml'
+    expose:
+      - 9116
+    labels:
+      org.label-schema.group: "monitoring"
+  wca-blackbox-exporter:
+    <<: *defaults
+    image: prom/blackbox-exporter:latest
+    container_name: wca-blackbox-exporter
+    volumes:
+      - "./docker/blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro"
+    command:
+      - '--config.file=/etc/blackbox_exporter/config.yml'
+    expose:
+      - 9115
+    labels:
+      org.label-schema.group: "monitoring"
+  wca-alertmanager:
+    <<: *defaults
+    image: meklis/wca-alertmanager
+    container_name: wca-alertmanager
+    volumes:
+      - "./docker/alertmanager:/etc/alertmanager:ro"
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.route-prefix=/alertmanager'
+    expose:
+      - 9093
+    labels:
+      org.label-schema.group: "monitoring"
+  wca-grafana:
+    <<: *defaults
+    image: grafana/grafana:11.4.0
+    container_name: wca-grafana
+    volumes:
+      - "./docker/grafana/grafana.ini:/etc/grafana/grafana.ini:ro"
+      - "grafana_data:/var/lib/grafana"
+      - "./docker/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro"
+      - "./docker/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    expose:
+      - 3000
+    labels:
+      org.label-schema.group: "monitoring"
+  wca-loki:
+    <<: *defaults
+    image: grafana/loki:latest
+    container_name: wca-loki
+    user: root
+    volumes:
+      - "./docker/loki/loki.yml:/etc/loki/loki.yml:ro"
+      - "loki_data:/loki"
+    command:
+      - '-config.file=/etc/loki/loki.yml'
+    expose:
+      - 3100
+    labels:
+      org.label-schema.group: "monitoring"
+  wca-alloy:
+    <<: *defaults
+    image: grafana/alloy:latest
+    container_name: wca-alloy
+    user: root
+    volumes:
+      - "./docker/alloy:/etc/alloy:ro"
+      - "alloy_data:/var/lib/alloy"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    command:
+      - 'run'
+      - '--server.http.listen-addr=0.0.0.0:12345'
+      - '--storage.path=/var/lib/alloy'
+      - '/etc/alloy'
+    expose:
+      - 12345
+    depends_on:
+      - wca-loki
+    labels:
+      org.label-schema.group: "monitoring"
+  wca-goflow2:
+    <<: *defaults
+    image: netsampler/goflow2:latest
+    container_name: wca-goflow2
+    user: root
+    ports:
+      - "${NETFLOW_EXPOSE:-0.0.0.0:2055}:2055/udp"
+      - "${SFLOW_EXPOSE:-0.0.0.0:6343}:6343/udp"
+    volumes:
+      - "./var/netflow:/var/lib/goflow2"
+    command:
+      - '-listen=sflow://:6343,netflow://:2055'
+      - '-addr=:8080'
+      - '-format=json'
+      - '-transport=file'
+      - '-transport.file=/var/lib/goflow2/flows.jsonl'
+      - '-store.json.path=/var/lib/goflow2/flows-state.json'
+    expose:
+      - 8080
+    labels:
+      org.label-schema.group: "monitoring"
+  wca-cadvisor:
+    <<: *defaults
+    image: meklis/cadvisor:v0.51.0
+    container_name: wca-cadvisor
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    restart: always
+    labels:
+      org.label-schema.group: "monitoring"
+  wca-nodeexporter:
+    <<: *defaults
+    image: meklis/wca-nodeexporter
+    container_name: wca-nodeexporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    expose:
+      - 9100
+    labels:
+      org.label-schema.group: "monitoring"
+  wca-oxidized:
+    <<: *defaults
+    image: *oxidized_image
+    container_name: wca-oxidized
+    volumes:
+      - ./var/oxidized:/home/oxidized/.config/oxidized
+      - ./docker/oxidized/entrypoint.sh:/opt/oxidized-entrypoint.sh:ro
+      - ./docker/oxidized/placeholder_server.py:/opt/oxidized-placeholder.py:ro
+    entrypoint: ["/bin/bash", "/opt/oxidized-entrypoint.sh"]
+    environment:
+      CONFIG_RELOAD_INTERVAL: 300
+      OXIDIZED_THREADS: ${OXIDIZED_THREADS:-30}
+      OXIDIZED_INTERVAL: ${OXIDIZED_INTERVAL:-86400}
+      OXIDIZED_TIMEOUT: ${OXIDIZED_TIMEOUT:-600}
+    labels:
+      org.label-schema.group: "monitoring"
+  wca-traplistener:
+    <<: *defaults
+    image: *snmptrap_image
+    container_name: wca-traplistener
+    user: root
+    ports:
+      - "${TRAP_SERVICE_SNMP_PORT:-162}:162/udp"
+    environment:
+      TRAP_SERVICE_ENABLED: ${TRAP_SERVICE_ENABLED:-no}
+      TRAP_SERVICE_COUNT_HANDLERS: ${TRAP_SERVICE_COUNT_HANDLERS:-10}
+    volumes:
+      - ".:/www"
+    env_file:
+      - .version
+  wca-ttyd:
+    <<: *defaults
+    image: *ttyd_image
+    container_name: wca-ttyd
+    volumes:
+      - ".:/www"
+    environment:
+      CONSOLE_ENABLE_WEB: ${CONSOLE_ENABLE_WEB:-no}
+      CONSOLE_FONT_SIZE: ${CONSOLE_FONT_SIZE:-14}
+    env_file:
+      - .version
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  alloy_data:
+
+networks:
+  wca-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+    ipam:
+      driver: default
+      config:
+        - subnet: ${LOCAL_SUBNET:-10.255.255.128/25}

@@ -1,0 +1,198 @@
+- key: system_info
+  description: Returned system information
+  logic_group: web_portal
+  routes:
+    - (DELETE):/api/v1/logout
+    - GET:/api/v1/dashboard/.*
+    - GET:/api/v1/system/settings$
+    - GET:/api/v1/device-group.*$
+
+- key: dashboard_global_edit
+  description: Dashboard global edit
+  logic_group: web_portal
+
+- key: dashboard_edit
+  description: Dashboard user edit
+  logic_group: web_portal
+  routes:
+    - ^PUT:/api/v1/dashboard/template
+
+- key: global_search
+  description: Global search
+  logic_group: web_portal
+  routes:
+    - ^(GET|POST):/api/v1/portal/search.*
+
+- key: system_configuration
+  description: Returned system information
+  logic_group: system
+  routes:
+    - ^.*:/api/v1/system.*
+
+- key: system_cross_auth_user
+  description: Allow generate access key for user
+  logic_group: system
+  routes:
+    - ^.*:/api/v1/system/cross-auth$
+
+- key: system_status
+  description: Show system status
+  logic_group: system
+  routes:
+    - ^.*:/api/v1/dashboard/widget/system-stat
+
+- key: schedule_configuration
+  description: Allow configure schedule system
+  logic_group: system
+  routes:
+    - ^.*:/api/v1/system/schedule
+
+- key: system_logs_actions
+  description: Show system logs actions
+  logic_group: system
+  routes:
+    - GET:/api/v1/logs/actions-list
+    - POST:/api/v1/logs/actions
+
+- key: schedule_reports
+  description: Allow see schedule reports
+  logic_group: system
+  routes:
+    - ^.*:/api/v1/logs/schedule/.*
+
+- key: log_switcher_core_actions
+  description: Show walks device logs
+  logic_group: system
+  routes:
+    - ^.*:/api/v1/logs/switcher-core/.*$
+    - ^GET:/api/v1/dashboard/widget/error-calling-by-device
+
+- key: log_poller
+  description: Show pollers logs
+  logic_group: system
+  routes:
+    - ^.*:/api/v1/logs/pollers/.*$
+
+- key: poller_info_by_device
+  description: Show pollers logs
+  logic_group: system
+  routes:
+    - GET:/api/v1/poller/latests
+
+- key: run_poller_by_device
+  description: Show pollers logs
+  logic_group: system
+  routes:
+    - GET:/api/v1/poller/poll-background
+
+
+#User controls
+- key: user_management
+  description: Full control of users and groups
+  logic_group: user_management
+  routes:
+    - ^.*:/api/v1/user
+    - ^.*:/api/v1/user-role
+    - ^GET:/api/v1/user-role-permissions
+    - ^DELETE:/v1/user-session-close
+
+- key: user_management_config_strict_ip
+  description: Full control of users and groups
+  logic_group: user_management
+
+- key: user_self_control
+  description: Allow update self information of account - updating name,password,contacts,sessions
+  logic_group: user_management
+  routes:
+    - GET:/api/v1/user/([0-9]{1,}|self)$
+    - PUT:/api/v1/user/([0-9]{1,}|self)$
+    - DELETE:/api/v1/user-session-close/.*
+    - GET:/api/v1/user-role
+
+- key: user_display
+  description: Show users list and user card
+  logic_group: user_management
+  routes:
+    - GET:/api/v1/user-list
+    - GET:/api/v1/user
+    - GET:/api/v1/user/[0-9]{1,}$
+    - GET:/api/v1/user-role
+
+- key: device_access_management
+  description: Control accesses for devices
+  logic_group: device_management
+  routes:
+    - ^.*:/api/v1/device-access.*
+
+- key: device_groups_management
+  description: Control groups for devices
+  logic_group: device_management
+  routes:
+    - ^.*:/api/v1/device-group.*
+
+- key: device_show
+  description: Show devices
+  logic_group: device_management
+  routes:
+    - (GET|PUT):/api/v1/maps/.*
+    - GET:/api/v1/device
+    - GET:/api/v1/device\?.*
+    - GET:/api/v1/device/options.*
+    - GET:/api/v1/device/[0-9]{1,}$
+    - GET:/api/v1/interface-marks.*
+    - PUT:/api/v1/interface-marks/.*/list
+    - GET:/api/v1/dev-dashboard.*
+    - GET:/api/v1/device-interface.*
+    - PUT:/api/v1/device-interface/ont-list
+    - POST:/api/v1/switcher-core/.*/system/[0-9]{1,}$
+    - GET:/api/v1/switcher-core/.*/system/[0-9]{1,}$
+    - GET:/api/v1/switcher-core/.*/sys_resources/[0-9]{1,}$
+    - GET:/api/v1/switcher-core/.*/parse_interface/[0-9]{1,}
+
+- key: device_iface_management
+  description: Allow interface management
+  logic_group: device_management
+  routes:
+    - PUT:/api/v1/device-interface/[0-9]{1,}
+
+- key: device_iface_manage_marks
+  description: Allow mark interfaces
+  logic_group: device_management
+  routes:
+    - ^PUT:/api/v1/interface-marks/.*$
+
+- key: device_management
+  description: Device management
+  logic_group: device_management
+  routes:
+    - POST:/api/v1/device
+    - PUT:/api/v1/device/[0-9]{1,}$
+    - PUT:/api/v1/poller/.*
+    - GET:/api/v1/device-model.*
+    - PUT:/api/v1/device-model/[0-9]{1,}$
+    - DELETE:/api/v1/device.*
+    - GET:/api/v1/device-access
+    - POST:/api/v1/device-detect
+
+
+- key: external_apps_grafana
+  description: Allow auth grafana
+  logic_group: external_apps
+
+- key: external_apps_grafana_admin
+  description: Allow auth grafana as admin
+  logic_group: external_apps
+- key: external_apps_prometheus
+  description: Allow auth prometheus
+  logic_group: external_apps
+- key: external_apps_alertmanager
+  description: Allow auth alertmanager
+  logic_group: external_apps
+- key: external_apps_phpmyadmin
+  description: Allow auth phpmyadmin
+  logic_group: external_apps
+- key: external_apps_oxidized
+  description: Allow auth oxidized
+  logic_group: external_apps
+
+

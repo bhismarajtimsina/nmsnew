@@ -1,0 +1,11 @@
+- key: external_apps_oxidized
+  description: Oxidized read configuration
+  logic_group: oxidized
+  routes:
+    - ^(GET):/data/.*$
+
+- key: device_management
+  logic_group: device_management
+  routes:
+    - ^(GET):/is-oxidized-supported/.*$
+

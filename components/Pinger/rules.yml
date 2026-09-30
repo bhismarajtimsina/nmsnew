@@ -1,0 +1,8 @@
+- key: device_show
+  description: Show devices
+  logic_group: device_management
+  routes:
+    - GET:/device-status-stat
+    - GET:/logs/
+    - GET:/status/
+    - GET:/statuses

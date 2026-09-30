@@ -1,0 +1,5 @@
+- key: router_info
+  description: Return list of interfaces
+  logic_group: router
+  routes:
+    - ^(GET):/.*

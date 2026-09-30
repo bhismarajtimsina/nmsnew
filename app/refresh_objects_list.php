@@ -1,0 +1,19 @@
+<?php
+return [
+    \WCAA\Storage\Devices\DeviceAccessStorage::class,
+    \WCAA\Storage\Devices\DeviceStorage::class,
+    \WCAA\Storage\Devices\DeviceInterfaceStorage::class,
+    \WCAA\Storage\Devices\DeviceGroupStorage::class,
+    \WCAA\Storage\Devices\DeviceModelStorage::class,
+    \WCAA\Storage\System\ScheduleStorage::class,
+    \WCAA\Storage\System\ScheduleReportsStorage::class,
+    \WCAA\Storage\SwitcherCoreActionStorage::class,
+    \WCAA\Storage\UserAuthKeyStorage::class,
+    \WCAA\Storage\UserRoleStorage::class,
+    \WCAA\Storage\UserStorage::class,
+    \WCAA\Storage\SystemActionsStorage::class,
+    \WCAA\Storage\SystemComponentsStorage::class,
+    \WCC\Links\Storage\LinkStorage::class,
+    \WCC\Events\Storage\AlertmanagerRulesStorage::class,
+    \WCC\Events\Storage\EventsStorage::class,
+];

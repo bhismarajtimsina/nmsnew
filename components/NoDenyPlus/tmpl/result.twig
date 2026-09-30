@@ -1,0 +1,103 @@
+<div style="max-width: 680px; overflow-y: auto">
+<table class="td_medium td_ok width100" style="min-width: 680px; width: 100%">
+    <thead>
+    <tr>
+        <td><b>MAC</b></td>
+        <td><b>Device</b></td>
+        <td><b>Interface</b></td>
+        <td ><b>Status</b></td>
+        <td><b>FDB (on interface)</b></td>
+        <td ><b>Diagnostic</b></td>
+        <td><b>Updated</b></td>
+    </tr>
+    </thead>
+    <tbody>
+    {% for iface in elements %}
+        <tr>
+        <td  style="vertical-align: top">{{ iface.search_by_mac }}</td>
+        <td  style="vertical-align: top">
+            <a href="{{ iface.links.device }}" target="_blank">
+                {% if iface.device.is_online %}
+                {{ iface.device.name }}<br>
+                <small>({{ iface.device.ip }})</small>
+                {% else %}
+                    <div style="color: darkred; font-weight: bold">
+                        {{ iface.device.name }}<br>
+                        <small>({{ iface.device.ip }})</small><br>
+                        DEVICE NOT AVALIABLE!
+                    </div>
+                {% endif %}
+            </a>
+        </td>
+        <td  style="vertical-align: top">
+            <a href="{{ iface.links.interface }}" target="_blank">
+                {% if iface.diagnostic.ident is defined %}
+                    <span title="{{ iface.diagnostic.ident.type }}">{{ iface.diagnostic.ident.value }}</span><br>
+                    <small>{{ iface.iface.name }}</small>
+                {% else %}
+                    {{ iface.iface.name }}
+                {% endif %}
+            </a>
+        </td>
+        <td  style="vertical-align: top; ">
+            {% if diagnostic.status.bind is defined and diagnostic.status.bind is not null %}
+                <div >{{ diagnostic.status.bind|capitalize}}</div>
+            {% elseif diagnostic.status.online is defined  %}
+                <div >{{ diagnostic.status.online|capitalize}}</div>
+            {% elseif iface.diagnostic.link_info is defined and iface.diagnostic.link_info is iterable %}
+                {% for link in iface.diagnostic.link_info %}
+                    <div style="min-width: 90px;">
+                        {% if link.oper_status == 'Up' %}
+                            Link: Up<br>
+                            Speed: {{ link.nway_status }}
+                        {% else %}
+                            Link: Down<br>
+                            Admin state: {{ link.admin_state }}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <small>No data</small>
+            {% endif %}
+        </td>
+        <td  style="vertical-align: top">
+            {% if iface.diagnostic.fdb is defined and iface.diagnostic.fdb is iterable %}
+                {% for fdb in iface.diagnostic.fdb %}
+                 {{ fdb.mac_address }}<br>
+                {% endfor %}
+            {% else %}
+                <small>No data</small>
+            {% endif %}
+        </td>
+        <td  style="vertical-align: top">
+            {% if iface.diagnostic.optical is defined %}
+                <div style="min-width: 120px">
+               {% if iface.diagnostic.optical.rx is not null %}RX: {{ iface.diagnostic.optical.rx }}dBm<br>{% endif %}
+               {% if iface.diagnostic.optical.olt_rx is not null %}OLT RX: {{ iface.diagnostic.optical.olt_rx }}dBm<br>{% endif %}
+               {% if iface.diagnostic.optical.tx is not null %}TX: {{ iface.diagnostic.optical.tx }}dBm<br>{% endif %}
+                </div>
+            {% elseif iface.diagnostic.cable_diag.pairs is defined and iface.diagnostic.cable_diag.pairs is iterable %}
+                {% for pair in iface.diagnostic.cable_diag.pairs %}
+                    <div>
+                    {% if pair.number is defined %}{{ pair.number }}: {% endif %}
+                    {% if pair.status is defined %}{{ pair.status }} {% endif %}
+                    {% if pair.length is defined and pair.length > 0 %} - {{ pair.length }}M {% endif %}
+                    </div>
+                {% endfor %}
+            {% elseif iface.diagnostic.cable_diag  is defined %}
+                <div>
+                {% if iface.diagnostic.cable_diag.status is defined %}{{ iface.diagnostic.cable_diag.status }} {% endif %}
+                {% if iface.diagnostic.cable_diag.length is defined and iface.diagnostic.cable_diag.length > 0 %} - {{ iface.diagnostic.cable_diag.length }}M {% endif %}
+                </div>
+            {% else %}
+                No data
+            {% endif %}
+        </td>
+        <td  style="vertical-align: top">
+            {{ iface.last_seen }}
+        </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>

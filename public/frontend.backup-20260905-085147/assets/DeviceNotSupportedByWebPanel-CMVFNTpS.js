@@ -1,0 +1,1 @@
+import{g as t,h as o,j as a,t as n}from"./index-DULVLRUP.js";const r={align:"center",style:{margin:"50px"}},p={__name:"DeviceNotSupportedByWebPanel",props:["deviceStore"],setup(e){return(c,s)=>(t(),o("div",null,[a("h4",r,"Device "+n(e.deviceStore.device.model.name)+" not supported by web panel!",1)]))}};export{p as default};

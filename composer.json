@@ -1,0 +1,72 @@
+{
+  "name": "meklis/support-api",
+  "description": "API interface with database storage for working with network devices",
+  "license": "proprietary",
+  "version": "1.0.0",
+  "authors": [
+    {
+      "name": "Max Boyar",
+      "email": "max.boyar.a@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "WCAA\\": "src",
+      "WCC\\": "components"
+    }
+  },
+  "require": {
+    "vlucas/phpdotenv": "^4.1@dev",
+    "php": "^7.4",
+    "monolog/monolog": "^2.2",
+    "php-di/php-di": "^6.3",
+    "slim/psr7": "^1.4",
+    "slim/slim": "^4.8",
+    "ramsey/uuid": "^4.0@dev",
+    "tuupola/cors-middleware": "dev-master",
+    "zircote/swagger-php": "^4.8",
+    "meklis/ipv4-subnet-calculator": "^3.1",
+    "ext-pdo": "*",
+    "ext-yaml": "*",
+    "ext-json": "*",
+    "ext-redis": "*",
+    "ext-sockets": "*",
+    "php-curl-class/php-curl-class": "^9.5",
+    "symfony/console": "~5",
+    "meklis/php-duration": "^1.2",
+    "matomo/device-detector": "6.3.0",
+    "twig/twig": "3.10.3",
+    "ext-memcached": "*",
+    "meklis/switcher-core": "dev-master",
+    "meklis/cron": "^1.5",
+    "cocur/background-process": "dev-master",
+    "meklis/prometheus_client_php": "dev-master",
+    "guzzlehttp/guzzle": "7.5.x-dev",
+    "meklis/prom-client": "dev-master",
+    "phpmailer/phpmailer": "dev-master",
+    "longman/telegram-bot": "0.80.*",
+    "giggsey/libphonenumber-for-php": "8.13.55",
+    "meklis/console-client": "dev-master",
+    "supervisorphp/supervisor": "^4.0",
+    "spiral/goridge": "3.x-dev",
+    "spiral/roadrunner-http": "2.x-dev",
+    "nyholm/psr7": "1.8.x-dev",
+    "superbalist/php-pubsub-redis": "dev-master",
+    "mustangostang/spyc": "^0.6.3",
+    "endroid/qr-code": "^4.6",
+    "spomky-labs/otphp": "v10.0.x-dev",
+    "paragonie/constant_time_encoding": "v2.x-dev"
+  },
+  "minimum-stability": "dev",
+  "config": {
+    "allow-plugins": {
+      "composer/package-versions-deprecated": true,
+      "php-http/discovery": true
+    },
+    "policy": {
+      "advisories": {
+        "block": false
+      }
+    }
+  }
+}

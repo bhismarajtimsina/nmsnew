@@ -1,0 +1,13 @@
+- key: paths_view
+  description: View transport paths and their state
+  logic_group: paths
+  routes:
+    - ^(GET):/.*$
+    - ^(GET):/map$
+    - ^(GET):/groups$
+
+- key: paths_edit
+  description: Allow create, edit and delete transport paths
+  logic_group: paths
+  routes:
+    - ^(GET|POST|PUT|DELETE):.*$

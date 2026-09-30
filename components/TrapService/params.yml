@@ -1,0 +1,23 @@
+trapservice:
+  - param_name: TRAP_SERVICE_ENABLED
+    type: checkbox
+    default: true
+    rebuild_required: true
+  - param_name: TRAP_SERVICE_SNMP_PORT
+    type: input
+    regex: .*
+    default: 162
+    rebuild_required: true
+  - param_name: TRAP_SERVICE_COUNT_HANDLERS
+    type: input
+    regex: .*
+    default: 10
+    rebuild_required: true
+  - param_name: TRAP_SERVICE_IGNORE_UNKNOWN_TRAPS
+    type: checkbox
+    default: true
+    rebuild_required: false
+  - param_name: TRAP_SERVICE_CHECK_COMMUNITY
+    type: checkbox
+    default: false
+    rebuild_required: false

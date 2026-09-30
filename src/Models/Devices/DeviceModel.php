@@ -1,0 +1,289 @@
+<?php
+
+
+namespace WCAA\Models\Devices;
+
+
+use WCAA\App;
+use WCAA\Models\AbstractModel;
+
+class DeviceModel extends AbstractModel
+{
+    /**
+     * @morm
+     * @var string
+     */
+    protected $name;
+
+    /**
+     * @morm
+     * @prop.display=root
+     * @var string
+     */
+    protected $key;
+
+    /**
+     * @morm
+     * @prop.display=root
+     * @var array
+     */
+    protected $params;
+
+    /**
+     * @morm
+     * @prop.display=root
+     * @var string
+     */
+    protected $vendor;
+
+    /**
+     * @morm
+     * @prop.display=root
+     * @var string
+     */
+    protected $model;
+
+    /**
+     * @morm
+     * @prop.display=root
+     * @var string
+     */
+    protected $type;
+
+
+    /**
+     * @morm
+     * @prop.display=root
+     * @var string|null
+     */
+    protected $controller;
+
+    /**
+     * @morm
+     * @prop.display=root
+     * @var array|null
+     */
+    protected $pollers;
+
+    /**
+     * @return array|null
+     */
+    public function getPollers(): ?array
+    {
+        return $this->pollers;
+    }
+
+    /**
+     * @param array|null $pollers
+     * @return DeviceModel
+     */
+    public function setPollers(?array $pollers): DeviceModel
+    {
+        $this->pollers = $pollers;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getKey(): string
+    {
+        return $this->key;
+    }
+
+    /**
+     * @param string $key
+     * @return DeviceModel
+     */
+    public function setKey(string $key): DeviceModel
+    {
+        $this->key = $key;
+        return $this;
+    }
+
+    /**
+     * Controller class name for this model, or null when it is not usable.
+     *
+     * The property is populated straight from the database by
+     * AbstractStorage::fillByArr(), which auto-decodes any value that looks like
+     * JSON. A row whose `controller` column holds JSON (a mis-seeded pollers
+     * blob, for instance) therefore arrives here as an array, and a bare
+     * `return $this->controller` raises a TypeError on every poll of every
+     * device using that model.
+     *
+     * Reporting "no controller" degrades that device gracefully instead of
+     * failing the whole poll run.
+     *
+     * @return string|null
+     */
+    public function getController(): ?string
+    {
+        if ($this->controller !== null && !is_string($this->controller)) {
+            return null;
+        }
+        return $this->controller;
+    }
+
+    /**
+     * @param string|null $controller
+     * @return DeviceModel
+     */
+    public function setController(?string $controller): DeviceModel
+    {
+        $this->controller = $controller;
+        return $this;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param string $type
+     * @return DeviceModel
+     */
+    public function setType(string $type): DeviceModel
+    {
+        $this->type = $type;
+        return $this;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getIcon()
+    {
+        return $this->icon;
+    }
+
+    /**
+     * @param string|null $icon
+     * @return DeviceModel
+     */
+    public function setIcon(?string $icon): DeviceModel
+    {
+        $this->icon = $icon;
+        return $this;
+    }
+
+
+    /**
+     * @morm
+     * @prop.display=root
+     * @var string
+     */
+    protected $icon;
+
+    /**
+     * DeviceModel constructor.
+     * @param null $id
+     */
+
+    function __construct($id = null)
+    {
+        parent::__construct($id);
+        $this->params = [];
+        $this->pollers = [];
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     * @return DeviceModel
+     */
+    public function setName(string $name): DeviceModel
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    /**
+     * @return array | null
+     */
+    public function getParams(): ?array
+    {
+        return $this->params;
+    }
+
+    /**
+     * @param array $params
+     * @return DeviceModel
+     */
+    public function setParams(array $params): DeviceModel
+    {
+        $this->params = $params;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getVendor(): string
+    {
+        return $this->vendor;
+    }
+
+    /**
+     * @param string $vendor
+     * @return DeviceModel
+     */
+    public function setVendor(string $vendor): DeviceModel
+    {
+        $this->vendor = $vendor;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getModel(): string
+    {
+        return $this->model;
+    }
+
+    /**
+     * @param string $model
+     * @return DeviceModel
+     */
+    public function setModel(string $model): DeviceModel
+    {
+        $this->model = $model;
+        return $this;
+    }
+
+
+    function __toString()
+    {
+        return $this->name; // TODO: Change the autogenerated stub
+    }
+
+    function getParamByName($name, $strict = false)
+    {
+        if (isset($this->params[$name])) {
+            return $this->params[$name];
+        }
+        if ($strict) {
+            throw new \Exception("Param with name $name not found");
+        }
+        return null;
+    }
+
+    function setParamByName($name, $value)
+    {
+        $this->params[$name] = $value;
+        return $this;
+    }
+}

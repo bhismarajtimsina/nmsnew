@@ -1,0 +1,95 @@
+name: Support
+user_id: -2
+handlers:
+
+
+#SwitcherCore
+  - \WCAA\Console\SwitcherCore\SwitcherCoreModulesCommand
+  - \WCAA\Console\SwitcherCore\SwitcherCoreCallModuleCommand
+
+#System
+  - \WCAA\Console\Security\ResetIpBlock
+  - \WCAA\Console\Security\EnableEncryption
+  - \WCAA\Console\Security\GenerateEncryptKey
+  - \WCAA\Console\RunServerCommand
+  - \WCAA\Console\EventsSubscriber
+  - \WCAA\Console\Cache\RefreshAll
+  - \WCAA\Console\Cache\RedisFlush
+  - \WCAA\Console\Cache\CompileOpcache
+  - \WCAA\Console\Cache\FlushConfigCaches
+  - \WCAA\Console\Cache\MemcacheKeys
+  - \WCAA\Console\Cache\MemcacheFlush
+  - \WCAA\Console\Cache\MemcacheValueDetail
+  - \WCAA\Console\Schedule\ScheduleList
+  - \WCAA\Console\Schedule\ScheduleExecutor
+  - \WCAA\Console\Schedule\ScheduleExecOnce
+  - \WCAA\Console\System\FixCrossSchemaForeignKeys
+  - \WCAA\Console\System\PrintGlobalConfiguration
+  - \WCAA\Console\System\PrometheusMetricsExporter
+  - \WCAA\Console\System\RecalcActiveSessions
+  - \WCAA\Console\System\ReloadExternalAppsConfiguration
+  - \WCAA\Console\System\EventObserverListeners
+  - \WCAA\Console\System\InternalEventsListener
+  - \WCAA\Console\System\ReloadHttpWorkers
+  - \WCAA\Console\System\GetHttpWorkers
+  - \WCAA\Console\WebSocketServerCommand
+
+#User control
+  - \WCAA\Console\User\ListUsersCommand
+  - \WCAA\Console\User\DeleteUserCommand
+  - \WCAA\Console\User\GenerateUserKeyCommand
+  - \WCAA\Console\User\ListUserGroupCommand
+  - \WCAA\Console\User\ResetUser
+  - \WCAA\Console\User\ResetIpStrict
+
+#Device model handlers
+  - \WCAA\Console\Devices\ListModelCommand
+
+#Device access handlers
+  - \WCAA\Console\Devices\UpdateAccessCommand
+  - \WCAA\Console\Devices\AddAccessCommand
+  - \WCAA\Console\Devices\ListAccessCommand
+  - \WCAA\Console\Devices\DeleteAccessCommand
+
+#Device control
+  - \WCAA\Console\Devices\ListDeviceCommand
+  - \WCAA\Console\Devices\DeleteDeviceGroup
+  - \WCAA\Console\Devices\ImportDevicesCommand
+
+
+#Migrations
+  - \WCAA\Console\Migrations\MigrationList
+  - \WCAA\Console\Migrations\MigrationMigrate
+  - \WCAA\Console\Migrations\MigrationMigrateComponents
+
+# History
+  - \WCAA\Console\Logs\ClearLogsActions
+
+
+# API block
+  - \WCAA\Console\Api\ListOfRulesAction
+  - \WCAA\Console\Api\RoutesListCommand
+
+
+# PollerEvents block
+  - \WCAA\Console\Poller\Poll
+  - \WCAA\Console\Poller\PollService
+
+  - \WCAA\Console\Poller\LastData\CountersConsole
+
+# Components block
+  - \WCAA\Console\Components\ComponentsList
+  - \WCAA\Console\Components\ComponentsControl
+  - \WCAA\Console\Components\BuildDependenciesTree
+
+# Supervisor
+  - \WCAA\Console\Supervisor\ProcessesList
+  - \WCAA\Console\Supervisor\ProcessControl
+  - \WCAA\Console\Supervisor\RestartSupervisor
+
+# Test blocks
+  - \WCAA\Console\Tests\TestSwitcherCoreCallModules
+  - \WCAA\Console\Tests\TestSnmpWalk
+    
+# OpenApi blocks
+  - \WCAA\Console\OpenApi\OpenApiGenerationCommand

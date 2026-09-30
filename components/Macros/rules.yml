@@ -1,0 +1,11 @@
+- key: macros_execute
+  description: Allow execute macros
+  logic_group: macros
+  routes:
+    - (GET|POST):/(preview|execute|list|macro|variables).*
+
+- key: macros_edit
+  description: Allow edit macros
+  logic_group: macros
+  routes:
+    - (GET|PUT|POST|DELETE):/control.*

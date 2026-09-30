@@ -1,0 +1,15 @@
+- key: attachments_view
+  description: Read attachments
+  logic_group: attachments
+  routes:
+    - (GET):/.*
+- key: attachments_upload
+  description: Upload attachments
+  logic_group: attachments
+  routes:
+    - (GET|POST|PUT):/.*
+- key: attachments_delete
+  description: Delete attachments
+  logic_group: attachments
+  routes:
+    - (DELETE|GET):/.*

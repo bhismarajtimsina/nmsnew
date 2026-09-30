@@ -1,0 +1,33 @@
+version: '2.7'
+rpc:
+  enable: true
+  listen: 'tcp://0.0.0.0:6001'
+server:
+  command: 'php /www/app/server.php'
+  relay: pipes
+http:
+  address: '0.0.0.0:8080'
+  internal_error_code: 505
+  middleware:
+    - gzip
+    - static
+  static:
+    dir: public
+    forbid:
+      - .php
+      - .htaccess
+  pool:
+    num_workers: ${RR_NUM_WORKERS}
+    max_jobs: 128
+    supervisor:
+      idle_ttl: 300s
+      exec_ttl: 600s
+      max_worker_memory: ${RR_MAX_WORKER_MEMORY}
+metrics:
+  address: '127.0.0.1:2112'
+
+kv:
+  memory:
+    driver: memory
+    config:
+      interval: 60

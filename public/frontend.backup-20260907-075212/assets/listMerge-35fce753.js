@@ -1,0 +1,1 @@
+function v(e,a){e.value=e.value.filter(n=>n.id!==a)}function d(e,a){const n=e.value.findIndex(u=>u.id===a.id);if(n===-1){e.value=[...e.value,a];return}Object.assign(e.value[n],a)}export{d as m,v as r};

@@ -1,0 +1,9 @@
+<b>{{action.message}}</b>
+
+Name: <b>{{action.action}}</b>
+User: <b>{{action.user.name}}</b>
+Status: <b>{{action.status}}</b>
+{% if action.device != null %}
+Device: <b>{{action.device.ip}} ({{action.device.name}})</b>
+{% endif %}
+

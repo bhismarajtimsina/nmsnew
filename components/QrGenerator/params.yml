@@ -1,0 +1,6 @@
+qr_generator:
+  - param_name: QRGENERATOR_SHOW_DATA
+    type: select
+    default: 'name'
+    variants: ['ip', 'name']
+    rebuild_required: false

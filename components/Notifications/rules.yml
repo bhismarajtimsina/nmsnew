@@ -1,0 +1,32 @@
+- key: notifications_full_access
+  description: Full access to working with component
+  logic_group: notifications
+  routes:
+    - ^(GET|PUT|DELETE|POST):/.*
+
+- key: notifications_configure_contacts
+  description: Allow configure contacts
+  logic_group: notifications
+  routes:
+    - ^(GET|PUT):/contacts/by-user/([0-9]{1,5})$
+    - ^(GET):/configured-channels
+    - ^(GET):/config/names/.*
+
+- key: notifications_send_global_notify
+  description: Allow to send global notifications, as system notifications or notifications without device
+  logic_group: notifications
+  routes: []
+
+- key: notifications_configure_self_contacts
+  description: Allow configure self contacts
+  logic_group: notifications
+  routes:
+    - ^(GET|PUT):/contacts/by-user/self$
+    - ^(GET):/configured-channels
+    - ^(GET):/config/names/.*
+
+- key: notifications_view_history
+  description: Allow to view notification history
+  logic_group: notifications
+  routes:
+    - (GET):/history/.*

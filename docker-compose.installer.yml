@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  composer:
+    environment:
+      COMPOSER_CACHE_DIR: /tmp/cache
+      COMPOSER_NO_INTERACTION: 1
+    container_name: composer
+    entrypoint: composer --no-interaction --no-plugins --optimize-autoloader install
+    build:
+      context: ./docker/roadrunner
+    volumes:
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./:/www"
+      - "./var/logs:/log"

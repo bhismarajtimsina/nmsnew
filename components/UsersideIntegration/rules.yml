@@ -1,0 +1,18 @@
+- key: device_show
+  description: Show devices
+  logic_group: device_management
+  routes:
+    - ^(GET):/.*$
+
+- key: utels_allow_exclude_from_stat
+  description: Allow to update boxes
+  logic_group: userside_integration
+  routes:
+    - ^(GET|PUT):/.*$
+
+- key: utels_allow_set_comment
+  description: Allow to update boxes
+  logic_group: userside_integration
+  routes:
+    - ^(GET|PUT):/.*$
+

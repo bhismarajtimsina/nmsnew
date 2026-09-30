@@ -1,0 +1,16 @@
+global:
+  notification_place: topRight
+
+device_dashboard:
+  sort_by: ip
+  down_devices_on_top: true
+  show_groups: true
+
+device:
+  expand_pon_tree: false
+  breadcrumb_show: ip
+  interfaces_stat_type: all
+
+strict_access_by_ip:
+  enabled: false
+  networks: []

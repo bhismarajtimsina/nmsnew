@@ -1,0 +1,42 @@
+- key: switches_reboot_device
+  description: Reboot device
+  logic_group: switches
+  routes:
+    - ^(PUT):/system/([0-9]{1,})/reboot$
+
+- key: switches_save_config
+  description: Save config on device
+  logic_group: switches
+  routes:
+    - ^(PUT):/system/([0-9]{1,})/save_config$
+
+#- key: switches_vlan_port_control
+#  description: Control vlan on ports
+#  logic_group: switches
+#  routes:
+#    - ^(GET|PUT):/vlans/([0-9]{1,})
+
+- key: switches_clear_counters
+  description: Clear counters
+  logic_group: switches
+  routes:
+    - ^(PUT):/system/([0-9]{1,})/clear_counters$
+    - ^(PUT):/system/([0-9]{1,})/([0-9]{1,})/clear_counters$
+
+- key: switches_set_port_description
+  description: Set port description
+  logic_group: switches
+  routes:
+    - ^(PUT):/interface/([0-9]{1,})/([0-9]{1,})$
+
+- key: switches_set_port_admin_state
+  description: Set port admin state
+  logic_group: switches
+  routes:
+    - ^(PUT):/interface/([0-9]{1,})/([0-9]{1,})$
+
+- key: switches_set_port_admin_speed
+  description: Set port admin speed
+  logic_group: switches
+  routes:
+    - ^(PUT):/interface/([0-9]{1,})/([0-9]{1,})$

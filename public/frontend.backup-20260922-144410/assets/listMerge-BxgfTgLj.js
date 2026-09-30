@@ -1,0 +1,1 @@
+function e(e,t){e.value=e.value.filter(e=>e.id!==t)}function t(e,t){let n=e.value.findIndex(e=>e.id===t.id);if(n===-1){e.value=[...e.value,t];return}Object.assign(e.value[n],t)}export{e as n,t};

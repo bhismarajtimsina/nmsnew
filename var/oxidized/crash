@@ -1,0 +1,21 @@
+--------------------------------------------------
+2026-08-22 10:45:16 UTC
+unexpected token at '<!doctype html><html lang="en">    <head>        <meta charset="utf-8">        <meta name="viewport" content="width=device-width, initial-scale=1">        <title>404 Not Found</title>        <style>            body{margin:0;padding:30px;font:12px/1.5 Helvetica,Arial,Verdana,sans-serif}            h1{margin:0;font-size:48px;font-weight:normal;line-height:48px}            strong{display:inline-block;width:65px}        </style>    </head>    <body>        <h1>404 Not Found</h1>        <div><p>The requested resource could not be found. Please verify the URI and try again.</p></div>        <a href="#" onclick="window.history.go(-1)">Go Back</a>    </body></html>' [JSON::ParserError]
+--------------------------------------------------
+/usr/lib/x86_64-linux-gnu/rubygems-integration/3.2.0/gems/json-2.6.3/lib/json/common.rb:216:in `parse'
+/usr/lib/x86_64-linux-gnu/rubygems-integration/3.2.0/gems/json-2.6.3/lib/json/common.rb:216:in `parse'
+/usr/local/bundle/gems/oxidized-0.29.1/lib/oxidized/source/http.rb:36:in `load'
+/usr/local/bundle/gems/oxidized-0.29.1/lib/oxidized/nodes.rb:16:in `block in load'
+/usr/local/bundle/gems/oxidized-0.29.1/lib/oxidized/nodes.rb:143:in `synchronize'
+/usr/local/bundle/gems/oxidized-0.29.1/lib/oxidized/nodes.rb:143:in `with_lock'
+/usr/local/bundle/gems/oxidized-0.29.1/lib/oxidized/nodes.rb:11:in `load'
+/usr/local/bundle/gems/oxidized-0.29.1/lib/oxidized/nodes.rb:138:in `initialize'
+/usr/local/bundle/gems/oxidized-0.29.1/lib/oxidized/core.rb:14:in `new'
+/usr/local/bundle/gems/oxidized-0.29.1/lib/oxidized/core.rb:14:in `initialize'
+/usr/local/bundle/gems/oxidized-0.29.1/lib/oxidized/core.rb:4:in `new'
+/usr/local/bundle/gems/oxidized-0.29.1/lib/oxidized/core.rb:4:in `new'
+/usr/local/bundle/gems/oxidized-0.29.1/lib/oxidized/cli.rb:13:in `run'
+/usr/local/bundle/gems/oxidized-0.29.1/bin/oxidized:5:in `<top (required)>'
+/usr/local/bundle/bin/oxidized:25:in `load'
+/usr/local/bundle/bin/oxidized:25:in `<main>'
+--------------------------------------------------

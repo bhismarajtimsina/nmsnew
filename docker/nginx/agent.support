@@ -1,0 +1,204 @@
+proxy_cache_path  /tmp/cache  levels=1:2    keys_zone=STATIC:100m
+    inactive=24h  max_size=1g;
+
+limit_req_zone $binary_remote_addr zone=alertmanager:20m rate=30r/s;
+limit_req_status 429;
+
+
+resolver 127.0.0.11 valid=10s ipv6=off;
+
+server {
+        client_max_body_size 1024M;
+        server_name _;
+        listen 80 default_server;
+        root /tmp/www;
+        index index.html;
+
+        proxy_read_timeout 300;
+        proxy_connect_timeout 300;
+        proxy_send_timeout 300;
+        gzip on;
+        gzip_comp_level 5;
+        gzip_disable "msie6";
+        gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+
+        set $forward_host $http_host;
+        if ($http_X_Forwarded_Host) {
+         set $forward_host $http_X_Forwarded_Host;
+        }
+        set $connection_header "";
+        set $upgrade_header "";
+        set $wca_backend wca;
+        if ($http_upgrade) {
+            set $upgrade_header $http_upgrade;
+            set $connection_header "upgrade";
+        }
+        proxy_set_header Upgrade $upgrade_header;
+        proxy_set_header Connection $connection_header;
+
+
+        location = /sw.js {
+           add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
+           try_files /sw.js =404;
+        }
+
+        location = /index.html {
+           add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
+           try_files /index.html =404;
+        }
+
+        # NOTE: this is a regex location, so it outranks every prefix location.
+        # Proxied apps (swagger, prometheus, grafana, alertmanager, oxidized, ttyd)
+        # therefore use `^~`, which stops nginx evaluating regex locations for
+        # them - otherwise their .js/.css are looked up in /tmp/www and 404.
+        location ~* \.(?:js|css)$ {
+           add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" always;
+           try_files $uri =404;
+        }
+
+        location / {
+           error_page 404 = @errors;
+        }
+        location @errors {
+           try_files $uri $uri/ /index.html$is_args$args;
+        }
+
+        location ^~ /upload/ {
+            alias /www/public/upload/;
+        }
+
+        location ^~ /api {
+           gzip off;
+            proxy_set_header Accept-Encoding "";
+
+            proxy_hide_header Access-Control-Allow-Origin;
+            proxy_hide_header Access-Control-Allow-Credentials;
+            proxy_hide_header Access-Control-Allow-Headers;
+            proxy_hide_header Access-Control-Allow-Methods;
+            proxy_hide_header Access-Control-Expose-Headers;
+
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS, PATCH' always;
+            add_header 'Access-Control-Allow-Headers' 'x-auth-key, Authorization, Content-Type, Accept, Origin' always;
+            add_header 'Access-Control-Max-Age' 86400 always;
+
+            if ($request_method = OPTIONS) {
+                add_header 'Content-Length' 0;
+                add_header 'Content-Type' 'text/plain; charset=UTF-8';
+                return 204;
+            }
+           proxy_pass http://$wca_backend:8080;
+           proxy_set_header WCA-Real-Ip $remote_addr;
+        }
+
+        location ^~ /ws {
+           proxy_http_version 1.1;
+           proxy_pass http://wca-ws:9501;
+           proxy_set_header WCA-Real-Ip $remote_addr;
+           proxy_set_header Upgrade $http_upgrade;
+           proxy_set_header Connection "upgrade";
+        }
+
+        location ^~ /metrics {
+          proxy_pass http://$wca_backend:8080;
+           proxy_set_header WCA-Real-Ip $remote_addr;
+        }
+
+        location ^~ /api/v1/system/webhook/alertmanager {
+           # Alertmanager delivers a group of alerts as a burst of requests, and it
+           # treats 429 as unrecoverable - it does not retry, so a throttled alert
+           # is lost, not delayed. Without a burst allowance nginx rejects the
+           # second request arriving in the same instant even well under 30r/s.
+           limit_req zone=alertmanager burst=60 nodelay;
+           proxy_pass http://$wca_backend:8080;
+           proxy_set_header WCA-Real-Ip $remote_addr;
+        }
+
+        location ^~ /grafana {
+           proxy_set_header Host $host;
+           proxy_set_header X-Forwarder-For $host;
+           proxy_set_header X-Request-URL http://wca-grafana:3000$uri$is_args$args;
+           proxy_set_header X-App-Name grafana;
+           proxy_pass http://wca-eap:8080;
+        }
+
+        location ^~ /grafana/api/live {
+           proxy_http_version 1.1;
+           proxy_set_header X-Forwarder-For $host;
+           proxy_set_header X-Request-URL ws://wca-grafana:3000$uri$is_args$args;
+           proxy_set_header X-App-Name grafana;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+           proxy_pass http://wca-eap:8080;
+        }
+
+        location ^~ /prometheus {
+           proxy_set_header Host $host;
+          proxy_set_header X-Request-URL http://wca-prometheus:9090$uri$is_args$args;
+          proxy_set_header X-App-Name prometheus;
+          proxy_pass http://wca-eap:8080;
+        }
+        location = /swagger {
+          return 301 /swagger/;
+        }
+        location ^~ /swagger/ {
+          proxy_pass http://wca-swagger-ui:8080/;
+          proxy_set_header Host $host;
+        }
+
+
+        location ^~ /alertmanager {
+          proxy_set_header Host $host;
+          proxy_set_header X-Request-URL http://wca-alertmanager:9093$uri$is_args$args;
+          proxy_set_header X-App-Name alertmanager;
+          proxy_pass http://wca-eap:8080;
+        }
+
+        location ^~ /oxidized {
+          proxy_set_header X-Forwarded-Host $forward_host;
+          proxy_redirect off;
+          proxy_pass_request_headers      on;
+          proxy_set_header X-Request-URL http://wca-oxidized:8888$uri$is_args$args;
+          proxy_set_header X-App-Name oxidized;
+          proxy_pass http://wca-eap:8080;
+        }
+
+        location = /phpmyadmin {
+          return 301 /phpmyadmin/;
+        }
+
+        location ^~ /phpmyadmin/ {
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Host $host;
+          proxy_set_header X-Forwarded-Prefix /phpmyadmin;
+          proxy_set_header X-Absolute-Url $scheme://$host:$server_port/phpmyadmin;
+          proxy_redirect off;
+          proxy_pass http://wca-db-admin:80/;
+        }
+
+        location ^~ /ttyd/console {
+          proxy_http_version 1.1;
+          proxy_pass_request_headers      on;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Request-URL http://wca-ttyd:7681$uri$is_args$args;
+          proxy_set_header X-App-Name console;
+          proxy_pass http://wca-eap:8080;
+          proxy_buffering    off;
+        }
+        location ^~ /ttyd/console/ws {
+          proxy_http_version 1.1;
+          proxy_pass_request_headers      on;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+          proxy_set_header X-Request-URL ws://wca-ttyd:7681$uri$is_args$args&arg=-t&arg=$cookie_Token;
+          proxy_set_header X-App-Name console;
+          proxy_pass http://wca-eap:8080;
+          proxy_buffering    off;
+        }
+}

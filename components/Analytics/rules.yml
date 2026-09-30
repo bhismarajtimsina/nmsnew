@@ -1,0 +1,5 @@
+- key: analytics
+  description: Analytics data
+  logic_group: analytics
+  routes:
+    - ^(GET|POST|PUT):/.*$

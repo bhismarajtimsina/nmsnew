@@ -1,0 +1,18 @@
+mikbill:
+  - param_name: MIKBILL_API_ADDR
+    type: input
+    regex: .*
+    default: 'https://billing.org'
+  - param_name: MIKBILL_AUTH_KEY
+    type: input
+    regex: .*
+    default: ''
+  - param_name: MIKBILL_GLOBAL_SEARCH_FIELD
+    type: select
+    default: 'agreement'
+    variants: ['agreement', 'uid', 'login']
+    rebuild_required: false
+  - param_name: MIKBILL_SET_ONT_COORDINATES
+    type: checkbox
+    default: false
+    rebuild_required: false

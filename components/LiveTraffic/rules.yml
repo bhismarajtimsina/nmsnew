@@ -1,0 +1,5 @@
+- key: live_traffic_info
+  description: Allow get live traffic from interface
+  logic_group: live_traffic
+  routes:
+    - ^(GET):.*$

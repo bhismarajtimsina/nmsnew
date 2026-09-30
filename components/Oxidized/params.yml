@@ -1,0 +1,20 @@
+oxidized:
+  - param_name: OXIDIZED_URL
+    type: input
+    regex: .*
+    default: http://wca-oxidized:8888/oxidized
+  - param_name: OXIDIZED_THREADS
+    type: number
+    regex: ^[0-9]{1,10}$
+    default: 30
+    rebuild_required: true
+  - param_name: OXIDIZED_INTERVAL
+    type: number
+    regex: ^[0-9]{1,50}$
+    default: 86400
+    rebuild_required: true
+  - param_name: OXIDIZED_TIMEOUT
+    type: number
+    regex: ^[0-9]{1,50}$
+    default: 300
+    rebuild_required: true

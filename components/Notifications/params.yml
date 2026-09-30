@@ -1,0 +1,4 @@
+notifications:
+  - param_name: NOTIFICATIONS_CHECK_PREVIOUS_MESSAGE
+    type: checkbox
+    default: false

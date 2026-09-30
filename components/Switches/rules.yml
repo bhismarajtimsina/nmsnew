@@ -1,0 +1,7 @@
+- key: switches_info
+  description: Return list of interfaces
+  logic_group: switches
+  routes:
+    - ^(GET):/tab-stats/.*$ #Return all interface information
+    - ^(GET):/interfaces/.*$ #Return all interface information
+    - ^(GET):/resources/.*$ #Return all interface information

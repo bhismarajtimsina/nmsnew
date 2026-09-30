@@ -1,0 +1,15 @@
+- key: sd_search_mac
+  description: Search MAC address by devices
+  logic_group: sd
+  routes:
+    - ^(POST):/search-mac$
+- key: sd_search_ip
+  description: Search IP on routers
+  logic_group: sd
+  routes:
+    - ^(POST):/search-ip$
+- key: sd_search_ip_with_port
+  description: Search IP on routers and port on FDB from devices
+  logic_group: sd
+  routes:
+    - ^(POST):/search-ip-with-fdb$

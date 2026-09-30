@@ -1,0 +1,128 @@
+#!/usr/bin/env python3
+"""Regenerate backend/app/registry/device_model_data.py from the legacy switcher-core model files.
+
+Reads the real detection rules (name, device_type, and the `detect: {description, objid}` regex pair) straight out of
+the legacy YAML — the same files the current PHP ModelCollector reads — for the vendors this migration has real,
+checked-in registry entries for. Nothing here is invented: an entry not present in the source file is not emitted.
+
+Only files listed in SOURCES are read. Adding a vendor means adding its file here and re-running this script, not
+hand-writing a data module.
+
+Run from the repository root:  python3 tools/gen_device_model_catalogue.py
+"""
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+MODELS_DIR = ROOT / "vendor/meklis/switcher-core/configs/models"
+OUT = ROOT / "backend/app/registry/device_model_data.py"
+
+# (source file, vendor slug, family slug for OLT entries, family slug for SWITCH entries)
+# A vendor whose file has only one device type leaves the other family slug as None.
+SOURCES: list[tuple[str, str, str | None, str | None]] = [
+    ("BDcom.yml", "bdcom", "bdcom-olt", "bdcom-switch"),
+    ("HuaweiOLT.yml", "huawei", "huawei-olt", None),
+    ("ZTE-C-series.yml", "zte", "zte-c-olt", None),
+]
+
+BLOCK_RE = re.compile(r"\n  - name: ")
+NAME_RE = re.compile(r"^(.+)$", re.M)
+KEY_RE = re.compile(r"^\s*key:\s*(\S+)\s*$", re.M)
+TYPE_RE = re.compile(r"^\s*device_type:\s*(\S+)\s*$", re.M)
+# Greedy, and bounded to one line (every `detect:` block is written on a single line in these files): a non-greedy
+# match would stop at the first `}`, which can be a quantifier's own closing brace (`\d{3,4}`), not the block's.
+DETECT_RE = re.compile(r"detect:\s*\{(.*)\}\s*$", re.M)
+
+
+def _unquote(value: str) -> str:
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "'\"":
+        value = value[1:-1]
+    return value
+
+
+DETECT_FIELDS_RE = re.compile(r"description:\s*(?P<description>.*?)\s*,\s*objid:\s*(?P<objid>.*)$")
+
+
+def _split_detect(inner: str) -> dict[str, str]:
+    # Not a naive comma-split: `\d{3,4}`-style quantifiers inside the description value contain a comma too, and every
+    # entry in these files puts `description:` before `objid:` in that fixed order (checked: none do it the other way).
+    match = DETECT_FIELDS_RE.match(inner.strip())
+    if not match:
+        raise SourceError(f"could not parse a detect block: {inner!r}")
+    return {"description": _unquote(match.group("description")), "objid": _unquote(match.group("objid"))}
+
+
+class SourceError(ValueError):
+    pass
+
+
+def parse_file(path: Path) -> list[dict]:
+    text = path.read_text()
+    entries = []
+    for block in BLOCK_RE.split(text)[1:]:
+        name = NAME_RE.match(block).group(1).strip()
+        key_match, type_match, detect_match = KEY_RE.search(block), TYPE_RE.search(block), DETECT_RE.search(block)
+        if not (key_match and type_match and detect_match):
+            raise SourceError(f"{path.name}: entry {name!r} is missing key, device_type, or detect")
+        detect = _split_detect(detect_match.group(1))
+        device_type = type_match.group(1).strip().lower()
+        if device_type not in ("olt", "switch"):
+            raise SourceError(f"{path.name}: entry {name!r} has an unknown device_type {device_type!r}")
+        entries.append({
+            "name": name, "key": key_match.group(1).strip(), "device_type": device_type,
+            "sysdescr_pattern": detect.get("description") or None, "sysobjectid_pattern": detect.get("objid") or None,
+        })
+    return entries
+
+
+def main() -> int:
+    rows: list[tuple] = []
+    for filename, vendor_slug, olt_family, switch_family in SOURCES:
+        path = MODELS_DIR / filename
+        if not path.is_file():
+            print(f"source file not found: {path}", file=sys.stderr)
+            return 1
+        try:
+            entries = parse_file(path)
+        except SourceError as exc:
+            print(exc, file=sys.stderr)
+            return 1
+        if not entries:
+            print(f"{path.name}: no entries parsed; the file format may have changed", file=sys.stderr)
+            return 1
+        for priority, entry in enumerate(entries):
+            family = olt_family if entry["device_type"] == "olt" else switch_family
+            if family is None:
+                print(f"{path.name}: entry {entry['name']!r} is device_type {entry['device_type']} but no family slug is configured for it", file=sys.stderr)
+                return 1
+            rows.append((
+                vendor_slug, family, entry["key"], entry["name"], entry["device_type"],
+                entry["sysobjectid_pattern"], entry["sysdescr_pattern"], priority,
+                f"vendor/meklis/switcher-core/configs/models/{filename}",
+            ))
+
+    out = [
+        '"""Device model detection catalogue.',
+        "",
+        "Generated by tools/gen_device_model_catalogue.py from the legacy vendor model files listed in SOURCES there.",
+        "Every regex here is the real, unmodified detection rule the legacy PHP ModelCollector uses today — read from",
+        "the checked-in YAML, never invented. Do not edit by hand; regenerate.\"\"\"",
+        "from __future__ import annotations",
+        "",
+        "# (vendor_slug, family_slug, key, name, device_type, sysobjectid_pattern, sysdescr_pattern, priority, source_note)",
+        "DEVICE_MODELS: list[tuple[str, str, str, str, str, str | None, str | None, int, str]] = [",
+    ]
+    for row in rows:
+        out.append(f"    {row!r},")
+    out.append("]")
+    OUT.write_text("\n".join(out) + "\n")
+    print(f"wrote {OUT.relative_to(ROOT)}: {len(rows)} model(s) from {len(SOURCES)} source file(s)")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

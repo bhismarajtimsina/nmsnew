@@ -1,0 +1,1 @@
+var e=`/assets/logo-cybersathy-full-n1tL2z1f.png`;export{e as t};
