@@ -119,10 +119,8 @@ normally), and an unrecognized OID from a registered device is accepted but coun
 try/except removed, which reproduced the actual internal pyasn1 exception that would otherwise propagate) - both
 caught.
 
-Still not built: credential validation against the sending device's access profile (own-components.md §3.2 also
-wants the community, or the SNMPv3 credentials, checked - right now only the source IP is) and per-source rate
-limiting and a global cap (Redis-based, the same shape as the polling engine's per-device lock). These are the
-natural next step; nothing about them is blocked on anything left over from this round.
+~~Still not built: credential validation ... and per-source rate limiting and a global cap.~~ Both are now done - see
+the 2026-09-30 notes below.
 
 **Not a gap, checked against the real legacy behavior (2026-09-29):** a trap never becomes an `events` row in either
 system. A dedicated research pass read the actual legacy trap pipeline (`components/TrapService/Controllers/Controller.php`,
@@ -132,3 +130,43 @@ field exists anywhere in it, no dedup/fingerprint check, and no pairing logic (n
 matching `linkUp`, unlike Alertmanager's fingerprint-based resolve in Plan 20). `trap_history` matching that exactly
 *is* full parity, not a partial implementation of something legacy does. Real-time trap-driven alerting would be a
 genuinely new capability on top of this, not a missing port of one - see the Target Design correction above.
+
+## Implementation notes (2026-09-30): flood protection
+
+**Community validation was already built** when this round started, though the note above still listed it as
+missing: `serve(..., enc=, check_community=)`, `TRAP_CHECK_COMMUNITY` (default off, matching legacy's
+`TRAP_SERVICE_CHECK_COMMUNITY`), with four listener tests covering the off/match/mismatch/no-community cases. SNMPv3
+credentials do not apply: the decoder accepts v1 and v2c only, the same as legacy.
+
+Built: `app/traps/ratelimit.py` (`TrapRateLimiter`), wired into `TrapProtocol.datagram_received` so it runs on the
+source IP alone, **before** a packet is decoded or a task is queued. Three limits, each with its own counter:
+
+| Limit | Setting (default) | Counter | Origin |
+|---|---|---|---|
+| Per-source token bucket | `TRAP_SOURCE_RATE` (50/s), `TRAP_SOURCE_BURST` (500) | `rate_limited_source` | New - legacy had none |
+| Global token bucket | `TRAP_GLOBAL_RATE` (1000/s), `TRAP_GLOBAL_BURST` (5000) | `rate_limited_global` | New |
+| Packets in flight | `TRAP_MAX_IN_FLIGHT` (500) | `overloaded` | Parity: legacy's 500-packet queue (`.trap-listener.yml`, `script_handler.queue_size`) |
+
+Design choices, each tested:
+- A packet takes a token from both buckets or neither, so a device refused by its own limit cannot drain the shared
+  cap, and a global refusal does not spend the sender's own budget.
+- Idle sources are forgotten once 10,000 are tracked (a full bucket is identical to a new one, so no decision
+  changes), and that sweep runs at most once a second, so a spoofed flood of new addresses cannot turn every packet
+  into a full-table scan.
+- **In-process, not Redis-based** as the earlier note proposed: exactly one process binds the trap port (D-19), so
+  there is no other instance to share state with, and a Redis round trip per datagram would put a network hop on the
+  hot path of the very flood being shed. If the receiver is ever scaled out, this is the piece to move.
+
+The defaults are **not tuned against real trap volume**. The per-source burst is deliberately generous because an
+OLT reporting a PON-wide LOS legitimately sends one trap per ONU at once. Revisit them from the three counters once
+the receiver runs in observe mode.
+
+Tests: 14 in `test_trap_ratelimit.py` (fake clock, no I/O) and 3 in `test_trap_listener.py`, including this plan's
+acceptance check "a flood from one source is rate-limited without affecting others", run over real loopback with
+two sender addresses (127.0.0.1 and 127.0.0.2). 6 mutations checked (per-source refusal ignored, global refusal
+ignored, in-flight cap removed, a source token spent on a global refusal, pruning a still-limited source, sweep
+throttle removed) - all caught; a no-op control change was confirmed to pass.
+
+Still missing for Done: recorded PDUs from real devices (the tests build their own; capturing real ones is an
+operator task), and unknown-trap sampling (K-15) - an unknown OID from a known device is currently stored every time,
+which the per-source limit now bounds but does not sample.

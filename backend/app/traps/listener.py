@@ -16,6 +16,7 @@ import asyncpg
 from app.core.crypto import EncryptionService
 from app.traps.decode import decode_trap, TrapDecodeError
 from app.traps.ingest import record_trap
+from app.traps.ratelimit import TrapRateLimiter
 
 logger = logging.getLogger("cybersathy.trap_receiver")
 
@@ -27,24 +28,50 @@ class TrapCounters:
         self.unknown_source = 0  # dropped: the source IP matched no device
         self.bad_community = 0  # dropped: check_community is on and the trap's community didn't match
         self.malformed = 0  # dropped: could not be decoded as an SNMP v1/v2c trap at all
+        self.rate_limited_source = 0  # dropped undecoded: this source exceeded its own rate
+        self.rate_limited_global = 0  # dropped undecoded: the receiver-wide rate was exceeded
+        self.overloaded = 0  # dropped undecoded: max_in_flight packets were already being handled
+
+
+# Legacy's trap listener bounded its work the same way: a 500-packet queue in front of its handlers
+# (.trap-listener.yml, `script_handler.queue_size`). It had no per-source limit; that part is new.
+DEFAULT_MAX_IN_FLIGHT = 500
 
 
 class TrapProtocol(asyncio.DatagramProtocol):
     """One UDP packet is one datagram_received call, which is synchronous (the asyncio protocol API), so the actual
     decode-and-store work runs as a tracked background task - tracked so a test (or a graceful shutdown) can wait
-    for every in-flight packet to finish being handled before checking what happened."""
+    for every in-flight packet to finish being handled before checking what happened.
+
+    Flood protection runs before any task is created: the rate limiter (per source, then global) and a cap on
+    packets in flight, so a flood can neither exhaust memory with queued tasks nor the database pool with inserts."""
 
     def __init__(
-        self, pool: asyncpg.Pool, counters: TrapCounters, *, enc: EncryptionService | None = None, check_community: bool = False
+        self, pool: asyncpg.Pool, counters: TrapCounters, *, enc: EncryptionService | None = None, check_community: bool = False,
+        limiter: TrapRateLimiter | None = None, max_in_flight: int = DEFAULT_MAX_IN_FLIGHT,
     ) -> None:
         self.pool = pool
         self.counters = counters
         self.enc = enc
         self.check_community = check_community
+        self.limiter = limiter
+        self.max_in_flight = max_in_flight
         self._tasks: set[asyncio.Task] = set()
 
     def datagram_received(self, data: bytes, addr: tuple[str, int]) -> None:
-        task = asyncio.ensure_future(self._handle(data, addr[0]))
+        source_ip = addr[0]
+        if len(self._tasks) >= self.max_in_flight:
+            self.counters.overloaded += 1
+            return
+        if self.limiter is not None:
+            refused = self.limiter.allow(source_ip)
+            if refused == "source":
+                self.counters.rate_limited_source += 1
+                return
+            if refused == "global":
+                self.counters.rate_limited_global += 1
+                return
+        task = asyncio.ensure_future(self._handle(data, source_ip))
         self._tasks.add(task)
         task.add_done_callback(self._tasks.discard)
 
@@ -81,6 +108,7 @@ class TrapProtocol(asyncio.DatagramProtocol):
 async def serve(
     pool: asyncpg.Pool, host: str = "0.0.0.0", port: int = 1162, *,
     enc: EncryptionService | None = None, check_community: bool = False,
+    limiter: TrapRateLimiter | None = None, max_in_flight: int = DEFAULT_MAX_IN_FLIGHT,
 ) -> tuple[asyncio.DatagramTransport, TrapProtocol]:
     """Binds the UDP socket and starts receiving. Call `.close()` on the returned transport to stop.
 
@@ -90,6 +118,8 @@ async def serve(
     loop = asyncio.get_running_loop()
     counters = TrapCounters()
     transport, protocol = await loop.create_datagram_endpoint(
-        lambda: TrapProtocol(pool, counters, enc=enc, check_community=check_community), local_addr=(host, port)
+        lambda: TrapProtocol(pool, counters, enc=enc, check_community=check_community, limiter=limiter,
+                             max_in_flight=max_in_flight),
+        local_addr=(host, port),
     )
     return transport, protocol

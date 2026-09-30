@@ -71,6 +71,11 @@ class Settings:
     trap_listener_host: str
     trap_listener_port: int
     trap_check_community: bool
+    trap_source_rate: float
+    trap_source_burst: float
+    trap_global_rate: float
+    trap_global_burst: float
+    trap_max_in_flight: int
 
     # ICMP pinger. See docs/cybersathy-nms-migration/12-worker-services.md and own-components.md §3.1.
     pinger_cycle_seconds: int
@@ -156,6 +161,15 @@ def load_settings() -> Settings:
         trap_listener_port=int(os.getenv("TRAP_LISTENER_PORT", "1162")),
         # TRAP_SERVICE_CHECK_COMMUNITY in the real .env - off in production, matched here exactly.
         trap_check_community=_bool("TRAP_CHECK_COMMUNITY", False),
+        # Flood protection (risk K-15). Traps per second, refilled continuously, with a burst allowance on top: an OLT
+        # reporting a PON-wide LOS legitimately sends one trap per ONU at once, so the per-source burst is generous.
+        # Not yet tuned against real trap volumes - revisit once the receiver runs in observe mode.
+        trap_source_rate=float(os.getenv("TRAP_SOURCE_RATE", "50")),
+        trap_source_burst=float(os.getenv("TRAP_SOURCE_BURST", "500")),
+        trap_global_rate=float(os.getenv("TRAP_GLOBAL_RATE", "1000")),
+        trap_global_burst=float(os.getenv("TRAP_GLOBAL_BURST", "5000")),
+        # Matches legacy's 500-packet queue (.trap-listener.yml, script_handler.queue_size).
+        trap_max_in_flight=int(os.getenv("TRAP_MAX_IN_FLIGHT", "500")),
         pinger_cycle_seconds=int(os.getenv("PINGER_CYCLE_SECONDS", "30")),
         pinger_count=int(os.getenv("PINGER_COUNT", "3")),
         pinger_timeout_seconds=float(os.getenv("PINGER_TIMEOUT_SECONDS", "1.0")),

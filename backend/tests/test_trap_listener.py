@@ -10,7 +10,8 @@ from pysnmp.proto.api import v2c
 
 from app.core.crypto import EncryptionService
 from app.core.database import create_pool
-from app.traps.listener import serve
+from app.traps.listener import TrapCounters, TrapProtocol, serve
+from app.traps.ratelimit import TrapRateLimiter
 from tests.helpers import make_device
 from tests.polling_helpers import COMMUNITY, make_access_profile
 
@@ -35,7 +36,8 @@ def v2c_trap(trap_oid: str, community: str = "public") -> bytes:
 
 def _total(protocol) -> int:
     c = protocol.counters
-    return c.accepted + c.unknown + c.unknown_source + c.bad_community + c.malformed
+    return (c.accepted + c.unknown + c.unknown_source + c.bad_community + c.malformed
+            + c.rate_limited_source + c.rate_limited_global + c.overloaded)
 
 
 async def _send_and_drain(protocol, sock, data: bytes, port: int) -> None:
@@ -180,3 +182,72 @@ async def test_check_community_on_drops_a_device_with_no_community_configured(po
     finally:
         sock.close()
         transport.close()
+
+
+def _sock_from(ip: str) -> socket.socket:
+    """A sender bound to a chosen loopback address, so one test can play two different devices. All of 127.0.0.0/8
+    is loopback on Linux; nothing leaves this host."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind((ip, 0))
+    return sock
+
+
+async def test_a_flood_from_one_source_is_rate_limited_without_affecting_another(pool, db):
+    """Plan 21's acceptance check. Burst of 3, and a refill so slow nothing comes back during the test."""
+    await make_device(db, "noisy", ip="127.0.0.1")
+    await make_device(db, "quiet", ip="127.0.0.2")
+    limiter = TrapRateLimiter(source_rate=0.001, source_burst=3, global_rate=1000, global_burst=1000)
+    transport, protocol = await serve(pool, host="127.0.0.1", port=0, limiter=limiter)
+    port = transport.get_extra_info("sockname")[1]
+    noisy, quiet = _sock_from("127.0.0.1"), _sock_from("127.0.0.2")
+    try:
+        for _ in range(10):
+            await _send_and_drain(protocol, noisy, v2c_trap("1.3.6.1.6.3.1.1.5.3"), port)
+        assert protocol.counters.accepted == 3 and protocol.counters.rate_limited_source == 7
+        await _send_and_drain(protocol, quiet, v2c_trap("1.3.6.1.6.3.1.1.5.4"), port)
+        assert protocol.counters.accepted == 4
+        rows = await db.fetch("select host(source_ip) as ip, count(*) as n from trap_history group by 1 order by 1")
+        assert [(r["ip"], r["n"]) for r in rows] == [("127.0.0.1", 3), ("127.0.0.2", 1)]
+    finally:
+        noisy.close()
+        quiet.close()
+        transport.close()
+
+
+async def test_the_global_cap_drops_traffic_from_every_source_once_spent(pool, db):
+    await make_device(db, "a", ip="127.0.0.1")
+    await make_device(db, "b", ip="127.0.0.2")
+    limiter = TrapRateLimiter(source_rate=1000, source_burst=1000, global_rate=0.001, global_burst=2)
+    transport, protocol = await serve(pool, host="127.0.0.1", port=0, limiter=limiter)
+    port = transport.get_extra_info("sockname")[1]
+    a, b = _sock_from("127.0.0.1"), _sock_from("127.0.0.2")
+    try:
+        await _send_and_drain(protocol, a, v2c_trap("1.3.6.1.6.3.1.1.5.3"), port)
+        await _send_and_drain(protocol, b, v2c_trap("1.3.6.1.6.3.1.1.5.3"), port)
+        await _send_and_drain(protocol, a, v2c_trap("1.3.6.1.6.3.1.1.5.3"), port)
+        await _send_and_drain(protocol, b, v2c_trap("1.3.6.1.6.3.1.1.5.3"), port)
+        assert protocol.counters.accepted == 2 and protocol.counters.rate_limited_global == 2
+        assert await db.fetchval("select count(*) from trap_history") == 2
+    finally:
+        a.close()
+        b.close()
+        transport.close()
+
+
+async def test_packets_beyond_max_in_flight_are_dropped_before_any_work_is_queued():
+    """Driven directly, with handlers held open, so "in flight" is exact rather than a race against the database."""
+    release = asyncio.Event()
+    protocol = TrapProtocol(pool=None, counters=TrapCounters(), max_in_flight=2)
+
+    async def held(data, source_ip):
+        await release.wait()
+
+    protocol._handle = held
+    for _ in range(5):
+        protocol.datagram_received(b"x", ("127.0.0.1", 40000))
+    assert len(protocol._tasks) == 2 and protocol.counters.overloaded == 3
+    release.set()
+    await protocol.drain()
+    protocol.datagram_received(b"x", ("127.0.0.1", 40000))  # capacity is back once the held packets finish
+    assert protocol.counters.overloaded == 3
+    await protocol.drain()

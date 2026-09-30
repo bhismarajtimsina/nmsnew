@@ -16,6 +16,7 @@ from app.core.crypto import EncryptionService
 from app.core.database import create_pool
 from app.core.logging import configure_logging
 from app.traps.listener import serve
+from app.traps.ratelimit import TrapRateLimiter
 
 
 async def run() -> int:
@@ -25,9 +26,14 @@ async def run() -> int:
     # Only constructed when actually needed: TRAP_CHECK_COMMUNITY off (its default) never touches a device's
     # community, matching legacy's own `_env('TRAP_SERVICE_CHECK_COMMUNITY', false)` gate exactly.
     enc = EncryptionService.from_settings() if settings.trap_check_community else None
+    limiter = TrapRateLimiter(
+        source_rate=settings.trap_source_rate, source_burst=settings.trap_source_burst,
+        global_rate=settings.trap_global_rate, global_burst=settings.trap_global_burst,
+    )
     transport, protocol = await serve(
         pool, host=settings.trap_listener_host, port=settings.trap_listener_port,
         enc=enc, check_community=settings.trap_check_community,
+        limiter=limiter, max_in_flight=settings.trap_max_in_flight,
     )
     log.info("trap receiver listening on %s:%s, check_community=%s",
              settings.trap_listener_host, settings.trap_listener_port, settings.trap_check_community)
@@ -41,9 +47,11 @@ async def run() -> int:
     finally:
         transport.close()
         await pool.close()
-    log.info("trap receiver stopped: accepted=%d unknown=%d unknown_source=%d bad_community=%d malformed=%d",
-             protocol.counters.accepted, protocol.counters.unknown, protocol.counters.unknown_source,
-             protocol.counters.bad_community, protocol.counters.malformed)
+    c = protocol.counters
+    log.info("trap receiver stopped: accepted=%d unknown=%d unknown_source=%d bad_community=%d malformed=%d "
+             "rate_limited_source=%d rate_limited_global=%d overloaded=%d",
+             c.accepted, c.unknown, c.unknown_source, c.bad_community, c.malformed,
+             c.rate_limited_source, c.rate_limited_global, c.overloaded)
     return 0
 
 
