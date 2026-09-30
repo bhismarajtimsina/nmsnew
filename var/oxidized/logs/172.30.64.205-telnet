@@ -1,0 +1,2369 @@
+
+>>User name:pathariolt
+>>User password:
+
+
+  Huawei Integrated Access Software (MA5683T).
+  Copyright(C) Huawei Technologies Co., Ltd. 2002-2014. All rights reserved.
+
+  -----------------------------------------------------------------------------
+  User last login information:
+  -----------------------------------------------------------------------------
+  Access Type : Telnet 
+  IP-Address  : 172.30.64.197
+  Login  Time : 2159-02-09 02:20:50+08:00
+  Logout Time : 2159-02-09 02:21:35+08:00
+  -----------------------------------------------------------------------------
+
+Pathari_Huawei-OLT>enable
+
+Pathari_Huawei-OLT#undo interactive
+  Interactive function is disabled
+
+Pathari_Huawei-OLT#undo smart
+  Interactive function is disabled
+
+Pathari_Huawei-OLT#scroll
+
+Pathari_Huawei-OLT#display current-configuration
+[MA5600V800R015: 5800]
+#
+[sysmode]
+  <sysmode>
+ switch adsl mode to rfc2662 vdsl mode to tr129
+ xpon mode switch-to profile-mode
+ voice-spec set vag-num 8
+ protocol support h248
+ system ex-mode backup 
+ system workscene msan 
+ router mode basic 
+#
+[global-config]
+  <global-config>
+ sysname Pathari_Huawei-OLT
+ terminal user name buildrun_new_password root *J$1a$4,<6M${jrK$]!{@;\a@E,:%}
+FE9*["Ar|&aO:2c+YN1zHVr,#eU$* 7 0000:00:00:00:00:00 0000:00:00:00:00:00 root 1 "-----" 0
+ terminal user name buildrun_new_password support *[$1a$"T_D+)w47<$+`I4)fvu.
+XFEz=<P&-f/#Cb3$Z@J6@0~N5!JoL$#$* 0 2005:07:28:02:31:46 2005:07:28:02:31:46 root 2 "-----" 0
+ terminal user name buildrun_new_password pathariolt *Z$1a$d%brQ+o9nT$ZRQs(!3hb$=)`A0.y-#C]f)~#>nJ;~a);H3Q51Y+$* 0 2158:08:16:17:58:53 2158:08:16:17:58:53 root 3 "14" 0
+ dba-profile add profile-id 20 profile-name "FTTH" type4 max 1000000
+ ont tr069-server-profile add profile-id 2 profile-name "tr069-server-profile_2" url "http://konnect-acs.vianet.com.np:7547" user "konnectacs" "%[;;!"EH4OH/A<
+SOFS'@BEQ!!B#A8&)VAB']]F;U$19'2_1!!%"
+ ont-srvprofile gpon profile-id 20 profile-name "FTTH"
+  ont-port pots adaptive eth adaptive 
+  commit
+ ont-lineprofile gpon profile-id 0 profile-name "line-profile_default_0"
+  tcont 0 dba-profile-id 2
+  tcont 1 dba-profile-id 0
+  commit
+  quit
+ ont-lineprofile gpon profile-id 20 profile-name "FTTH"
+  tr069-management enable
+  tcont 4 dba-profile-id 20
+  gem add 4 eth tcont 4
+  gem add 5 eth tcont 4
+  gem mapping 4 0 vlan 100
+  gem mapping 5 0 vlan 883
+  commit
+  quit
+#
+[device-config]
+  <device-config>
+ board add 0/0 H805GPFD 
+ board add 0/1 H805GPFD 
+ board add 0/8 H801X2CS 
+ board add 0/9 H801X2CS 
+ board add standby
+#
+[public-config]
+  <public-config>
+ snmp-agent local-engineid 800007DB03643E8C86D14EFE
+ snmp-agent community write $OM-eHy~Or4BeNl72={(''cotv~l7)2'IW)x]D2QqXn8LtZ8x$ 
+ snmp-agent community write $9/'`Heg[43`.+qX|A$VO~V7fFO>aD6@M6~oS9g+:.3z@=zpn$ 
+ snmp-agent community read $,pRK.3*=-~}EFb$8v~{T+3'+HUguOz)m,.)Bu<.ai<F:lw;j$ 
+ snmp-agent community read $;G+{E^J_r*oS{>/NAF[72(HXH-QE*;MYeBgnn[*i2xJ$;R4e$ 
+ snmp-agent community write $Tg:2%$,_n1_i~PH>CIVR(!XL(qWH@['IWTuKXX(x5X[64N1_$ 
+ snmp-agent target-host trap-hostname cms address 103.75.48.238 udp-port 162 
+trap-paramsname cms
+ snmp-agent target-host trap-paramsname cms v2C securityname $52eQ.4]m[TCOv3=
+XIzt$sa!%|U0cXa~T(3E/FNCdEAx2oN*:$ 
+#
+[vlan-config]
+  <vlan-config>
+ vlan 100 smart
+ vlan 883 smart
+ vlan 1555 smart
+ port vlan 100 0/8 0
+ port vlan 100 0/8 1
+ port vlan 100 0/9 0
+ port vlan 100 0/9 1
+ port vlan 883 0/8 0
+ port vlan 883 0/8 1
+ port vlan 1555 0/8 0
+ port vlan 1555 0/8 1
+ port vlan 1555 0/9 0
+ port vlan 1555 0/9 1
+#
+[gpon]
+  <gpon-0/0>
+ interface gpon 0/0
+ port 0 ont-auto-find enable
+ port 1 ont-auto-find enable
+ port 2 ont-auto-find enable
+ port 3 ont-auto-find enable
+ port 4 ont-auto-find enable
+ port 5 ont-auto-find enable
+ port 6 ont-auto-find enable
+ port 7 ont-auto-find enable
+ port 8 ont-auto-find enable
+ port 9 ont-auto-find enable
+ port 10 ont-auto-find enable
+ port 11 ont-auto-find enable
+ port 12 ont-auto-find enable
+ port 13 ont-auto-find enable
+ port 14 ont-auto-find enable
+ port 15 ont-auto-find enable
+ ont add 0 0 sn-auth "5A544547CDF574ED" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_phadindra_poudel" 
+ ont ipconfig 0 0 dhcp vlan 883 priority 5
+ ont tr069-server-config 0 0 profile-id 2
+ ont add 0 1 sn-auth "5A595845CA625270" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 0 1 dhcp vlan 883 priority 5
+ ont tr069-server-config 0 1 profile-id 2
+ ont add 0 2 sn-auth "5A595845CA478639" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 0 2 dhcp vlan 883 priority 5
+ ont tr069-server-config 0 2 profile-id 2
+ ont add 0 15 sn-auth "4857544398D6A8A0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 0 15 dhcp vlan 883 priority 5
+ ont tr069-server-config 0 15 profile-id 2
+ ont add 0 16 sn-auth "54504C47CE94C460" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 0 16 dhcp vlan 883 priority 5
+ ont tr069-server-config 0 16 profile-id 2
+ ont add 0 45 sn-auth "5A595845CAD34765" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_baburam_panday" 
+ ont add 1 0 sn-auth "464854545C1CA800" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 1 0 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 0 profile-id 2
+ ont add 1 1 sn-auth "485754436D5C879E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ptr_anita_dhimal " 
+ ont add 1 2 sn-auth "4857544398E9BEA0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_dambar_thapa" 
+ ont add 1 3 sn-auth "48575443B515EBA5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_radha_rai" 
+ ont add 1 4 sn-auth "5A595845CA711290" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_kalpana_tamang" 
+ ont add 1 5 sn-auth "485754433E0C9FA1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 1 5 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 5 profile-id 2
+ ont add 1 6 sn-auth "5A595845CA539293" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ptr_ranju_shah" 
+ ont add 1 7 sn-auth "5A595845CA690847" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_bishnu_kumari" 
+ ont add 1 8 sn-auth "485754433E102EA1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 1 8 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 8 profile-id 2
+ ont add 1 9 sn-auth "5A595845CAA03801" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_santosh_budhathoki" 
+ ont add 1 10 sn-auth "48575443476A4AA8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 1 10 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 10 profile-id 2
+ ont add 1 11 sn-auth "485754436D68B09E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 1 11 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 11 profile-id 2
+ ont add 1 12 sn-auth "485754438235DF9E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 1 12 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 12 profile-id 2
+ ont add 1 13 sn-auth "414C434CFBFE4863" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 14 sn-auth "414C434CFBFE52C3" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 15 sn-auth "44534E57294FC430" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 16 sn-auth "485754438237D59E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 1 16 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 16 profile-id 2
+ ont add 1 17 sn-auth "5A595845CA697910" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 1 17 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 17 profile-id 2
+ ont add 1 18 sn-auth "48575443219123A3" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 19 sn-auth "485754432B6DBF9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 20 sn-auth "414C434CFBFE3A5C" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 21 sn-auth "485754433342059E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 22 sn-auth "4857544357777A71" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 1 22 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 22 profile-id 2
+ ont add 1 23 sn-auth "4857544347852FA8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 24 sn-auth "48575443686961A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 25 sn-auth "4857544397872D9E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 1 25 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 25 profile-id 2
+ ont add 1 26 sn-auth "48575443A072119E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 1 26 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 26 profile-id 2
+ ont add 1 27 sn-auth "47504F4E004FBD58" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 28 sn-auth "485754439DD5A2AC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 29 sn-auth "485754439DF4E2AC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 30 sn-auth "485754439EBC14A4" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 31 sn-auth "48575443A5332C9A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 32 sn-auth "48575443A797189A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 33 sn-auth "48575443EEB751A4" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 34 sn-auth "48575443EEBB3BA4" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 35 sn-auth "4E42454C21051DC8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 36 sn-auth "4E42454C210552F8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 37 sn-auth "4E42454CEB209325" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 38 sn-auth "4E42454CFA8FA404" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 1 39 sn-auth "5A544547CED76855" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_lal_bahadur_rai" 
+ ont ipconfig 1 39 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 39 profile-id 2
+ ont add 1 40 sn-auth "44495847D2E3A05A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 1 40 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 40 profile-id 2
+ ont add 1 41 sn-auth "5A544547CF9E9193" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_chabindra_karki" 
+ ont ipconfig 1 41 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 41 profile-id 2
+ ont add 1 42 sn-auth "5A544547D1049FBA" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_susma_basnet" 
+ ont ipconfig 1 42 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 42 profile-id 2
+ ont add 1 43 sn-auth "5A544547CEF4CFE8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_jib_nath" 
+ ont ipconfig 1 43 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 43 profile-id 2
+ ont add 1 44 sn-auth "4857544368F0FD9D" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_tamang_bishnu" 
+ ont ipconfig 1 44 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 44 profile-id 2
+ ont add 1 45 sn-auth "4857544372D8FFA1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_indira_bishwokarma" 
+ ont ipconfig 1 45 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 45 profile-id 2
+ ont add 1 46 sn-auth "5A544547CE52AEE0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 1 46 dhcp vlan 883 priority 5
+ ont tr069-server-config 1 46 profile-id 2
+ ont add 2 0 sn-auth "485754430BD9D9A3" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "no des" 
+ ont add 2 1 sn-auth "47504F4E00E508D8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 2 2 sn-auth "485754431C52859B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 2 3 sn-auth "485754432B82BF9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 2 4 sn-auth "48575443690572A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 2 5 sn-auth "485754439775219E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 2 6 sn-auth "48575443A825D273" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 2 7 sn-auth "48575443E719409E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 2 8 sn-auth "4E42454C21051D88" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 2 9 sn-auth "5A544547CECABDAD" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_chandra_karki" 
+ ont ipconfig 2 9 dhcp vlan 883 priority 5
+ ont tr069-server-config 2 9 profile-id 2
+ ont add 2 10 sn-auth "48575443820BCD9E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_binda_maya" 
+ ont add 2 11 sn-auth "485754433EE5CF9D" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_gopi_krishna" 
+ ont add 2 12 sn-auth "414C434CFBF7F96E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ptr_tilak_thapa" 
+ ont add 2 13 sn-auth "485754435F60059D" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_rita_panday" 
+ ont add 2 14 sn-auth "4857544307027D9F" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 2 14 dhcp vlan 883 priority 5
+ ont tr069-server-config 2 14 profile-id 2
+ ont add 2 15 sn-auth "485754437A1863A1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_anupa_bista" 
+ ont add 2 16 sn-auth "4857544388C46EA5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_bishnu_timshina" 
+ ont add 2 17 sn-auth "485754439756B89E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_pathari_khanepani" 
+ ont add 2 18 sn-auth "4857544322EA3BA1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "4857544322EA3BA1" 
+ ont add 2 19 sn-auth "485754436D6DEE9E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc " ptr_monika_rai" 
+ ont add 2 20 sn-auth "485754432593B83D" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 2 21 sn-auth "5A595845CAF53108" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_chandeshor_paikara" 
+ ont add 2 22 sn-auth "48575443DC79B8A2" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_susma_poudel" 
+ ont add 2 23 sn-auth "5A595845CA781933" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_sanjip_tamrakar" 
+ ont add 2 24 sn-auth "5A544547CEF43C23" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 2 24 dhcp vlan 883 priority 5
+ ont tr069-server-config 2 24 profile-id 2
+ ont add 2 25 sn-auth "5A595845CA00C50C" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "tagggg" 
+ ont add 2 26 sn-auth "44534E57297976A0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_gopi_krishna" 
+ ont add 2 27 sn-auth "5A544547CE893298" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 2 27 dhcp vlan 883 priority 5
+ ont tr069-server-config 2 27 profile-id 2
+ ont add 2 28 sn-auth "59454B46CBCB2480" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_menuka_adhikari" 
+ ont ipconfig 2 28 dhcp vlan 883 priority 5
+ ont tr069-server-config 2 28 profile-id 2
+ ont add 2 29 sn-auth "48575443C71DDC9A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "raj_bhattarai" 
+ ont ipconfig 2 29 dhcp vlan 883 priority 5
+ ont tr069-server-config 2 29 profile-id 2
+ ont add 3 0 sn-auth "44534E5728BA2610" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_samana_bk" 
+ ont add 3 1 sn-auth "414C434CB395A26F" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 2 sn-auth "414C434CB42D9953" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 3 sn-auth "414C434CEB1672D8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 4 sn-auth "5A595845CAC26615" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_premchandra_nayak" 
+ ont add 3 5 sn-auth "444635306A7D8723" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 6 sn-auth "48575443477810A8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 7 sn-auth "48575443B2E0F2A2" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc " phr_raj_shoe" 
+ ont add 3 8 sn-auth "48575443685063A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 9 sn-auth "4857544368579AA5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 10 sn-auth "485754439B3F979B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 11 sn-auth "485754439DCBCAAC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 12 sn-auth "485754439DD538AC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 13 sn-auth "485754439DEA15AC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 14 sn-auth "485754439E5F41A4" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 15 sn-auth "48575443A58C389A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 16 sn-auth "48575443EA7E9BA2" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 17 sn-auth "4E42454CEB204F93" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 18 sn-auth "4E42454CFA8F2E4A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 19 sn-auth "4E42454CFA8F75C8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 20 sn-auth "4E42454CFA8F9181" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 21 sn-auth "414C434CB2B0DD22" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 22 sn-auth "485754436D52869E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_ramachandra_padlkar" 
+ ont add 3 23 sn-auth "4857544382158D9E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_arjun_basnet" 
+ ont add 3 24 sn-auth "48575443A5BCD4AC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_nirmala_timshina" 
+ ont add 3 25 sn-auth "48575443A8550FA2" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "Phr_pratiksha_adhikari" 
+ ont add 3 26 sn-auth "48575443EA61D99E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_papu_kumar" 
+ ont add 3 27 sn-auth "5A544547CCE55E08" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_sita_adhikari" 
+ ont ipconfig 3 27 dhcp vlan 883 priority 5
+ ont tr069-server-config 3 27 profile-id 2
+ ont add 3 28 sn-auth "44534E572A15B450" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_menuka_basnet" 
+ ont add 3 29 sn-auth "485754430BC730A3" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 3 29 dhcp vlan 883 priority 5
+ ont tr069-server-config 3 29 profile-id 2
+ ont add 3 30 sn-auth "4857544357D193A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 3 30 dhcp vlan 883 priority 5
+ ont tr069-server-config 3 30 profile-id 2
+ ont add 3 31 sn-auth "44534E572A1A6CF8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ptr_sabitra_basnet" 
+ ont add 3 32 sn-auth "485754435F5CF5A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 3 32 dhcp vlan 883 priority 5
+ ont tr069-server-config 3 32 profile-id 2
+ ont add 3 33 sn-auth "48575443B2EDDEA2" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_tharka_kafle" 
+ ont add 3 34 sn-auth "485754437512215B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_muna_modi" 
+ ont add 3 35 sn-auth "485754435724962E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_sushil_modi" 
+ ont add 3 36 sn-auth "4857544398DC67A0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_ramachandra_padlkar" 
+ ont add 3 37 sn-auth "5A595845CA905858" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_sabitra_pandey" 
+ ont add 3 38 sn-auth "464854545C1CA850" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_hari_paikara" 
+ ont ipconfig 3 38 dhcp vlan 883 priority 5
+ ont tr069-server-config 3 38 profile-id 2
+ ont add 3 39 sn-auth "4E42454CEB2071B5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_chandra_khatri" 
+ ont add 3 40 sn-auth "5A595845CAC16468" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 3 41 sn-auth "5A595845CA872899" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_gita_biswakarma" 
+ ont add 3 42 sn-auth "5A544547CEF47B96" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_moon_shine" 
+ ont ipconfig 3 42 dhcp vlan 883 priority 5
+ ont tr069-server-config 3 42 profile-id 2
+ ont add 3 43 sn-auth "5A595845CA01D7F0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc " phr_chandika_karki" 
+ ont ipconfig 3 43 dhcp vlan 883 priority 5
+ ont tr069-server-config 3 43 profile-id 2
+ ont add 3 44 sn-auth "5A595845CA098843" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_chandamuni_devi" 
+ ont ipconfig 3 44 dhcp vlan 883 priority 5
+ ont tr069-server-config 3 44 profile-id 2
+ ont add 3 45 sn-auth "5A544547CEC20D45" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_prestige_traders" 
+ ont ipconfig 3 45 dhcp vlan 883 priority 5
+ ont tr069-server-config 3 45 profile-id 2
+ ont add 3 46 sn-auth "5A544547D0535BC0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_shrijana_parajuli" 
+ ont ipconfig 3 46 dhcp vlan 883 priority 5
+ ont tr069-server-config 3 46 profile-id 2
+ ont add 3 47 sn-auth "5A544547D192F7C0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 3 47 dhcp vlan 883 priority 5
+ ont tr069-server-config 3 47 profile-id 2
+ ont add 3 48 sn-auth "5A544547CED75628" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_binod_electronics" 
+ ont ipconfig 3 48 dhcp vlan 883 priority 5
+ ont tr069-server-config 3 48 profile-id 2
+ ont add 4 0 sn-auth "414C434CB2AC621D" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 1 sn-auth "414C434CB3D7BFA2" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 2 sn-auth "414C434CFBFE3D83" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 3 sn-auth "414C434CFBFE537E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 4 sn-auth "5A544547CECD39D6" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_chhaya_makeup" 
+ ont ipconfig 4 4 dhcp vlan 883 priority 5
+ ont tr069-server-config 4 4 profile-id 2
+ ont add 4 5 sn-auth "45434F4D0CEEDF9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 6 sn-auth "48575443325679A1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc " phr_shila_nalbo" 
+ ont add 4 7 sn-auth "4E42454CEB20998B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_durga_sabji" 
+ ont ipconfig 4 7 dhcp vlan 883 priority 5
+ ont tr069-server-config 4 7 profile-id 2
+ ont add 4 8 sn-auth "48575443123A03A4" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 9 sn-auth "485754433288D39F" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 10 sn-auth "485754433E11ABA1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 11 sn-auth "4857544343D62F9E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 12 sn-auth "48575443591CDE9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 13 sn-auth "485754436FC00AA5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 14 sn-auth "485754437D65DF9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 15 sn-auth "485754439DE540AC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 16 sn-auth "485754439DED2EAC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 17 sn-auth "485754439DF5FBAC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 18 sn-auth "485754439DF613AC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 19 sn-auth "48575443A868056A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 20 sn-auth "4E42454C21051D78" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 21 sn-auth "4E42454CEB209C0C" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 22 sn-auth "4E42454CEB20CE91" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 23 sn-auth "485754436863B1A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 24 sn-auth "48575443DBDB2795" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ptr_tilak_karki" 
+ ont add 4 25 sn-auth "44534E572A0D5608" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 4 25 dhcp vlan 883 priority 5
+ ont tr069-server-config 4 25 profile-id 2
+ ont add 4 26 sn-auth "48575443E3CF68A4" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 27 sn-auth "4857544322CEA8A1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_laxmi_malla" 
+ ont add 4 28 sn-auth "4E42454CEB2021BE" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 29 sn-auth "485754438C1567A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_pawan_adhikari" 
+ ont add 4 30 sn-auth "4E42454C210552B8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_bhulke_devi" 
+ ont add 4 31 sn-auth "5A544547CF844BB8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_madan_guragain" 
+ ont ipconfig 4 31 dhcp vlan 883 priority 5
+ ont tr069-server-config 4 31 profile-id 2
+ ont add 4 32 sn-auth "44534E5729F86958" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 33 sn-auth "44534E5729798648" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_green_land" 
+ ont add 4 34 sn-auth "4857544314D3DF9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_phul_maya" 
+ ont ipconfig 4 34 dhcp vlan 883 priority 5
+ ont tr069-server-config 4 34 profile-id 2
+ ont add 4 35 sn-auth "44534E5729D9F3E8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_susma_dhital" 
+ ont add 4 36 sn-auth "48575443B2EFDDA2" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_phul_maya" 
+ ont add 4 37 sn-auth "48575443F7ABC69C" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_tilak_thapa" 
+ ont add 4 38 sn-auth "4857544369093FA5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_riya_rai" 
+ ont add 4 39 sn-auth "485754434CCCBAA1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ccccccc" 
+ ont add 4 40 sn-auth "4857544398EF15A0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_krishna_sitaula" 
+ ont add 4 41 sn-auth "4857544397899C9E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 42 sn-auth "485754434CCB20A1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 4 43 sn-auth "485754435F51E7A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_birbahadur_basnet" 
+ ont add 4 44 sn-auth "5A595845CA0124EC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 4 44 dhcp vlan 883 priority 5
+ ont tr069-server-config 4 44 profile-id 2
+ ont add 4 45 sn-auth "485754438BF8A5A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_manoj_koirala" 
+ ont add 4 46 sn-auth "485754435F50909D" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_jai_bahadur_nembang" 
+ ont add 4 47 sn-auth "5A544547CE5277D0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 4 47 dhcp vlan 883 priority 5
+ ont tr069-server-config 4 47 profile-id 2
+ ont add 4 48 sn-auth "44495847D2EA4716" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 4 48 dhcp vlan 883 priority 5
+ ont tr069-server-config 4 48 profile-id 2
+ ont add 4 49 sn-auth "5A544547D199388B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_bhulke_mandir" 
+ ont ipconfig 4 49 dhcp vlan 883 priority 5
+ ont tr069-server-config 4 49 profile-id 2
+ ont add 4 50 sn-auth "5A595845CA881847" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_phul_maya" 
+ ont ipconfig 4 50 dhcp vlan 883 priority 5
+ ont tr069-server-config 4 50 profile-id 2
+ ont add 4 51 sn-auth "5A544547CDFEA011" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc " phr_green_land" 
+ ont ipconfig 4 51 dhcp vlan 883 priority 5
+ ont tr069-server-config 4 51 profile-id 2
+ ont add 4 52 sn-auth "44534E572A33E080" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 4 52 dhcp vlan 883 priority 5
+ ont tr069-server-config 4 52 profile-id 2
+ ont add 4 53 sn-auth "4857544357B923A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_madan_guragain" 
+ ont ipconfig 4 53 dhcp vlan 883 priority 5
+ ont tr069-server-config 4 53 profile-id 2
+ ont add 4 54 sn-auth "5A544547CCE52172" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 4 54 dhcp vlan 883 priority 5
+ ont tr069-server-config 4 54 profile-id 2
+ ont add 5 0 sn-auth "414C434CB2A99C41" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 5 1 sn-auth "414C434CB39C053E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 5 2 sn-auth "414C434CB42B294A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 5 3 sn-auth "4857544372D694A1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 3 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 3 profile-id 2
+ ont add 5 4 sn-auth "444635306A7D86F3" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 4 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 4 profile-id 2
+ ont add 5 5 sn-auth "444635316ADE79EF" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 5 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 5 profile-id 2
+ ont add 5 6 sn-auth "45434F4D0D001F9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 6 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 6 profile-id 2
+ ont add 5 7 sn-auth "45434F4D2C789F9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 7 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 7 profile-id 2
+ ont add 5 8 sn-auth "45434F4D2C78DF9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 8 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 8 profile-id 2
+ ont add 5 9 sn-auth "5A544547C43F1EDD" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_sandip_majhi" 
+ ont ipconfig 5 9 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 9 profile-id 2
+ ont add 5 10 sn-auth "464854545C1C9B60" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 10 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 10 profile-id 2
+ ont add 5 11 sn-auth "464854546402A100" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 11 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 11 profile-id 2
+ ont add 5 12 sn-auth "47504F4E00164928" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 12 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 12 profile-id 2
+ ont add 5 13 sn-auth "47504F4E001784F8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 13 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 13 profile-id 2
+ ont add 5 16 sn-auth "48575443149BEF9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 16 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 16 profile-id 2
+ ont add 5 17 sn-auth "4857544314D2AF9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 17 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 17 profile-id 2
+ ont add 5 18 sn-auth "4857544314D3AF9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont tr069-server-config 5 18 profile-id 2
+ ont add 5 19 sn-auth "4857544314D82F9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 19 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 19 profile-id 2
+ ont add 5 21 sn-auth "4857544314DA2F9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 21 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 21 profile-id 2
+ ont add 5 23 sn-auth "485754431615C0A6" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont tr069-server-config 5 23 profile-id 2
+ ont add 5 24 sn-auth "485754431F9C829B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont tr069-server-config 5 24 profile-id 2
+ ont add 5 25 sn-auth "48575443263041A6" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 25 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 25 profile-id 2
+ ont add 5 26 sn-auth "4857544326350BA6" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 26 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 26 profile-id 2
+ ont add 5 27 sn-auth "485754432734F0A3" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 27 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 27 profile-id 2
+ ont add 5 28 sn-auth "48575443288004A4" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 28 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 28 profile-id 2
+ ont add 5 29 sn-auth "485754432B6AFF9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 29 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 29 profile-id 2
+ ont add 5 30 sn-auth "485754432FCEB6A9" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 30 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 30 profile-id 2
+ ont add 5 31 sn-auth "4857544331C8A7A9" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 31 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 31 profile-id 2
+ ont add 5 32 sn-auth "485754433261A89F" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 32 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 32 profile-id 2
+ ont add 5 33 sn-auth "485754433CABD6A3" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 33 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 33 profile-id 2
+ ont add 5 35 sn-auth "48575443477771A8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 35 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 35 profile-id 2
+ ont add 5 37 sn-auth "4857544357C261A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 37 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 37 profile-id 2
+ ont add 5 38 sn-auth "485754435F5C08A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 38 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 38 profile-id 2
+ ont add 5 39 sn-auth "48575443661E589A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 39 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 39 profile-id 2
+ ont add 5 40 sn-auth "48575443685439A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 40 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 40 profile-id 2
+ ont add 5 41 sn-auth "48575443686ABCA5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 41 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 41 profile-id 2
+ ont add 5 43 sn-auth "485754437D548F9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont tr069-server-config 5 43 profile-id 2
+ ont add 5 44 sn-auth "48575443801982A4" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 44 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 44 profile-id 2
+ ont add 5 45 sn-auth "485754438D6DC39A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 45 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 45 profile-id 2
+ ont add 5 46 sn-auth "485754439383729C" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 46 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 46 profile-id 2
+ ont add 5 47 sn-auth "48575443A42343A0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 47 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 47 profile-id 2
+ ont add 5 48 sn-auth "48575443A4F5169A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 48 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 48 profile-id 2
+ ont add 5 49 sn-auth "48575443A7BEC59A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 49 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 49 profile-id 2
+ ont add 5 50 sn-auth "48575443A885109A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 50 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 50 profile-id 2
+ ont add 5 51 sn-auth "48575443ABED6075" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 51 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 51 profile-id 2
+ ont add 5 52 sn-auth "48575443BC8937A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 52 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 52 profile-id 2
+ ont add 5 53 sn-auth "48575443BC8966A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 53 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 53 profile-id 2
+ ont add 5 54 sn-auth "48575443D18D83A4" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 54 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 54 profile-id 2
+ ont add 5 55 sn-auth "48575443D55C0DA5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 55 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 55 profile-id 2
+ ont add 5 56 sn-auth "48575443D55C12A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 56 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 56 profile-id 2
+ ont add 5 57 sn-auth "48575443DC8465A2" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 57 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 57 profile-id 2
+ ont add 5 58 sn-auth "48575443DD6B2CA5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 58 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 58 profile-id 2
+ ont add 5 59 sn-auth "48575443DD6D83A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 59 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 59 profile-id 2
+ ont add 5 60 sn-auth "48575443E7149E9E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 60 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 60 profile-id 2
+ ont add 5 61 sn-auth "48575443E93C19A6" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 61 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 61 profile-id 2
+ ont add 5 62 sn-auth "48575443E93D80A6" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 62 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 62 profile-id 2
+ ont add 5 63 sn-auth "48575443EEBA09A4" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 63 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 63 profile-id 2
+ ont add 5 64 sn-auth "48575443FC23309B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 64 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 64 profile-id 2
+ ont add 5 65 sn-auth "4E42454C21055298" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 65 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 65 profile-id 2
+ ont add 5 66 sn-auth "4E42454CEB202116" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 66 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 66 profile-id 2
+ ont add 5 67 sn-auth "4E42454CEB204278" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 67 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 67 profile-id 2
+ ont add 5 69 sn-auth "58504F4E444B565D" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 69 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 69 profile-id 2
+ ont add 5 70 sn-auth "5A595845CA681595" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 70 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 70 profile-id 2
+ ont add 5 71 sn-auth "5A595845CAD88584" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 5 71 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 71 profile-id 2
+ ont add 5 74 sn-auth "5A595845CA468137" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_anil_biswakarma" 
+ ont ipconfig 5 74 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 74 profile-id 2
+ ont add 5 75 sn-auth "44495847D2EAC57C" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_gopal_yogi" 
+ ont ipconfig 5 75 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 75 profile-id 2
+ ont add 5 76 sn-auth "5A595845CAC50172" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_baburam_shrestha" 
+ ont ipconfig 5 76 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 76 profile-id 2
+ ont add 5 77 sn-auth "5A544547CEF4C7DE" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ptr_nar_bahadur" 
+ ont ipconfig 5 77 dhcp vlan 883 priority 5
+ ont tr069-server-config 5 77 profile-id 2
+ ont add 6 0 sn-auth "414C434CB3B285D4" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 1 sn-auth "414C434CB3FC8E1C" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 2 sn-auth "414C434CB420FFB1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 3 sn-auth "414C434CB42B4E7B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 4 sn-auth "414C434CFBF820E0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 5 sn-auth "444635306A7D7E77" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 6 sn-auth "444635306A7D8717" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 7 sn-auth "44534E5729CF9D08" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 8 sn-auth "45434F4D0CEF4F9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 9 sn-auth "464854545C1CBC90" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 10 sn-auth "485754431C0F299B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 11 sn-auth "485754436D5CAD9E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 12 sn-auth "4857544379F30CA1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 13 sn-auth "48575443823F899E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 14 sn-auth "485754438D2E0D9A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 15 sn-auth "454C5747C407A12F" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 16 sn-auth "485754439DE244AC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 17 sn-auth "48575443A5AA48AC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 18 sn-auth "48575443A868661F" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 19 sn-auth "48575443A98E8643" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 20 sn-auth "48575443A9CC09A0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 21 sn-auth "48575443BCC0969E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 22 sn-auth "48575443D561EAA5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 23 sn-auth "48575443DC8CE0A2" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 24 sn-auth "48575443E70C9E9E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 25 sn-auth "48575443E7397DA8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 26 sn-auth "5A544547CDF2DB93" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_buddharaj_rai" 
+ ont tr069-server-config 6 26 profile-id 2
+ ont add 6 27 sn-auth "4E42454C21054968" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 28 sn-auth "4E42454CEB2098B2" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 29 sn-auth "4E42454CEB20A0A0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 30 sn-auth "4E42454CFA8FD485" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 31 sn-auth "414C434CB421B56B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 32 sn-auth "414C434CFBF7FCF0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_sarala_bk" 
+ ont add 6 33 sn-auth "48575443263422A6" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_lila_kami" 
+ ont add 6 34 sn-auth "48575443A340ED18" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc " ptr_samjhana_khadka" 
+ ont add 6 35 sn-auth "48575443B2E6FAA2" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_anisha_limbu" 
+ ont add 6 36 sn-auth "4E42454C21051DE8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 37 sn-auth "4857544379E70AA1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_siya_sharma" 
+ ont add 6 38 sn-auth "48575443E9F718A2" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_parina_limbu" 
+ ont add 6 39 sn-auth "4857544347788DA8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ptr_gopal_karki" 
+ ont add 6 40 sn-auth "48575443E7F5F59E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 41 sn-auth "485754434778B2A8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_dipak_dhimal" 
+ ont add 6 42 sn-auth "5A595845CAE11214" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 6 42 dhcp vlan 883 priority 5
+ ont tr069-server-config 6 42 profile-id 2
+ ont add 6 43 sn-auth "464854545C1BEF20" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ccc" 
+ ont add 6 44 sn-auth "48575443F433BD9C" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_rangita_gurung" 
+ ont add 6 45 sn-auth "485754432727A0A3" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "kkk" 
+ ont add 6 46 sn-auth "44534E572A2E5C10" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 47 sn-auth "48575443332DBF9E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc " phr_mina_devi" 
+ ont add 6 48 sn-auth "44534E572A1A5240" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_nisha_gurung" 
+ ont add 6 49 sn-auth "485754435F4535A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ptr_bharat_bardewa" 
+ ont add 6 50 sn-auth "485754438230069E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_purnakumari_rai" 
+ ont add 6 51 sn-auth "48575443A080319E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_mina_rai" 
+ ont add 6 52 sn-auth "485754436D42339E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 53 sn-auth "5A595845CA524014" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 6 54 sn-auth "59454B46CB5C12E0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "pathari" 
+ ont ipconfig 6 54 dhcp vlan 883 priority 5
+ ont tr069-server-config 6 54 profile-id 2
+ ont add 6 55 sn-auth "4E42454C21051D68" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 6 55 dhcp vlan 883 priority 5
+ ont tr069-server-config 6 55 profile-id 2
+ ont add 6 56 sn-auth "5A595845CA959880" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 6 56 dhcp vlan 883 priority 5
+ ont tr069-server-config 6 56 profile-id 2
+ ont add 6 57 sn-auth "5A544547CE88FC49" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_basnet_pramila" 
+ ont ipconfig 6 57 dhcp vlan 883 priority 5
+ ont tr069-server-config 6 57 profile-id 2
+ ont add 6 58 sn-auth "5A544547C43ECF55" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_hemraj_limbu" 
+ ont ipconfig 6 58 dhcp vlan 883 priority 5
+ ont tr069-server-config 6 58 profile-id 2
+ ont add 7 0 sn-auth "5A595845CA00E20A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_surya_khadka" 
+ ont add 7 1 sn-auth "444635306A7D7EB3" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 7 1 dhcp vlan 883 priority 5
+ ont tr069-server-config 7 1 profile-id 2
+ ont add 7 2 sn-auth "464854545C1C69E0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 7 2 dhcp vlan 883 priority 5
+ ont tr069-server-config 7 2 profile-id 2
+ ont add 7 3 sn-auth "48575443043E5E92" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 7 3 dhcp vlan 883 priority 5
+ ont tr069-server-config 7 3 profile-id 2
+ ont add 7 4 sn-auth "485754430705D99F" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 7 4 dhcp vlan 883 priority 5
+ ont tr069-server-config 7 4 profile-id 2
+ ont add 7 5 sn-auth "4857544314CEEF9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 7 5 dhcp vlan 883 priority 5
+ ont tr069-server-config 7 5 profile-id 2
+ ont add 7 6 sn-auth "4857544314DA1F9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 7 6 dhcp vlan 883 priority 5
+ ont tr069-server-config 7 6 profile-id 2
+ ont add 7 7 sn-auth "4857544315FA0A30" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 7 7 dhcp vlan 883 priority 5
+ ont tr069-server-config 7 7 profile-id 2
+ ont add 7 8 sn-auth "485754433E3AB7A4" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 7 8 dhcp vlan 883 priority 5
+ ont tr069-server-config 7 8 profile-id 2
+ ont add 7 9 sn-auth "485754435051A195" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 7 9 dhcp vlan 883 priority 5
+ ont tr069-server-config 7 9 profile-id 2
+ ont add 7 10 sn-auth "485754436D21ED9E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 7 10 dhcp vlan 883 priority 5
+ ont tr069-server-config 7 10 profile-id 2
+ ont add 7 11 sn-auth "51494E462E1E0DE8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 7 11 dhcp vlan 883 priority 5
+ ont tr069-server-config 7 11 profile-id 2
+ ont add 7 12 sn-auth "485754434FED507F" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 7 13 sn-auth "5A595845CA890919" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "5A595845CA890919" 
+ ont ipconfig 7 13 dhcp vlan 883 priority 5
+ ont tr069-server-config 7 13 profile-id 2
+ ont add 7 17 sn-auth "4857544368671DA5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 7 20 sn-auth "485754439DD43EAC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 7 29 sn-auth "48575443478547A8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ptr_mankumari_bk" 
+ ont add 8 0 sn-auth "414C434CB3F8661D" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 8 1 sn-auth "44534E5729C32378" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 1 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 1 profile-id 2
+ ont add 8 2 sn-auth "44534E572A0DC1D8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont tr069-server-config 8 2 profile-id 2
+ ont add 8 3 sn-auth "45434F4D2C788F9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 3 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 3 profile-id 2
+ ont add 8 4 sn-auth "4857544314DA3F9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 4 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 4 profile-id 2
+ ont add 8 5 sn-auth "4857544322C573A1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 5 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 5 profile-id 2
+ ont add 8 6 sn-auth "485754432314B5A1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 6 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 6 profile-id 2
+ ont add 8 7 sn-auth "485754433370809E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 7 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 7 profile-id 2
+ ont add 8 8 sn-auth "48575443478546A8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 8 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 8 profile-id 2
+ ont add 8 9 sn-auth "4857544382257D9E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 9 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 9 profile-id 2
+ ont add 8 10 sn-auth "4857544397846A9E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 10 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 10 profile-id 2
+ ont add 8 11 sn-auth "48575443979F5E9E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 11 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 11 profile-id 2
+ ont add 8 12 sn-auth "485754439DD1C6AC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 12 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 12 profile-id 2
+ ont add 8 13 sn-auth "48575443BCC1089E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 13 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 13 profile-id 2
+ ont add 8 14 sn-auth "485754451D7D73D2" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 14 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 14 profile-id 2
+ ont add 8 15 sn-auth "4E42454C210552D8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 15 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 15 profile-id 2
+ ont add 8 16 sn-auth "5A544547C43ECE77" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 16 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 16 profile-id 2
+ ont add 8 17 sn-auth "4E42454CFA8F34D5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 17 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 17 profile-id 2
+ ont add 8 18 sn-auth "4E42454CFA8FC80C" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 18 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 18 profile-id 2
+ ont add 8 19 sn-auth "5A595845CA025423" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 19 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 19 profile-id 2
+ ont add 8 20 sn-auth "5A595845CA577905" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 20 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 20 profile-id 2
+ ont add 8 21 sn-auth "5A595845CAB15997" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 21 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 21 profile-id 2
+ ont add 8 22 sn-auth "5A595845CAE52747" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 22 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 22 profile-id 2
+ ont add 8 23 sn-auth "5A595845CAE87421" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_buddhi_bal" 
+ ont ipconfig 8 23 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 23 profile-id 2
+ ont add 8 24 sn-auth "5A595845CAA78257" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 8 24 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 24 profile-id 2
+ ont add 8 25 sn-auth "5A544547D07BF762" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_yashoda_gautam" 
+ ont ipconfig 8 25 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 25 profile-id 2
+ ont add 8 26 sn-auth "44495847D2EADAFD" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_purna_kumari_rai" 
+ ont ipconfig 8 26 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 26 profile-id 2
+ ont add 8 27 sn-auth "485754439DDA4BAC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_bishnu_panchayan" 
+ ont ipconfig 8 27 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 27 profile-id 2
+ ont add 8 28 sn-auth "5A544547D053A34D" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_anisha_rai" 
+ ont ipconfig 8 28 dhcp vlan 883 priority 5
+ ont tr069-server-config 8 28 profile-id 2
+ ont add 9 0 sn-auth "444635306A7D7EA7" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 0 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 0 profile-id 2
+ ont add 9 1 sn-auth "45434F4D2BEACF9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 1 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 1 profile-id 2
+ ont add 9 2 sn-auth "464854545C1C7D80" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 2 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 2 profile-id 2
+ ont add 9 3 sn-auth "47504F4E00C22798" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 3 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 3 profile-id 2
+ ont add 9 4 sn-auth "485754430762D6A1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "no des" 
+ ont tr069-server-config 9 4 profile-id 2
+ ont add 9 5 sn-auth "485754430BCCD2A3" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 5 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 5 profile-id 2
+ ont add 9 6 sn-auth "485754430E1100A1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont tr069-server-config 9 6 profile-id 2
+ ont add 9 7 sn-auth "485754432E6A78A1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont tr069-server-config 9 7 profile-id 2
+ ont add 9 8 sn-auth "4857544331C894A9" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 9 9 sn-auth "4857544331FF179F" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 9 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 9 profile-id 2
+ ont add 9 10 sn-auth "48575443337E5B95" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 10 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 10 profile-id 2
+ ont add 9 11 sn-auth "48575443477738A8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 9 12 sn-auth "485754435726E571" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont tr069-server-config 9 12 profile-id 2
+ ont add 9 13 sn-auth "485754436101FF9B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 13 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 13 profile-id 2
+ ont add 9 14 sn-auth "48575443DD6BA1A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 9 15 sn-auth "48575443DD6B6DA5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 9 16 sn-auth "48575443D5620BA5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 9 17 sn-auth "48575443D55F91A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 9 18 sn-auth "485754438E228B8A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 18 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 18 profile-id 2
+ ont add 9 19 sn-auth "485754439775109E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 19 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 19 profile-id 2
+ ont add 9 20 sn-auth "4857544398D343A0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 20 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 20 profile-id 2
+ ont add 9 21 sn-auth "485754439DF4A0AC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ptr_mankumari_bk" 
+ ont ipconfig 9 21 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 21 profile-id 2
+ ont add 9 22 sn-auth "485754436FCCB1A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 9 23 sn-auth "485754436852A2A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 9 24 sn-auth "48575443D770D3A0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 24 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 24 profile-id 2
+ ont add 9 25 sn-auth "485754436855C4A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 9 26 sn-auth "5A595845CA876321" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc " phr_ramkumar_shrestha" 
+ ont ipconfig 9 26 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 26 profile-id 2
+ ont add 9 27 sn-auth "48575443E93A99A6" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 9 28 sn-auth "48575443FBB6E0A8" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 9 29 sn-auth "5A595845CA451028" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 29 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 29 profile-id 2
+ ont add 9 30 sn-auth "5A595845CA609376" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 30 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 30 profile-id 2
+ ont add 9 31 sn-auth "5A595845CAA30714" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 31 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 31 profile-id 2
+ ont add 9 32 sn-auth "5A595845CAC12306" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 32 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 32 profile-id 2
+ ont add 9 33 sn-auth "5A595845CAD77696" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 33 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 33 profile-id 2
+ ont add 9 34 sn-auth "5A544547CF51632C" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 9 34 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 34 profile-id 2
+ ont add 9 35 sn-auth "5A544547D19270DC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_dhundi_lamshal" 
+ ont ipconfig 9 35 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 35 profile-id 2
+ ont add 9 37 sn-auth "44495847D2EAC9DC" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_bibek_subba" 
+ ont ipconfig 9 37 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 37 profile-id 2
+ ont add 9 38 sn-auth "44495847D2EAEF9D" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ptr_man_limbu" 
+ ont ipconfig 9 38 dhcp vlan 883 priority 5
+ ont tr069-server-config 9 38 profile-id 2
+ ont add 10 0 sn-auth "48575443230BC5A1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_pawan_adhikari" 
+ ont add 10 1 sn-auth "44534E572A27E778" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 10 2 sn-auth "47504F4E0013CC52" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 10 3 sn-auth "47504F4E00164340" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 10 4 sn-auth "48575443332F049E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 10 5 sn-auth "4857544384E737A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 10 6 sn-auth "48575443A3C2DF23" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 10 7 sn-auth "48575443A849CFA2" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 10 8 sn-auth "48575443B0DD7E9A" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 10 9 sn-auth "48575443E93BA7A6" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 10 10 sn-auth "5A595845CA708949" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 10 11 sn-auth "5A595845CAC12223" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_nirmala_parajuli" 
+ ont add 10 12 sn-auth "485754437B9664A1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_ashok_pokhrel" 
+ ont add 10 13 sn-auth "485754433E1ABFA1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ptr_arobinda_barman" 
+ ont add 10 14 sn-auth "44534E57299B9738" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_babul_ghale" 
+ ont add 10 15 sn-auth "44534E5729D12158" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "DSNW29D12158" 
+ ont add 10 16 sn-auth "48575443F6ABEBA5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont add 10 17 sn-auth "5A595845CA547428" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_sher_kotari" 
+ ont add 10 18 sn-auth "5A595845CAB10188" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 10 18 dhcp vlan 883 priority 5
+ ont tr069-server-config 10 18 profile-id 2
+ ont add 10 19 sn-auth "5A595845CA462579" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc " phr_rudra_karki" 
+ ont ipconfig 10 19 dhcp vlan 883 priority 5
+ ont tr069-server-config 10 19 profile-id 2
+ ont add 10 20 sn-auth "44495847D2EAE873" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 10 20 dhcp vlan 883 priority 5
+ ont tr069-server-config 10 20 profile-id 2
+ ont add 10 21 sn-auth "5A544547D1061001" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ptr_arobinda_barman " 
+ ont ipconfig 10 21 dhcp vlan 883 priority 5
+ ont tr069-server-config 10 21 profile-id 2
+ ont add 10 22 sn-auth "5A544547D08C8780" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_ranmaya_sambahamphe" 
+ ont ipconfig 10 22 dhcp vlan 883 priority 5
+ ont tr069-server-config 10 22 profile-id 2
+ ont add 10 23 sn-auth "5A544547D1945727" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_hom_adhikari" 
+ ont ipconfig 10 23 dhcp vlan 883 priority 5
+ ont tr069-server-config 10 23 profile-id 2
+ ont add 11 0 sn-auth "5A595845CA587924" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 11 0 dhcp vlan 883 priority 5
+ ont tr069-server-config 11 0 profile-id 2
+ ont add 11 1 sn-auth "5A595845CA836033" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 11 1 dhcp vlan 883 priority 5
+ ont tr069-server-config 11 1 profile-id 2
+ ont add 11 2 sn-auth "5A595845CAF14509" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 11 2 dhcp vlan 883 priority 5
+ ont tr069-server-config 11 2 profile-id 2
+ ont add 11 3 sn-auth "5A544547CCEB5660" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_khadka_karki" 
+ ont ipconfig 11 3 dhcp vlan 883 priority 5
+ ont tr069-server-config 11 3 profile-id 2
+ ont add 11 4 sn-auth "5A544547D1A97641" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_dilli_thapa" 
+ ont ipconfig 11 4 dhcp vlan 883 priority 5
+ ont tr069-server-config 11 4 profile-id 2
+ ont add 11 5 sn-auth "5A544547CECAB2C5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_dilli_thapa" 
+ ont ipconfig 11 5 dhcp vlan 883 priority 5
+ ont tr069-server-config 11 5 profile-id 2
+ ont add 12 0 sn-auth "48575443A75824A3" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 12 0 dhcp vlan 883 priority 5
+ ont tr069-server-config 12 0 profile-id 2
+ ont add 12 1 sn-auth "485754433343B59E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 12 1 dhcp vlan 883 priority 5
+ ont tr069-server-config 12 1 profile-id 2
+ ont add 12 3 sn-auth "48575443A9C0DF3B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 12 3 dhcp vlan 883 priority 5
+ ont tr069-server-config 12 3 profile-id 2
+ ont add 12 4 sn-auth "48575443A6FAE88B" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 12 4 dhcp vlan 883 priority 5
+ ont tr069-server-config 12 4 profile-id 2
+ ont add 12 5 sn-auth "4857544378546B95" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 12 5 dhcp vlan 883 priority 5
+ ont tr069-server-config 12 5 profile-id 2
+ ont add 12 6 sn-auth "485754438C12E1A5" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 12 6 dhcp vlan 883 priority 5
+ ont tr069-server-config 12 6 profile-id 2
+ ont add 12 7 sn-auth "48575443B8ABB49E" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 12 7 dhcp vlan 883 priority 5
+ ont tr069-server-config 12 7 profile-id 2
+ ont add 12 8 sn-auth "4857544398C34FA0" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 12 8 dhcp vlan 883 priority 5
+ ont tr069-server-config 12 8 profile-id 2
+ ont add 12 9 sn-auth "48575443273CF8A3" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 12 9 dhcp vlan 883 priority 5
+ ont tr069-server-config 12 9 profile-id 2
+ ont add 12 10 sn-auth "48575443A33F3D82" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 12 10 dhcp vlan 883 priority 5
+ ont tr069-server-config 12 10 profile-id 2
+ ont add 12 11 sn-auth "485754437A094DA1" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc " phr_rai_sangita" 
+ ont ipconfig 12 11 dhcp vlan 883 priority 5
+ ont tr069-server-config 12 11 profile-id 2
+ ont add 12 12 sn-auth "5A595845CA687352" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_rai_sangita" 
+ ont ipconfig 12 12 dhcp vlan 883 priority 5
+ ont tr069-server-config 12 12 profile-id 2
+ ont add 12 13 sn-auth "4E42454CEB208825" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc " phr_gyan_chonghang" 
+ ont ipconfig 12 13 dhcp vlan 883 priority 5
+ ont tr069-server-config 12 13 profile-id 2
+ ont add 12 14 sn-auth "5A544547CE53BAA3" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_gyan_chonghang" 
+ ont ipconfig 12 14 dhcp vlan 883 priority 5
+ ont tr069-server-config 12 14 profile-id 2
+ ont add 13 0 sn-auth "5A595845CA01247F" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 13 0 dhcp vlan 883 priority 5
+ ont tr069-server-config 13 0 profile-id 2
+ ont add 14 0 sn-auth "5A595845CAC24394" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "ONT_NO_DESCRIPTION" 
+ ont ipconfig 14 0 dhcp vlan 883 priority 5
+ ont tr069-server-config 14 0 profile-id 2
+ ont port attribute 1 10 eth 4 operational-state off 
+ ont port native-vlan 3 9 eth 1 vlan 100 priority 0 
+ ont port native-vlan 4 20 eth 1 vlan 100 priority 0 
+ ont port native-vlan 6 11 eth 1 vlan 100 priority 0 
+#
+  <gpon-0/1>
+ interface gpon 0/1
+ port 0 ont-auto-find enable
+ port 1 ont-auto-find enable
+ port 2 ont-auto-find enable
+ port 3 ont-auto-find enable
+ port 4 ont-auto-find enable
+ port 5 ont-auto-find enable
+ port 6 ont-auto-find enable
+ port 7 ont-auto-find enable
+ port 8 ont-auto-find enable
+ port 9 ont-auto-find enable
+ port 10 ont-auto-find enable
+ port 11 ont-auto-find enable
+ port 12 ont-auto-find enable
+ port 13 ont-auto-find enable
+ port 14 ont-auto-find enable
+ port 15 ont-auto-find enable
+ ont add 15 0 sn-auth "5A544547C45E19D9" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_rajendra_biswakarma" 
+ ont ipconfig 15 0 dhcp vlan 883 priority 5
+ ont tr069-server-config 15 0 profile-id 2
+ ont add 15 1 sn-auth "5A544547D1041E48" omci ont-lineprofile-id 20 
+ont-srvprofile-id 20 desc "phr_sukmaya_limbu" 
+ ont ipconfig 15 1 dhcp vlan 883 priority 5
+ ont tr069-server-config 15 1 profile-id 2
+#
+[emu-config]
+  <emu-config>
+ emu add 0 fan 0 1  "H801FCBI"
+#
+[bbs-config]
+  <bbs-config>
+ service-port 3 vlan 100 gpon 0/0/1 ont 13 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 4 vlan 100 gpon 0/0/3 ont 25 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 5 vlan 100 gpon 0/0/3 ont 1 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 6 vlan 100 gpon 0/0/3 ont 2 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 7 vlan 100 gpon 0/0/3 ont 3 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 8 vlan 100 gpon 0/0/6 ont 43 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 9 vlan 100 gpon 0/0/3 ont 5 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 10 vlan 100 gpon 0/0/3 ont 6 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 12 vlan 100 gpon 0/0/3 ont 8 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 13 vlan 100 gpon 0/0/3 ont 9 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 14 vlan 100 gpon 0/0/3 ont 10 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 15 vlan 100 gpon 0/0/3 ont 11 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 16 vlan 100 gpon 0/0/3 ont 12 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 17 vlan 100 gpon 0/0/3 ont 13 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 18 vlan 100 gpon 0/0/3 ont 14 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 19 vlan 100 gpon 0/0/3 ont 15 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 20 vlan 100 gpon 0/0/3 ont 16 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 21 vlan 100 gpon 0/0/3 ont 17 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 22 vlan 100 gpon 0/0/3 ont 18 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 23 vlan 100 gpon 0/0/3 ont 19 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 24 vlan 100 gpon 0/0/3 ont 20 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 26 vlan 100 gpon 0/0/2 ont 1 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 27 vlan 100 gpon 0/0/2 ont 2 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 28 vlan 100 gpon 0/0/2 ont 3 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 29 vlan 100 gpon 0/0/2 ont 4 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 30 vlan 100 gpon 0/0/2 ont 5 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 31 vlan 100 gpon 0/0/2 ont 6 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 32 vlan 100 gpon 0/0/2 ont 7 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 33 vlan 100 gpon 0/0/2 ont 8 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 37 vlan 883 gpon 0/0/8 ont 10 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 38 vlan 100 gpon 0/0/8 ont 10 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 39 vlan 100 gpon 0/0/4 ont 0 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 40 vlan 100 gpon 0/0/4 ont 1 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 41 vlan 100 gpon 0/0/4 ont 2 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 42 vlan 100 gpon 0/0/4 ont 3 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 44 vlan 100 gpon 0/0/4 ont 5 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 45 vlan 100 gpon 0/0/6 ont 44 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 46 vlan 883 gpon 0/0/14 ont 0 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 47 vlan 100 gpon 0/0/4 ont 8 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 48 vlan 100 gpon 0/0/4 ont 9 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 49 vlan 100 gpon 0/0/4 ont 10 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 50 vlan 100 gpon 0/0/4 ont 11 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 51 vlan 100 gpon 0/0/4 ont 12 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 52 vlan 100 gpon 0/0/4 ont 13 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 53 vlan 100 gpon 0/0/4 ont 14 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 54 vlan 100 gpon 0/0/4 ont 15 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 55 vlan 100 gpon 0/0/4 ont 16 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 56 vlan 100 gpon 0/0/4 ont 17 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 57 vlan 100 gpon 0/0/4 ont 18 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 58 vlan 100 gpon 0/0/4 ont 19 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 59 vlan 100 gpon 0/0/4 ont 20 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 60 vlan 100 gpon 0/0/4 ont 21 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 61 vlan 100 gpon 0/0/4 ont 22 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 62 vlan 100 gpon 0/0/14 ont 0 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 63 vlan 883 gpon 0/0/9 ont 0 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 64 vlan 100 gpon 0/0/9 ont 0 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 66 vlan 883 gpon 0/0/9 ont 1 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 67 vlan 100 gpon 0/0/9 ont 1 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 68 vlan 883 gpon 0/0/9 ont 2 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 69 vlan 100 gpon 0/0/6 ont 37 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 70 vlan 100 gpon 0/0/6 ont 38 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 71 vlan 100 gpon 0/0/2 ont 10 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 74 vlan 100 gpon 0/0/10 ont 12 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 75 vlan 100 gpon 0/0/4 ont 30 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 76 vlan 100 gpon 0/0/3 ont 26 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 77 vlan 100 gpon 0/0/9 ont 2 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 78 vlan 100 gpon 0/0/1 ont 1 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 79 vlan 100 gpon 0/0/6 ont 39 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 81 vlan 100 gpon 0/0/6 ont 40 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 82 vlan 883 gpon 0/0/9 ont 3 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 83 vlan 100 gpon 0/0/9 ont 3 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 84 vlan 100 gpon 0/0/9 ont 28 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 85 vlan 100 gpon 0/0/9 ont 8 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 87 vlan 100 gpon 0/0/3 ont 21 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 88 vlan 100 gpon 0/0/4 ont 23 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 89 vlan 100 gpon 0/0/4 ont 24 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 91 vlan 100 gpon 0/0/4 ont 26 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 92 vlan 883 gpon 0/0/9 ont 5 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 93 vlan 100 gpon 0/0/1 ont 14 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 95 vlan 100 gpon 0/0/3 ont 23 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 96 vlan 100 gpon 0/0/1 ont 15 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 97 vlan 100 gpon 0/0/9 ont 5 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 99 vlan 100 gpon 0/0/1 ont 18 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 100 vlan 100 gpon 0/0/1 ont 19 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 101 vlan 100 gpon 0/0/6 ont 15 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 102 vlan 100 gpon 0/0/1 ont 21 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 103 vlan 883 gpon 0/0/9 ont 6 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 104 vlan 100 gpon 0/0/1 ont 23 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 105 vlan 100 gpon 0/0/1 ont 24 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 106 vlan 883 gpon 0/0/0 ont 16 gemport 5 multi-service user-vlan  881 tag-transform translate
+ service-port 107 vlan 100 gpon 0/0/0 ont 16 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 108 vlan 883 gpon 0/0/1 ont 0 gemport 5 multi-service user-vlan 
+881 tag-transform translate
+ service-port 109 vlan 100 gpon 0/0/1 ont 28 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 110 vlan 100 gpon 0/0/1 ont 29 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 111 vlan 100 gpon 0/0/1 ont 30 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 112 vlan 100 gpon 0/0/1 ont 31 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 113 vlan 100 gpon 0/0/1 ont 32 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 114 vlan 100 gpon 0/0/1 ont 33 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 115 vlan 100 gpon 0/0/1 ont 34 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 116 vlan 100 gpon 0/0/1 ont 35 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 117 vlan 100 gpon 0/0/1 ont 36 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 118 vlan 100 gpon 0/0/1 ont 37 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 119 vlan 100 gpon 0/0/1 ont 38 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 120 vlan 100 gpon 0/0/4 ont 27 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 121 vlan 100 gpon 0/0/9 ont 6 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 122 vlan 883 gpon 0/0/9 ont 7 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 123 vlan 100 gpon 0/0/9 ont 7 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 124 vlan 100 gpon 0/0/9 ont 11 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 125 vlan 100 gpon 0/0/9 ont 14 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 126 vlan 883 gpon 0/0/9 ont 9 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 127 vlan 100 gpon 0/0/9 ont 9 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 128 vlan 883 gpon 0/0/9 ont 10 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 129 vlan 100 gpon 0/0/9 ont 10 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 130 vlan 100 gpon 0/0/9 ont 15 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 131 vlan 100 gpon 0/0/9 ont 16 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 132 vlan 883 gpon 0/0/9 ont 12 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 133 vlan 100 gpon 0/0/9 ont 12 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 134 vlan 883 gpon 0/0/9 ont 13 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 135 vlan 100 gpon 0/0/9 ont 13 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 136 vlan 100 gpon 0/0/9 ont 17 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 137 vlan 100 gpon 0/0/9 ont 22 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 138 vlan 100 gpon 0/0/9 ont 23 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 139 vlan 100 gpon 0/0/9 ont 25 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 140 vlan 883 gpon 0/0/10 ont 18 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 141 vlan 100 gpon 0/0/10 ont 18 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 142 vlan 883 gpon 0/0/9 ont 26 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 143 vlan 100 gpon 0/0/9 ont 26 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 144 vlan 883 gpon 0/0/9 ont 18 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 145 vlan 100 gpon 0/0/9 ont 18 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 146 vlan 883 gpon 0/0/9 ont 19 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 147 vlan 100 gpon 0/0/9 ont 19 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 148 vlan 883 gpon 0/0/9 ont 20 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 149 vlan 100 gpon 0/0/9 ont 20 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 150 vlan 883 gpon 0/0/10 ont 19 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 151 vlan 100 gpon 0/0/10 ont 19 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 154 vlan 883 gpon 0/0/8 ont 23 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 155 vlan 100 gpon 0/0/8 ont 23 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 156 vlan 883 gpon 0/0/9 ont 24 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 157 vlan 100 gpon 0/0/9 ont 24 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 160 vlan 883 gpon 0/0/9 ont 21 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 161 vlan 100 gpon 0/0/9 ont 21 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 166 vlan 883 gpon 0/0/9 ont 29 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 167 vlan 100 gpon 0/0/9 ont 29 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 168 vlan 883 gpon 0/0/9 ont 30 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 169 vlan 100 gpon 0/0/9 ont 30 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 170 vlan 883 gpon 0/0/9 ont 31 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 171 vlan 100 gpon 0/0/9 ont 31 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 172 vlan 883 gpon 0/0/9 ont 32 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 173 vlan 100 gpon 0/0/9 ont 32 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 174 vlan 883 gpon 0/0/9 ont 33 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 175 vlan 100 gpon 0/0/9 ont 33 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 176 vlan 883 gpon 0/0/9 ont 4 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 177 vlan 100 gpon 0/0/9 ont 4 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 184 vlan 100 gpon 0/0/9 ont 27 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 186 vlan 100 gpon 0/0/6 ont 0 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 187 vlan 100 gpon 0/0/6 ont 1 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 188 vlan 100 gpon 0/0/6 ont 2 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 189 vlan 100 gpon 0/0/6 ont 3 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 190 vlan 100 gpon 0/0/6 ont 4 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 191 vlan 100 gpon 0/0/6 ont 5 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 192 vlan 100 gpon 0/0/6 ont 6 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 193 vlan 100 gpon 0/0/6 ont 7 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 194 vlan 100 gpon 0/0/6 ont 8 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 195 vlan 100 gpon 0/0/6 ont 9 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 196 vlan 100 gpon 0/0/6 ont 10 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 197 vlan 100 gpon 0/0/6 ont 11 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 198 vlan 100 gpon 0/0/6 ont 12 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 199 vlan 100 gpon 0/0/6 ont 13 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 200 vlan 100 gpon 0/0/6 ont 14 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 202 vlan 100 gpon 0/0/6 ont 16 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 203 vlan 100 gpon 0/0/6 ont 17 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 204 vlan 100 gpon 0/0/4 ont 28 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 205 vlan 100 gpon 0/0/6 ont 18 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 206 vlan 100 gpon 0/0/6 ont 19 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 207 vlan 100 gpon 0/0/6 ont 20 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 208 vlan 100 gpon 0/0/6 ont 21 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 209 vlan 100 gpon 0/0/6 ont 22 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 210 vlan 100 gpon 0/0/6 ont 23 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 211 vlan 100 gpon 0/0/6 ont 24 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 212 vlan 100 gpon 0/0/6 ont 25 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 214 vlan 100 gpon 0/0/6 ont 27 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 215 vlan 100 gpon 0/0/6 ont 28 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 216 vlan 100 gpon 0/0/6 ont 29 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 217 vlan 100 gpon 0/0/6 ont 30 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 218 vlan 100 gpon 0/0/6 ont 31 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 223 vlan 100 gpon 0/0/3 ont 39 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 224 vlan 883 gpon 0/0/8 ont 24 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 226 vlan 100 gpon 0/0/8 ont 24 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 227 vlan 883 gpon 0/0/5 ont 74 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 231 vlan 100 gpon 0/0/7 ont 12 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 234 vlan 100 gpon 0/0/4 ont 45 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 235 vlan 100 gpon 0/0/5 ont 74 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 236 vlan 100 gpon 0/0/7 ont 17 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 237 vlan 100 gpon 0/0/3 ont 4 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 238 vlan 100 gpon 0/0/2 ont 0 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 239 vlan 100 gpon 0/0/7 ont 20 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 240 vlan 100 gpon 0/0/2 ont 11 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 241 vlan 883 gpon 0/0/1 ont 20 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 242 vlan 100 gpon 0/0/4 ont 46 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 243 vlan 100 gpon 0/0/10 ont 11 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 244 vlan 100 gpon 0/0/2 ont 26 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 248 vlan 100 gpon 0/0/6 ont 32 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 249 vlan 100 gpon 0/0/3 ont 28 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 250 vlan 100 gpon 0/0/1 ont 20 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 251 vlan 100 gpon 0/0/6 ont 41 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 252 vlan 100 gpon 0/0/3 ont 40 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 253 vlan 100 gpon 0/0/1 ont 2 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 254 vlan 100 gpon 0/0/3 ont 31 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 255 vlan 100 gpon 0/0/10 ont 1 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 256 vlan 100 gpon 0/0/10 ont 2 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 257 vlan 100 gpon 0/0/10 ont 3 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 258 vlan 100 gpon 0/0/10 ont 4 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 259 vlan 100 gpon 0/0/10 ont 5 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 260 vlan 100 gpon 0/0/10 ont 6 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 261 vlan 100 gpon 0/0/10 ont 7 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 262 vlan 100 gpon 0/0/10 ont 8 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 263 vlan 100 gpon 0/0/10 ont 9 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 265 vlan 100 gpon 0/0/1 ont 9 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 266 vlan 100 gpon 0/0/6 ont 33 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 267 vlan 100 gpon 0/0/4 ont 43 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 268 vlan 100 gpon 0/0/6 ont 34 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 269 vlan 100 gpon 0/0/3 ont 24 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 271 vlan 100 gpon 0/0/10 ont 13 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 272 vlan 883 gpon 0/0/1 ont 22 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 273 vlan 100 gpon 0/0/6 ont 35 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 274 vlan 100 gpon 0/0/6 ont 36 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 276 vlan 100 gpon 0/0/3 ont 0 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 277 vlan 100 gpon 0/0/1 ont 0 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 278 vlan 100 gpon 0/0/1 ont 22 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 279 vlan 100 gpon 0/0/3 ont 7 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 280 vlan 883 gpon 0/0/1 ont 25 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 281 vlan 883 gpon 0/0/1 ont 5 gemport 5 multi-service user-vlan 
+881 tag-transform translate
+ service-port 282 vlan 100 gpon 0/0/4 ont 32 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 283 vlan 100 gpon 0/0/4 ont 33 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 285 vlan 100 gpon 0/0/10 ont 14 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 287 vlan 100 gpon 0/0/2 ont 12 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 288 vlan 100 gpon 0/0/2 ont 13 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 289 vlan 100 gpon 0/0/1 ont 5 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 294 vlan 100 gpon 0/0/4 ont 6 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 295 vlan 100 gpon 0/0/10 ont 15 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 296 vlan 100 gpon 0/0/4 ont 35 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 297 vlan 100 gpon 0/0/6 ont 45 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 298 vlan 100 gpon 0/0/4 ont 36 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 299 vlan 883 gpon 0/0/1 ont 8 gemport 5 multi-service user-vlan 
+881 tag-transform translate
+ service-port 300 vlan 100 gpon 0/0/4 ont 37 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 301 vlan 100 gpon 0/0/1 ont 8 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 302 vlan 100 gpon 0/0/6 ont 51 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 303 vlan 100 gpon 0/0/4 ont 38 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 304 vlan 100 gpon 0/0/7 ont 29 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 305 vlan 100 gpon 0/0/2 ont 15 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 306 vlan 100 gpon 0/0/6 ont 46 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 307 vlan 100 gpon 0/0/1 ont 25 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 308 vlan 100 gpon 0/0/2 ont 22 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 309 vlan 883 gpon 0/0/1 ont 26 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 310 vlan 100 gpon 0/0/4 ont 40 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 311 vlan 100 gpon 0/0/6 ont 47 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 312 vlan 100 gpon 0/0/2 ont 17 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 314 vlan 100 gpon 0/0/4 ont 39 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 315 vlan 100 gpon 0/0/6 ont 48 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 316 vlan 100 gpon 0/0/1 ont 3 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 317 vlan 100 gpon 0/0/2 ont 18 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 320 vlan 100 gpon 0/0/2 ont 16 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 322 vlan 883 gpon 0/0/1 ont 10 gemport 5 multi-service user-vlan  881 tag-transform translate
+ service-port 323 vlan 100 gpon 0/0/1 ont 26 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 324 vlan 100 gpon 0/0/6 ont 49 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 325 vlan 100 gpon 0/0/10 ont 16 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 326 vlan 883 gpon 0/0/3 ont 43 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 327 vlan 100 gpon 0/0/3 ont 41 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 328 vlan 100 gpon 0/0/3 ont 43 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 330 vlan 100 gpon 0/0/1 ont 10 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 331 vlan 100 gpon 0/0/4 ont 29 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 332 vlan 100 gpon 0/0/10 ont 0 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 333 vlan 100 gpon 0/0/4 ont 42 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 334 vlan 883 gpon 0/0/4 ont 7 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 335 vlan 883 gpon 0/0/1 ont 11 gemport 5 multi-service user-vlan  881 tag-transform translate
+ service-port 337 vlan 100 gpon 0/0/4 ont 7 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 339 vlan 883 gpon 0/0/3 ont 44 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 340 vlan 100 gpon 0/0/3 ont 33 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 344 vlan 100 gpon 0/0/2 ont 19 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 346 vlan 100 gpon 0/0/1 ont 11 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 348 vlan 100 gpon 0/0/3 ont 22 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 351 vlan 100 gpon 0/0/3 ont 34 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 352 vlan 100 gpon 0/0/3 ont 35 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 354 vlan 100 gpon 0/0/3 ont 44 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 357 vlan 100 gpon 0/0/2 ont 20 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 359 vlan 100 gpon 0/0/4 ont 41 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 361 vlan 100 gpon 0/0/6 ont 50 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 362 vlan 100 gpon 0/0/6 ont 52 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 363 vlan 100 gpon 0/0/10 ont 17 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 364 vlan 100 gpon 0/0/3 ont 36 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 367 vlan 100 gpon 0/0/3 ont 37 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 368 vlan 100 gpon 0/0/1 ont 6 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 370 vlan 883 gpon 0/0/1 ont 12 gemport 5 multi-service user-vlan  881 tag-transform translate
+ service-port 371 vlan 100 gpon 0/0/1 ont 27 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 372 vlan 100 gpon 0/0/2 ont 23 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 373 vlan 100 gpon 0/0/6 ont 53 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 378 vlan 883 gpon 0/0/8 ont 26 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 379 vlan 100 gpon 0/0/8 ont 26 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 380 vlan 883 gpon 0/0/11 ont 3 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 381 vlan 100 gpon 0/0/11 ont 3 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 382 vlan 883 gpon 0/0/12 ont 13 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 383 vlan 100 gpon 0/0/12 ont 13 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 384 vlan 883 gpon 0/0/12 ont 14 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 385 vlan 100 gpon 0/0/12 ont 14 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 386 vlan 883 gpon 0/0/1 ont 39 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 387 vlan 100 gpon 0/0/1 ont 39 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 388 vlan 883 gpon 0/0/9 ont 34 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 389 vlan 100 gpon 0/0/9 ont 34 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 390 vlan 883 gpon 0/0/3 ont 45 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 391 vlan 100 gpon 0/0/3 ont 45 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 392 vlan 883 gpon 0/0/5 ont 75 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 393 vlan 100 gpon 0/0/5 ont 75 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 396 vlan 883 gpon 0/0/10 ont 20 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 397 vlan 100 gpon 0/0/10 ont 20 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 398 vlan 883 gpon 0/0/8 ont 25 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 399 vlan 100 gpon 0/0/8 ont 25 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 400 vlan 883 gpon 0/0/9 ont 35 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 401 vlan 100 gpon 0/0/9 ont 35 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 403 vlan 883 gpon 0/0/4 ont 48 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 405 vlan 100 gpon 0/0/7 ont 0 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 406 vlan 100 gpon 0/0/4 ont 48 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 409 vlan 883 gpon 0/0/1 ont 40 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 410 vlan 100 gpon 0/0/1 ont 12 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 411 vlan 100 gpon 0/0/1 ont 40 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 412 vlan 100 gpon 0/0/0 ont 45 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 413 vlan 100 gpon 0/0/1 ont 7 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 414 vlan 100 gpon 0/0/10 ont 10 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 415 vlan 883 gpon 0/0/1 ont 16 gemport 5 multi-service user-vlan  881 tag-transform translate
+ service-port 416 vlan 100 gpon 0/0/2 ont 21 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 417 vlan 100 gpon 0/0/2 ont 25 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 420 vlan 100 gpon 0/0/1 ont 16 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 425 vlan 883 gpon 0/0/3 ont 46 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 428 vlan 100 gpon 0/0/1 ont 4 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 429 vlan 883 gpon 0/0/1 ont 17 gemport 5 multi-service user-vlan  881 tag-transform translate
+ service-port 430 vlan 100 gpon 0/0/1 ont 17 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 431 vlan 100 gpon 0/0/3 ont 46 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 433 vlan 883 gpon 0/0/2 ont 14 gemport 5 multi-service user-vlan  881 tag-transform translate
+ service-port 435 vlan 100 gpon 0/0/2 ont 14 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 436 vlan 883 gpon 0/0/3 ont 29 gemport 5 multi-service user-vlan  881 tag-transform translate
+ service-port 437 vlan 100 gpon 0/0/3 ont 29 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 438 vlan 883 gpon 0/0/3 ont 30 gemport 5 multi-service user-vlan  881 tag-transform translate
+ service-port 439 vlan 100 gpon 0/0/3 ont 30 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 440 vlan 883 gpon 0/0/3 ont 32 gemport 5 multi-service user-vlan  881 tag-transform translate
+ service-port 441 vlan 100 gpon 0/0/3 ont 32 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 442 vlan 883 gpon 0/0/4 ont 44 gemport 5 multi-service user-vlan  881 tag-transform translate
+ service-port 443 vlan 100 gpon 0/0/4 ont 44 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 444 vlan 883 gpon 0/0/6 ont 42 gemport 5 multi-service user-vlan  881 tag-transform translate
+ service-port 445 vlan 100 gpon 0/0/6 ont 42 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 447 vlan 883 gpon 0/0/1 ont 0 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 448 vlan 883 gpon 0/0/4 ont 44 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 449 vlan 883 gpon 0/0/1 ont 10 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 450 vlan 883 gpon 0/0/1 ont 16 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 451 vlan 883 gpon 0/0/1 ont 12 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 452 vlan 883 gpon 0/0/1 ont 5 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 453 vlan 883 gpon 0/0/3 ont 29 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 454 vlan 883 gpon 0/0/3 ont 30 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 455 vlan 883 gpon 0/0/3 ont 32 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 456 vlan 883 gpon 0/0/4 ont 47 gemport 5 multi-service user-vlan  881 tag-transform translate
+ service-port 457 vlan 100 gpon 0/0/4 ont 47 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 466 vlan 883 gpon 0/0/10 ont 21 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 468 vlan 883 gpon 0/0/11 ont 0 gemport 5 multi-service user-vlan  881 tag-transform translate
+ service-port 469 vlan 100 gpon 0/0/11 ont 0 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 470 vlan 883 gpon 0/0/11 ont 1 gemport 5 multi-service user-vlan  881 tag-transform translate
+ service-port 471 vlan 100 gpon 0/0/11 ont 1 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 472 vlan 883 gpon 0/0/11 ont 2 gemport 5 multi-service user-vlan  881 tag-transform translate
+ service-port 473 vlan 100 gpon 0/0/11 ont 2 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 474 vlan 883 gpon 0/0/11 ont 0 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 475 vlan 883 gpon 0/0/11 ont 1 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 476 vlan 883 gpon 0/0/11 ont 2 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 477 vlan 100 gpon 0/0/10 ont 21 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 478 vlan 883 gpon 0/0/4 ont 49 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 479 vlan 100 gpon 0/0/4 ont 49 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 485 vlan 883 gpon 0/0/0 ont 15 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 486 vlan 100 gpon 0/0/0 ont 15 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 488 vlan 883 gpon 0/0/5 ont 76 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 489 vlan 100 gpon 0/0/5 ont 76 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 490 vlan 883 gpon 0/0/1 ont 41 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 491 vlan 100 gpon 0/0/1 ont 41 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 492 vlan 883 gpon 0/0/1 ont 42 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 493 vlan 100 gpon 0/0/1 ont 42 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 494 vlan 883 gpon 0/0/8 ont 16 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 495 vlan 883 gpon 0/0/5 ont 0 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 496 vlan 100 gpon 0/0/5 ont 0 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 497 vlan 883 gpon 0/0/5 ont 1 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 498 vlan 100 gpon 0/0/5 ont 1 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 499 vlan 883 gpon 0/0/5 ont 2 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 500 vlan 100 gpon 0/0/5 ont 2 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 503 vlan 883 gpon 0/0/5 ont 4 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 504 vlan 100 gpon 0/0/5 ont 4 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 505 vlan 883 gpon 0/0/5 ont 5 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 506 vlan 100 gpon 0/0/5 ont 5 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 507 vlan 883 gpon 0/0/5 ont 6 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 508 vlan 100 gpon 0/0/5 ont 6 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 509 vlan 883 gpon 0/0/5 ont 7 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 510 vlan 100 gpon 0/0/5 ont 7 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 511 vlan 883 gpon 0/0/5 ont 8 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 512 vlan 100 gpon 0/0/5 ont 8 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 515 vlan 883 gpon 0/0/5 ont 10 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 516 vlan 100 gpon 0/0/5 ont 10 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 517 vlan 883 gpon 0/0/5 ont 11 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 518 vlan 100 gpon 0/0/5 ont 11 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 519 vlan 883 gpon 0/0/5 ont 12 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 520 vlan 100 gpon 0/0/5 ont 12 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 521 vlan 883 gpon 0/0/5 ont 13 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 522 vlan 100 gpon 0/0/5 ont 13 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 527 vlan 883 gpon 0/0/5 ont 16 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 528 vlan 100 gpon 0/0/5 ont 16 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 529 vlan 883 gpon 0/0/5 ont 17 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 530 vlan 100 gpon 0/0/5 ont 17 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 531 vlan 883 gpon 0/0/5 ont 18 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 532 vlan 100 gpon 0/0/5 ont 18 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 533 vlan 883 gpon 0/0/5 ont 19 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 534 vlan 100 gpon 0/0/5 ont 19 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 537 vlan 883 gpon 0/0/5 ont 21 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 538 vlan 100 gpon 0/0/5 ont 21 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 541 vlan 883 gpon 0/0/5 ont 23 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 542 vlan 100 gpon 0/0/5 ont 23 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 543 vlan 883 gpon 0/0/5 ont 24 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 544 vlan 100 gpon 0/0/5 ont 24 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 545 vlan 883 gpon 0/0/5 ont 25 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 546 vlan 100 gpon 0/0/5 ont 25 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 547 vlan 883 gpon 0/0/5 ont 26 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 548 vlan 100 gpon 0/0/5 ont 26 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 549 vlan 883 gpon 0/0/5 ont 27 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 550 vlan 100 gpon 0/0/5 ont 27 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 551 vlan 883 gpon 0/0/5 ont 28 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 552 vlan 100 gpon 0/0/5 ont 28 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 553 vlan 883 gpon 0/0/5 ont 29 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 554 vlan 100 gpon 0/0/5 ont 29 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 555 vlan 883 gpon 0/0/5 ont 30 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 556 vlan 100 gpon 0/0/5 ont 30 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 557 vlan 100 gpon 0/0/8 ont 16 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 559 vlan 883 gpon 0/0/5 ont 32 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 560 vlan 100 gpon 0/0/5 ont 32 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 561 vlan 883 gpon 0/0/5 ont 33 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 562 vlan 100 gpon 0/0/5 ont 33 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 565 vlan 883 gpon 0/0/5 ont 35 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 566 vlan 100 gpon 0/0/5 ont 35 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 569 vlan 883 gpon 0/0/5 ont 37 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 570 vlan 100 gpon 0/0/5 ont 37 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 571 vlan 883 gpon 0/0/5 ont 38 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 572 vlan 100 gpon 0/0/5 ont 38 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 573 vlan 883 gpon 0/0/5 ont 39 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 574 vlan 100 gpon 0/0/5 ont 39 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 575 vlan 883 gpon 0/0/5 ont 40 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 576 vlan 100 gpon 0/0/5 ont 40 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 577 vlan 883 gpon 0/0/5 ont 41 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 578 vlan 100 gpon 0/0/5 ont 41 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 581 vlan 883 gpon 0/0/5 ont 43 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 582 vlan 100 gpon 0/0/5 ont 43 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 583 vlan 883 gpon 0/0/5 ont 44 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 584 vlan 100 gpon 0/0/5 ont 44 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 585 vlan 883 gpon 0/0/5 ont 45 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 586 vlan 100 gpon 0/0/5 ont 45 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 587 vlan 883 gpon 0/0/5 ont 46 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 588 vlan 100 gpon 0/0/5 ont 46 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 589 vlan 883 gpon 0/0/5 ont 47 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 590 vlan 100 gpon 0/0/5 ont 47 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 591 vlan 883 gpon 0/0/5 ont 48 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 592 vlan 100 gpon 0/0/5 ont 48 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 593 vlan 883 gpon 0/0/5 ont 49 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 594 vlan 100 gpon 0/0/5 ont 49 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 595 vlan 883 gpon 0/0/5 ont 50 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 596 vlan 100 gpon 0/0/5 ont 50 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 597 vlan 883 gpon 0/0/5 ont 51 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 598 vlan 100 gpon 0/0/5 ont 51 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 599 vlan 883 gpon 0/0/5 ont 52 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 600 vlan 100 gpon 0/0/5 ont 52 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 601 vlan 883 gpon 0/0/5 ont 53 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 602 vlan 100 gpon 0/0/5 ont 53 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 603 vlan 883 gpon 0/0/5 ont 54 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 604 vlan 100 gpon 0/0/5 ont 54 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 605 vlan 883 gpon 0/0/5 ont 55 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 606 vlan 100 gpon 0/0/5 ont 55 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 607 vlan 883 gpon 0/0/5 ont 56 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 608 vlan 100 gpon 0/0/5 ont 56 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 609 vlan 883 gpon 0/0/5 ont 57 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 610 vlan 100 gpon 0/0/5 ont 57 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 613 vlan 883 gpon 0/0/5 ont 59 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 614 vlan 100 gpon 0/0/5 ont 59 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 615 vlan 883 gpon 0/0/5 ont 60 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 616 vlan 100 gpon 0/0/5 ont 60 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 617 vlan 883 gpon 0/0/5 ont 61 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 618 vlan 100 gpon 0/0/5 ont 61 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 619 vlan 883 gpon 0/0/5 ont 62 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 620 vlan 100 gpon 0/0/5 ont 62 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 621 vlan 883 gpon 0/0/5 ont 63 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 622 vlan 100 gpon 0/0/5 ont 63 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 623 vlan 883 gpon 0/0/5 ont 64 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 624 vlan 100 gpon 0/0/5 ont 64 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 625 vlan 883 gpon 0/0/5 ont 65 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 626 vlan 100 gpon 0/0/5 ont 65 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 627 vlan 883 gpon 0/0/5 ont 66 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 628 vlan 100 gpon 0/0/5 ont 66 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 629 vlan 883 gpon 0/0/5 ont 67 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 630 vlan 100 gpon 0/0/5 ont 67 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 633 vlan 883 gpon 0/0/5 ont 69 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 634 vlan 100 gpon 0/0/5 ont 69 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 635 vlan 883 gpon 0/0/5 ont 70 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 636 vlan 100 gpon 0/0/5 ont 70 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 637 vlan 883 gpon 0/0/5 ont 71 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 638 vlan 100 gpon 0/0/5 ont 71 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 641 vlan 883 gpon 0/0/5 ont 31 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 642 vlan 100 gpon 0/0/5 ont 31 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 643 vlan 883 gpon 0/0/5 ont 58 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 644 vlan 100 gpon 0/0/5 ont 58 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 659 vlan 883 gpon 0/0/12 ont 0 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 660 vlan 100 gpon 0/0/12 ont 0 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 661 vlan 883 gpon 0/0/12 ont 1 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 662 vlan 100 gpon 0/0/12 ont 1 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 665 vlan 883 gpon 0/0/12 ont 3 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 666 vlan 100 gpon 0/0/12 ont 3 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 667 vlan 883 gpon 0/0/12 ont 4 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 668 vlan 100 gpon 0/0/12 ont 4 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 669 vlan 883 gpon 0/0/12 ont 5 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 670 vlan 100 gpon 0/0/12 ont 5 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 671 vlan 883 gpon 0/0/12 ont 6 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 672 vlan 100 gpon 0/0/12 ont 6 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 673 vlan 883 gpon 0/0/12 ont 7 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 674 vlan 100 gpon 0/0/12 ont 7 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 675 vlan 883 gpon 0/0/12 ont 8 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 676 vlan 100 gpon 0/0/12 ont 8 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 677 vlan 883 gpon 0/0/12 ont 9 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 678 vlan 100 gpon 0/0/12 ont 9 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 679 vlan 883 gpon 0/0/12 ont 10 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 680 vlan 100 gpon 0/0/12 ont 10 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 681 vlan 883 gpon 0/0/6 ont 56 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 682 vlan 100 gpon 0/0/6 ont 56 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 685 vlan 883 gpon 0/0/12 ont 11 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 686 vlan 100 gpon 0/0/12 ont 11 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 687 vlan 883 gpon 0/0/8 ont 0 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 688 vlan 100 gpon 0/0/8 ont 0 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 689 vlan 883 gpon 0/0/8 ont 1 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 690 vlan 100 gpon 0/0/8 ont 1 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 691 vlan 883 gpon 0/0/8 ont 2 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 692 vlan 100 gpon 0/0/8 ont 2 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 693 vlan 883 gpon 0/0/8 ont 3 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 694 vlan 100 gpon 0/0/8 ont 3 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 695 vlan 883 gpon 0/0/8 ont 4 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 696 vlan 100 gpon 0/0/8 ont 4 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 697 vlan 883 gpon 0/0/8 ont 5 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 698 vlan 100 gpon 0/0/8 ont 5 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 699 vlan 883 gpon 0/0/8 ont 6 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 700 vlan 100 gpon 0/0/8 ont 6 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 701 vlan 883 gpon 0/0/8 ont 7 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 702 vlan 100 gpon 0/0/8 ont 7 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 703 vlan 883 gpon 0/0/8 ont 8 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 704 vlan 100 gpon 0/0/8 ont 8 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 705 vlan 883 gpon 0/0/8 ont 9 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 706 vlan 100 gpon 0/0/8 ont 9 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 708 vlan 883 gpon 0/0/9 ont 37 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 709 vlan 883 gpon 0/0/8 ont 11 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 710 vlan 100 gpon 0/0/8 ont 11 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 711 vlan 883 gpon 0/0/8 ont 12 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 712 vlan 100 gpon 0/0/8 ont 12 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 713 vlan 883 gpon 0/0/8 ont 13 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 714 vlan 100 gpon 0/0/8 ont 13 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 715 vlan 883 gpon 0/0/8 ont 14 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 716 vlan 100 gpon 0/0/8 ont 14 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 717 vlan 883 gpon 0/0/8 ont 15 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 718 vlan 100 gpon 0/0/8 ont 15 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 719 vlan 100 gpon 0/0/9 ont 37 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 721 vlan 883 gpon 0/0/8 ont 17 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 722 vlan 100 gpon 0/0/8 ont 17 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 723 vlan 883 gpon 0/0/8 ont 18 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 724 vlan 100 gpon 0/0/8 ont 18 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 725 vlan 883 gpon 0/0/8 ont 19 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 726 vlan 100 gpon 0/0/8 ont 19 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 727 vlan 883 gpon 0/0/8 ont 20 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 728 vlan 100 gpon 0/0/8 ont 20 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 729 vlan 883 gpon 0/0/8 ont 21 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 730 vlan 100 gpon 0/0/8 ont 21 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 731 vlan 883 gpon 0/0/8 ont 22 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 732 vlan 100 gpon 0/0/8 ont 22 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 733 vlan 883 gpon 0/0/12 ont 12 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 734 vlan 100 gpon 0/0/12 ont 12 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 736 vlan 883 gpon 0/0/9 ont 38 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 737 vlan 100 gpon 0/0/9 ont 38 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 740 vlan 883 gpon 0/0/3 ont 42 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 741 vlan 100 gpon 0/0/3 ont 42 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 744 vlan 883 gpon 0/0/13 ont 0 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 745 vlan 100 gpon 0/0/13 ont 0 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 746 vlan 883 gpon 0/0/3 ont 38 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 747 vlan 100 gpon 0/0/3 ont 38 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 890 vlan 883 gpon 0/0/1 ont 43 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 891 vlan 100 gpon 0/0/1 ont 43 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 892 vlan 883 gpon 0/0/5 ont 77 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 893 vlan 100 gpon 0/0/5 ont 77 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 894 vlan 883 gpon 0/0/10 ont 22 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 895 vlan 100 gpon 0/0/10 ont 22 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 900 vlan 883 gpon 0/0/11 ont 4 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 901 vlan 100 gpon 0/0/11 ont 4 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 902 vlan 883 gpon 0/0/7 ont 1 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 903 vlan 100 gpon 0/0/7 ont 1 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 904 vlan 883 gpon 0/0/7 ont 2 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 905 vlan 100 gpon 0/0/7 ont 2 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 906 vlan 883 gpon 0/0/7 ont 3 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 907 vlan 100 gpon 0/0/7 ont 3 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 908 vlan 883 gpon 0/0/7 ont 4 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 909 vlan 100 gpon 0/0/7 ont 4 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 910 vlan 883 gpon 0/0/7 ont 5 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 911 vlan 100 gpon 0/0/7 ont 5 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 912 vlan 883 gpon 0/0/7 ont 6 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 913 vlan 100 gpon 0/0/7 ont 6 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 914 vlan 883 gpon 0/0/7 ont 7 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 915 vlan 100 gpon 0/0/7 ont 7 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 916 vlan 883 gpon 0/0/7 ont 8 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 917 vlan 100 gpon 0/0/7 ont 8 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 918 vlan 883 gpon 0/0/7 ont 9 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 919 vlan 100 gpon 0/0/7 ont 9 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 920 vlan 883 gpon 0/0/7 ont 10 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 921 vlan 100 gpon 0/0/7 ont 10 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 922 vlan 883 gpon 0/0/7 ont 11 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 923 vlan 100 gpon 0/0/7 ont 11 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 926 vlan 100 gpon 0/0/7 ont 13 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 927 vlan 883 gpon 0/0/4 ont 4 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 928 vlan 100 gpon 0/0/4 ont 4 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 933 vlan 883 gpon 0/1/15 ont 0 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 934 vlan 100 gpon 0/1/15 ont 0 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 935 vlan 883 gpon 0/0/8 ont 27 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 936 vlan 100 gpon 0/0/8 ont 27 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 939 vlan 883 gpon 0/1/15 ont 1 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 940 vlan 100 gpon 0/1/15 ont 1 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 945 vlan 883 gpon 0/0/11 ont 5 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 946 vlan 100 gpon 0/0/11 ont 5 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 949 vlan 883 gpon 0/0/3 ont 47 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 950 vlan 100 gpon 0/0/3 ont 47 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 951 vlan 883 gpon 0/0/2 ont 28 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 952 vlan 100 gpon 0/0/2 ont 28 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 953 vlan 883 gpon 0/0/1 ont 44 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 954 vlan 100 gpon 0/0/1 ont 44 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 957 vlan 883 gpon 0/0/4 ont 25 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 958 vlan 100 gpon 0/0/4 ont 25 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 959 vlan 883 gpon 0/0/5 ont 3 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 960 vlan 100 gpon 0/0/5 ont 3 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 967 vlan 883 gpon 0/0/4 ont 34 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 968 vlan 100 gpon 0/0/4 ont 34 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 969 vlan 883 gpon 0/0/6 ont 55 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 970 vlan 100 gpon 0/0/6 ont 55 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 973 vlan 883 gpon 0/0/2 ont 9 gemport 5 multi-service user-vlan 
+883 tag-transform translate
+ service-port 974 vlan 100 gpon 0/0/2 ont 9 gemport 4 multi-service user-vlan 
+100 tag-transform translate
+ service-port 981 vlan 883 gpon 0/0/2 ont 29 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 982 vlan 100 gpon 0/0/2 ont 29 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 983 vlan 883 gpon 0/0/4 ont 50 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 984 vlan 100 gpon 0/0/4 ont 50 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 991 vlan 883 gpon 0/0/6 ont 26 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 992 vlan 100 gpon 0/0/6 ont 26 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 993 vlan 883 gpon 0/0/6 ont 54 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 994 vlan 100 gpon 0/0/6 ont 54 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 999 vlan 883 gpon 0/0/2 ont 24 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 1000 vlan 100 gpon 0/0/2 ont 24 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 1001 vlan 883 gpon 0/0/4 ont 51 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 1002 vlan 100 gpon 0/0/4 ont 51 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 1003 vlan 883 gpon 0/0/10 ont 23 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 1004 vlan 100 gpon 0/0/10 ont 23 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 1019 vlan 883 gpon 0/0/4 ont 52 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 1020 vlan 100 gpon 0/0/4 ont 52 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 1021 vlan 883 gpon 0/0/8 ont 28 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 1022 vlan 100 gpon 0/0/8 ont 28 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 1023 vlan 883 gpon 0/0/3 ont 27 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 1024 vlan 100 gpon 0/0/3 ont 27 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 1025 vlan 883 gpon 0/0/6 ont 57 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 1026 vlan 100 gpon 0/0/6 ont 57 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 1027 vlan 883 gpon 0/0/6 ont 58 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 1028 vlan 100 gpon 0/0/6 ont 58 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 1029 vlan 883 gpon 0/0/4 ont 53 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 1030 vlan 100 gpon 0/0/4 ont 53 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 1031 vlan 883 gpon 0/0/4 ont 54 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 1032 vlan 100 gpon 0/0/4 ont 54 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 1035 vlan 883 gpon 0/0/2 ont 27 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 1036 vlan 100 gpon 0/0/2 ont 27 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 1041 vlan 883 gpon 0/0/4 ont 31 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 1042 vlan 100 gpon 0/0/4 ont 31 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 1074 vlan 100 gpon 0/0/0 ont 0 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 1075 vlan 883 gpon 0/0/0 ont 0 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 1076 vlan 883 gpon 0/0/3 ont 48 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 1077 vlan 100 gpon 0/0/3 ont 48 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 1078 vlan 883 gpon 0/0/0 ont 1 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 1079 vlan 100 gpon 0/0/0 ont 1 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 1080 vlan 883 gpon 0/0/5 ont 9 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 1081 vlan 100 gpon 0/0/5 ont 9 gemport 4 multi-service user-vlan  100 tag-transform translate
+ service-port 1082 vlan 883 gpon 0/0/1 ont 45 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 1083 vlan 100 gpon 0/0/1 ont 45 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 1084 vlan 883 gpon 0/0/1 ont 46 gemport 5 multi-service user-vlan 883 tag-transform translate
+ service-port 1085 vlan 100 gpon 0/0/1 ont 46 gemport 4 multi-service user-vlan 100 tag-transform translate
+ service-port 1086 vlan 883 gpon 0/0/0 ont 2 gemport 5 multi-service user-vlan  883 tag-transform translate
+ service-port 1087 vlan 100 gpon 0/0/0 ont 2 gemport 4 multi-service user-vlan  100 tag-transform translate
+#
+[lldp-config]
+  <lldp-config>
+ lldp enable
+ lldp enable port 0/8/0
+#
+[config]
+  <config>
+ mpls label start 8192
+#
+[prevlanif]
+  <prevlanif>
+ interface vlanif1555
+#
+[vlanif]
+  <vlanif1555>
+interface vlanif1555
+ ip address 172.30.64.205 255.255.255.0
+#
+[meth]
+  <meth0>
+interface meth0
+ ip address 10.11.104.2 255.255.255.0
+#
+[null]
+  <null0>
+interface null0
+#
+[aaa]
+  <aaa>
+aaa 
+ authentication-scheme "default"
+ #
+ authorization-scheme "default"
+ #
+ accounting-scheme "default"
+ #
+ domain "default"
+ #
+[post-system]
+  <post-system>
+ip route-static 0.0.0.0 0.0.0.0 172.30.64.1
+ undo ssh server compatible_ssh1x 
+ ssh user root authentication-type password
+ ssh user support authentication-type password
+ ssh user pathariolt authentication-type password
+#
+return
+
+Pathari_Huawei-OLT#

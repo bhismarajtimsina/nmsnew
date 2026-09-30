@@ -1,0 +1,8 @@
+ALTER TABLE users
+    ADD COLUMN is_twofa TINYINT(1) DEFAULT 0;
+ALTER TABLE users
+    ADD twofa_token VARCHAR(255) DEFAULT NULL;
+ALTER TABLE users
+    ADD COLUMN twofa_remember TINYINT(1) DEFAULT 0;
+ALTER TABLE users
+    ADD COLUMN twofa_attempt TINYINT(1) DEFAULT 0;

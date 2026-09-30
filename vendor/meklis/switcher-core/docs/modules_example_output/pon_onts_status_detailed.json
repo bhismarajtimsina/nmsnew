@@ -1,0 +1,37 @@
+{
+    "data": [
+        {
+            "interface": {
+                "name": "pon0\/0\/2:1",
+                "parent": 16780800,
+                "id": 16780801,
+                "xid": 14,
+                "type": "ONU",
+                "onu_num": 1,
+                "uni": null
+            },
+            "status": "Online",
+            "last_reg": 1629316638,
+            "last_reg_since": "0d 0h 25min 12sec",
+            "last_down_reason": "Losi",
+            "admin_status": "Enabled"
+        },
+        {
+            "interface": {
+                "name": "pon0\/0\/2:2",
+                "parent": 16780800,
+                "id": 16780802,
+                "xid": 14,
+                "type": "ONU",
+                "onu_num": 2,
+                "uni": null
+            },
+            "status": "Online",
+            "last_reg": 1629317253,
+            "last_reg_since": "0d 0h 14min 57sec",
+            "last_down_reason": "",
+            "admin_status": "Enabled"
+        }
+    ],
+    "arguments": []
+}

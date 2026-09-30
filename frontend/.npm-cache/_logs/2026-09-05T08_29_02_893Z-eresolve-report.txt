@@ -1,0 +1,22 @@
+'Log files:
+/root/nms/frontend/.npm-cache/_logs/2026-09-05T08_29_02_893Z-debug-0.log
+
+# npm resolution error report
+
+While resolving: vue3-apexcharts@1.11.1
+Found: apexcharts@3.54.1
+node_modules/apexcharts
+  apexcharts@"^3.37.1" from the root project
+
+Could not resolve dependency:
+peer apexcharts@">=5.10.0" from vue3-apexcharts@1.11.1
+node_modules/vue3-apexcharts
+  vue3-apexcharts@"^1.4.1" from the root project
+
+Conflicting peer dependency: apexcharts@7.1.0
+node_modules/apexcharts
+  peer apexcharts@">=5.10.0" from vue3-apexcharts@1.11.1
+  node_modules/vue3-apexcharts
+    vue3-apexcharts@"^1.4.1" from the root project
+
+Fix the upstream dependency conflict, or retry this command with --force or --legacy-peer-deps to accept an incorrect (and potentially broken) dependency resolution.

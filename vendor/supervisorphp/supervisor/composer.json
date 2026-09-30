@@ -1,0 +1,60 @@
+{
+    "name": "supervisorphp/supervisor",
+    "description": "PHP library for managing Supervisor through XML-RPC API",
+    "homepage": "http://supervisorphp.com",
+    "license": "MIT",
+    "keywords": [
+        "supervisor",
+        "process manager"
+    ],
+    "authors": [
+        {
+            "name": "Márk Sági-Kazár",
+            "email": "mark.sagikazar@gmail.com"
+        },
+        {
+            "name": "Buster Neece",
+            "email": "buster@busterneece.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Supervisor\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=7.3",
+        "lstrojny/fxmlrpc": ">=0.12"
+    },
+    "require-dev": {
+        "ext-pcntl": "*",
+        "ext-posix": "*",
+        "behat/behat": "^3.0",
+        "guzzlehttp/guzzle": "^6.0",
+        "http-interop/http-factory-guzzle": "^1.0",
+        "overtrue/phplint": "^2.0",
+        "php-http/guzzle6-adapter": "^2.0",
+        "php-http/httplug": "^2.1",
+        "php-http/message": "^1.8",
+        "phpspec/phpspec": "^6.2",
+        "phpstan/phpstan": "^0.12.32",
+        "phpstan/phpstan-strict-rules": "^0.12.2",
+        "roave/security-advisories": "dev-master",
+        "supervisorphp/configuration": "^0.2"
+    },
+    "scripts": {
+        "ci": [
+            "@composer install --prefer-dist --no-progress --no-suggest",
+            "@phplint",
+            "@phpstan",
+            "@phpspec",
+            "@behat"
+        ],
+        "phplint": "phplint",
+        "phpstan": "phpstan analyze",
+        "phpspec": "phpspec run",
+        "behat": "behat"
+    }
+}

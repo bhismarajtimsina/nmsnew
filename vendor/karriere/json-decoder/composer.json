@@ -1,0 +1,31 @@
+{
+    "name": "karriere/json-decoder",
+    "description": "JsonDecoder implementation that allows you to convert your JSON data into PHP class objects",
+    "keywords": ["json", "decoder"],
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Johannes Pichler",
+            "email": "johannes.pichler@karriere.at",
+            "role": "Maintainer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Karriere\\JsonDecoder\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=7.0"
+    },
+    "require-dev": {
+        "karriere/code-quality": "^3.0",
+        "sebastian/comparator": "^1.1",
+        "sebastian/exporter": "^2.0",
+        "sebastian/recursion-context": "^2.0"
+    },
+    "scripts": {
+        "test": "vendor/bin/phpspec run",
+        "lint": "vendor/bin/phpcs src/ --standard=PSR2"
+    }
+}

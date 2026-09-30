@@ -1,0 +1,130 @@
+- name: AuthNotification
+  descriptions: The agent generates this notification when login authentication succeeds or fails.
+  object: .1.3.6.1.4.1.3320.9.188.6.1
+  is_interface: false
+
+- name: FanNotification
+  descriptions: The agent generates this notification when fan stops or resumes .
+  object: .1.3.6.1.4.1.3320.9.187.2.1
+  is_interface: false
+
+- name: PowerNotification
+  descriptions:  The agent generates this notification when power status changes.
+  object: .1.3.6.1.4.1.3320.9.189.4.1
+  is_interface: false
+
+- name: OnuStatusChangeNotification
+  description: The agent generates this notification when ONU status change alarms
+  object: .1.3.6.1.4.1.3320.10.3.7.2
+  modules:
+    - pon_onts_status
+    - pon_onts_serial
+  is_interface: true
+
+- name: OnuSfpParameterAlarm
+  description:  The agent generates this notification when ONU SFP parameter alarms
+  object: .1.3.6.1.4.1.3320.10.3.6.3
+  modules:
+    - pon_onts_optical
+  is_interface: true
+
+- name:  OnuOpRxLowNotification
+  description:  The agent generates this notification when ONU status change alarms
+  object: .1.3.6.1.4.1.3320.10.3.10.2
+  modules:
+    - pon_onts_optical
+  is_interface: true
+
+- name: OnuOpRxHighNotification
+  description:  The agent generates this notification when ONU status change alarms
+  object: .1.3.6.1.4.1.3320.10.3.10.4
+  modules:
+    - pon_onts_optical
+  is_interface: true
+
+- name: UniPortStateNotification
+  description:  The agent generates this notification when ONU uni port state changed
+  object: .1.3.6.1.4.1.3320.10.4.4.4
+  modules:
+    - uni_interfaces_status
+  is_interface: true
+
+- name: VideoPortCatvAlarmNotification
+  description:   The agent generates this notification when alarm was triggered
+  object: .1.3.6.1.4.1.3320.10.10.2.3
+  is_interface: true
+
+- name: SfpParameterAlarmsNotification
+  description:  The agent generates this trap when olt optical module  works in abnormal status or return to normal
+  object: .1.3.6.1.4.1.3320.101.6.3.2
+  is_interface: true
+
+- name: EponLlidChangesNotification
+  description:  The agent generates this notification when llid change
+  object: .1.3.6.1.4.1.3320.101.17.4.1
+  modules:
+    - pon_onts_optical
+  is_interface: true
+
+# --- Added from BDCOM's own NMS-* MIBs. An unrecognised trap OID is dropped
+# by the listener, so a notification the device is documented to send but this
+# file never declared is a notification nobody ever sees.
+#
+# Every OID below is the numeric address the MIB assigns that NOTIFICATION-TYPE,
+# resolved by following its ::= { parent N } chain to the enterprise root
+# (tools/bdcom-mib-oid-map.py). Not verified against live hardware: no device
+# testing is done on this project, and no trap has ever been logged here, so
+# there is nothing to compare against.
+
+# The MIB defines gponOnuSfpParameterAlarmNotification at .10.3.6.2, and
+# defines nothing at .10.3.6.3 where OnuSfpParameterAlarm above points. That
+# looks like an off-by-one, but the older line is left in place rather than
+# corrected: if some firmware really does emit .3, replacing it would break a
+# path that works today. Declaring both costs nothing.
+- name: OnuSfpParameterAlarmNotification
+  description: The agent generates this notification when ONU SFP parameter alarms (MIB-defined OID)
+  object: .1.3.6.1.4.1.3320.10.3.6.2
+  modules:
+    - pon_onts_optical
+  is_interface: true
+
+# An ONU's own last gasp as it loses power — the earliest and most reliable
+# signal that a subscriber has gone dark, and worth far more than waiting for
+# the next poll to notice.
+- name: OnuDyingGaspNotification
+  description: The agent generates this notification when an ONU reports dying gasp (power loss)
+  object: .1.3.6.1.4.1.3320.10.3.8.2
+  modules:
+    - pon_onts_status
+  is_interface: true
+
+# The OLT's own PON-side optical module, as opposed to an ONU's.
+- name: OltPonSfpParameterAlarmNotification
+  description: The agent generates this notification when the OLT PON optical module leaves or returns to normal
+  object: .1.3.6.1.4.1.3320.10.2.5.2
+  is_interface: true
+
+# An ONU trying to register that the OLT will not accept — either a
+# misprovisioned unit or one that does not belong on this network.
+- name: EponPonOnuIllegalRegNotification
+  description: The agent generates this notification when an illegal ONU attempts to register
+  object: .1.3.6.1.4.1.3320.101.16.1.1
+  is_interface: true
+
+- name: EponOnuIfStatusNotification
+  description: The agent generates this notification when an ONU interface changes state
+  object: .1.3.6.1.4.1.3320.101.19.1.1
+  modules:
+    - uni_interfaces_status
+  is_interface: true
+
+# Chassis-level health, which applies to the switch line as much as the OLTs.
+- name: WillRebootNotification
+  description: The agent generates this notification when the device is about to reboot
+  object: .1.3.6.1.4.1.3320.9.354.4
+  is_interface: false
+
+- name: HardwareFailedNotification
+  description: The agent generates this notification on a hardware failure
+  object: .1.3.6.1.4.1.3320.9.354.7
+  is_interface: false

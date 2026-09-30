@@ -1,0 +1,20 @@
+{
+    "name": "meklis/prom-client",
+    "description": "Prometheus client",
+    "type": "library",
+    "require": {
+        "php-curl-class/php-curl-class": "^9.5"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Meklis\\PromClient\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "meklis",
+            "email": "max.boyar.a@gmail.com"
+        }
+    ]
+}

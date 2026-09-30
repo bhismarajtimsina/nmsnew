@@ -1,0 +1,309 @@
+{
+    "data": [
+        {
+            "interface": {
+                "id": "2",
+                "name": "1\/2",
+                "_key": "2"
+            },
+            "pairs": [
+                {
+                    "number": 1,
+                    "status": "NoCable",
+                    "length": 0
+                },
+                {
+                    "number": 2,
+                    "status": "NoCable",
+                    "length": 0
+                }
+            ]
+        },
+        {
+            "interface": {
+                "id": "4",
+                "name": "1\/4",
+                "_key": "4"
+            },
+            "pairs": [
+                {
+                    "number": 1,
+                    "status": "Open",
+                    "length": 13
+                },
+                {
+                    "number": 2,
+                    "status": "Open",
+                    "length": 13
+                }
+            ]
+        },
+        {
+            "interface": {
+                "id": "6",
+                "name": "1\/6",
+                "_key": "6"
+            },
+            "pairs": [
+                {
+                    "number": 1,
+                    "status": "NoCable",
+                    "length": 0
+                },
+                {
+                    "number": 2,
+                    "status": "NoCable",
+                    "length": 0
+                }
+            ]
+        },
+        {
+            "interface": {
+                "id": "7",
+                "name": "1\/7",
+                "_key": "7"
+            },
+            "pairs": [
+                {
+                    "number": 1,
+                    "status": "NoCable",
+                    "length": 0
+                },
+                {
+                    "number": 2,
+                    "status": "NoCable",
+                    "length": 0
+                }
+            ]
+        },
+        {
+            "interface": {
+                "id": "8",
+                "name": "1\/8",
+                "_key": "8"
+            },
+            "pairs": [
+                {
+                    "number": 1,
+                    "status": "Open",
+                    "length": 20
+                },
+                {
+                    "number": 2,
+                    "status": "Open",
+                    "length": 20
+                }
+            ]
+        },
+        {
+            "interface": {
+                "id": "9",
+                "name": "1\/9",
+                "_key": "9"
+            },
+            "pairs": [
+                {
+                    "number": 1,
+                    "status": "NoCable",
+                    "length": 0
+                },
+                {
+                    "number": 2,
+                    "status": "NoCable",
+                    "length": 0
+                }
+            ]
+        },
+        {
+            "interface": {
+                "id": "10",
+                "name": "1\/10",
+                "_key": "10"
+            },
+            "pairs": [
+                {
+                    "number": 1,
+                    "status": "NoCable",
+                    "length": 0
+                },
+                {
+                    "number": 2,
+                    "status": "NoCable",
+                    "length": 0
+                }
+            ]
+        },
+        {
+            "interface": {
+                "id": "12",
+                "name": "1\/12",
+                "_key": "12"
+            },
+            "pairs": [
+                {
+                    "number": 1,
+                    "status": "Open",
+                    "length": 32
+                },
+                {
+                    "number": 2,
+                    "status": "Open",
+                    "length": 32
+                }
+            ]
+        },
+        {
+            "interface": {
+                "id": "13",
+                "name": "1\/13",
+                "_key": "13"
+            },
+            "pairs": [
+                {
+                    "number": 1,
+                    "status": "NoCable",
+                    "length": 0
+                },
+                {
+                    "number": 2,
+                    "status": "NoCable",
+                    "length": 0
+                }
+            ]
+        },
+        {
+            "interface": {
+                "id": "14",
+                "name": "1\/14",
+                "_key": "14"
+            },
+            "pairs": [
+                {
+                    "number": 1,
+                    "status": "NoCable",
+                    "length": 0
+                },
+                {
+                    "number": 2,
+                    "status": "NoCable",
+                    "length": 0
+                }
+            ]
+        },
+        {
+            "interface": {
+                "id": "15",
+                "name": "1\/15",
+                "_key": "15"
+            },
+            "pairs": [
+                {
+                    "number": 1,
+                    "status": "NoCable",
+                    "length": 0
+                },
+                {
+                    "number": 2,
+                    "status": "NoCable",
+                    "length": 0
+                }
+            ]
+        },
+        {
+            "interface": {
+                "id": "16",
+                "name": "1\/16",
+                "_key": "16"
+            },
+            "pairs": [
+                {
+                    "number": 1,
+                    "status": "NoCable",
+                    "length": 0
+                },
+                {
+                    "number": 2,
+                    "status": "NoCable",
+                    "length": 0
+                }
+            ]
+        },
+        {
+            "interface": {
+                "id": "17",
+                "name": "1\/17",
+                "_key": "17"
+            },
+            "pairs": [
+                {
+                    "number": 1,
+                    "status": "NoCable",
+                    "length": 0
+                },
+                {
+                    "number": 2,
+                    "status": "NoCable",
+                    "length": 0
+                }
+            ]
+        },
+        {
+            "interface": {
+                "id": "18",
+                "name": "1\/18",
+                "_key": "18"
+            },
+            "pairs": [
+                {
+                    "number": 1,
+                    "status": "NoCable",
+                    "length": 0
+                },
+                {
+                    "number": 2,
+                    "status": "NoCable",
+                    "length": 0
+                }
+            ]
+        },
+        {
+            "interface": {
+                "id": "22",
+                "name": "1\/22",
+                "_key": "22"
+            },
+            "pairs": [
+                {
+                    "number": 1,
+                    "status": "Open",
+                    "length": 24
+                },
+                {
+                    "number": 2,
+                    "status": "Open",
+                    "length": 24
+                }
+            ]
+        },
+        {
+            "interface": {
+                "id": "23",
+                "name": "1\/23",
+                "_key": "23"
+            },
+            "pairs": [
+                {
+                    "number": 1,
+                    "status": "NoCable",
+                    "length": 0
+                },
+                {
+                    "number": 2,
+                    "status": "NoCable",
+                    "length": 0
+                }
+            ]
+        }
+    ],
+    "arguments": []
+}

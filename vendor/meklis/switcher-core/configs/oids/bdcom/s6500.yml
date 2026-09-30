@@ -1,0 +1,26 @@
+# BDCOM S6500 series.
+#
+# Chassis switches (S6506/S6508).
+#
+# The shared switch base is ./switch-common.yml, which every model in this
+# family lists first; this file is what the family adds on top. Nothing here
+# has been confirmed against real hardware of this family yet — the OIDs come
+# from BDCOM's published MIBs, and anything a given unit does not answer is
+# omitted from the reading rather than failing it.
+
+# --- Chassis sensors. Definitions are from BDCOM's own MIBs, not inferred:
+# NMS-POWER-MIB puts `power` at nmsMgmt 189 with `powerStatus` as power.1 and
+# the four states below spelled out; NMS-FAN-TRAP puts `fanTrap` at nmsMgmt
+# 187 with FanTable at fanTrap.4, FanStatus in column 2 and FanSpeed in
+# column 3; card temperature sits in the chassis tree at .3.6.10.1.13. The
+# BDCOM OLT files beside this one already use these exact OIDs.
+#
+# Whether a given unit answers them is a hardware question, not a firmware
+# one — a fanless desktop model reports none of this. Both modules that read
+# them (BDcom\Switches\SystemResources and BDcom\Switches\PowerStatus)
+# omit what does not answer instead of failing the whole reading.
+- {name: system.power.status, oid: .1.3.6.1.4.1.3320.9.189.1.0, values: {1: A-normal, 2: B-normal, 3: A-B-normal, 4: other}}
+- {name: system.fan.status, oid: .1.3.6.1.4.1.3320.9.187.1, values: {1: Normal, 2: Stop}}
+- {name: resources.fanStatus, oid: .1.3.6.1.4.1.3320.9.187.4.1.2, values: {1: Normal, 2: Stop, 3: Unused}}
+- {name: resources.fanSpeed, oid: .1.3.6.1.4.1.3320.9.187.4.1.3}
+- {name: sensors.temperature.cpu, oid: .1.3.6.1.4.1.3320.3.6.10.1.13}

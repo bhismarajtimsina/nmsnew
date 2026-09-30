@@ -1,0 +1,403 @@
+{
+    "data": [
+        {
+            "status": "Up",
+            "interface": {
+                "name": "pon0\/0\/2:1",
+                "parent": 16780800,
+                "id": 16780801,
+                "xid": 14,
+                "type": "ONU",
+                "onu_num": 1,
+                "uni": "1"
+            },
+            "admin_status": "Enabled",
+            "vlan_id": 40,
+            "vlan_mode": "Untagged",
+            "stat_in_octets": "0",
+            "stat_in_undersize_pkts": 0,
+            "stat_in_oversize_pkts": 0,
+            "stat_in_fragments_pkts": 0,
+            "stat_in_crc_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_in_jabber_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_undersize_pkts": 0,
+            "stat_out_oversize_pkts": 0,
+            "stat_out_fragments_pkts": 0,
+            "stat_out_crc_pkts": 0,
+            "stat_out_drop_pkts": 0,
+            "stat_out_jabber": 0
+        },
+        {
+            "status": "Down",
+            "interface": {
+                "name": "pon0\/0\/2:2",
+                "parent": 16780800,
+                "id": 16780802,
+                "xid": 14,
+                "type": "ONU",
+                "onu_num": 2,
+                "uni": "1"
+            },
+            "admin_status": "Enabled",
+            "vlan_id": 40,
+            "vlan_mode": "Untagged",
+            "stat_in_octets": "0",
+            "stat_in_undersize_pkts": 0,
+            "stat_in_oversize_pkts": 0,
+            "stat_in_fragments_pkts": 0,
+            "stat_in_crc_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_in_jabber_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_undersize_pkts": 0,
+            "stat_out_oversize_pkts": 0,
+            "stat_out_fragments_pkts": 0,
+            "stat_out_crc_pkts": 0,
+            "stat_out_drop_pkts": 0,
+            "stat_out_jabber": 0
+        },
+        {
+            "stat_in_octets": "1699265059",
+            "interface": {
+                "name": "ge0\/0\/1",
+                "parent": null,
+                "id": 16777472,
+                "xid": 1,
+                "type": "1G-SFP",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 12162,
+            "stat_out_octets": "45959056",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "ge0\/0\/2",
+                "parent": null,
+                "id": 16777728,
+                "xid": 2,
+                "type": "1G-SFP",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "ge0\/0\/3",
+                "parent": null,
+                "id": 16777984,
+                "xid": 3,
+                "type": "1G-SFP",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "ge0\/0\/4",
+                "parent": null,
+                "id": 16778240,
+                "xid": 4,
+                "type": "1G-SFP",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "ge0\/0\/5",
+                "parent": null,
+                "id": 16778496,
+                "xid": 5,
+                "type": "1G-SFP",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "ge0\/0\/6",
+                "parent": null,
+                "id": 16778752,
+                "xid": 6,
+                "type": "1G-SFP",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "ge0\/0\/7",
+                "parent": null,
+                "id": 16779008,
+                "xid": 7,
+                "type": "1G-SFP",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "ge0\/0\/8",
+                "parent": null,
+                "id": 16779264,
+                "xid": 8,
+                "type": "1G-SFP",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "xge0\/0\/1",
+                "parent": null,
+                "id": 16779520,
+                "xid": 9,
+                "type": "10G-SFP",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "xge0\/0\/2",
+                "parent": null,
+                "id": 16779776,
+                "xid": 10,
+                "type": "10G-SFP",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "xge0\/0\/3",
+                "parent": null,
+                "id": 16780032,
+                "xid": 11,
+                "type": "10G-SFP",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "xge0\/0\/4",
+                "parent": null,
+                "id": 16780288,
+                "xid": 12,
+                "type": "10G-SFP",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "pon0\/0\/1",
+                "parent": null,
+                "id": 16780544,
+                "xid": 13,
+                "type": "PON",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "45598565",
+            "interface": {
+                "name": "pon0\/0\/2",
+                "parent": null,
+                "id": 16780800,
+                "xid": 14,
+                "type": "PON",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 4,
+            "stat_out_octets": "1708219332",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "pon0\/0\/3",
+                "parent": null,
+                "id": 16781056,
+                "xid": 15,
+                "type": "PON",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "pon0\/0\/4",
+                "parent": null,
+                "id": 16781312,
+                "xid": 16,
+                "type": "PON",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "pon0\/0\/5",
+                "parent": null,
+                "id": 16781568,
+                "xid": 17,
+                "type": "PON",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "pon0\/0\/6",
+                "parent": null,
+                "id": 16781824,
+                "xid": 18,
+                "type": "PON",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "pon0\/0\/7",
+                "parent": null,
+                "id": 16782080,
+                "xid": 19,
+                "type": "PON",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        },
+        {
+            "stat_in_octets": "0",
+            "interface": {
+                "name": "pon0\/0\/8",
+                "parent": null,
+                "id": 16782336,
+                "xid": 20,
+                "type": "PON",
+                "onu_num": null,
+                "uni": null
+            },
+            "stat_in_oversize_pkts": 0,
+            "stat_in_drop_pkts": 0,
+            "stat_out_octets": "0",
+            "stat_out_oversize_pkts": 0,
+            "stat_out_drop_pkts": 0
+        }
+    ],
+    "arguments": []
+}

@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "vue-tsc": "^3.3.11"
+  },
+  "_npx": {
+    "packages": [
+      "vue-tsc"
+    ]
+  }
+}

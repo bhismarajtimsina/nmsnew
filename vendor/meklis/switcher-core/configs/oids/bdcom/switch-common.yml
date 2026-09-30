@@ -1,0 +1,331 @@
+# The OID base every BDCOM Ethernet switch shares.
+#
+# Named for what it is rather than for the one unit it was proved on: BDCOM
+# publishes device-generic data under nmsMgmt (.1.3.6.1.4.1.3320.9.x) and the
+# chassis tree (.3.6.10.x), which are the same locations on every product they
+# make. Confirmed by comparison, not assumption — resources.cpuUtil,
+# sys.serialNum, sys.macAddress, sfp.ddm.* and the VLAN names below carry
+# byte-identical OIDs in this file, in ./3310c.yml (an EPON OLT) and in
+# ./gp3600.yml (a GPON OLT).
+#
+# What a family adds on top of this — fan, power supply and CPU temperature,
+# fitted on some models and not others — lives in its own file beside this one
+# (./s2900.yml and friends), the same way each OLT family has its own. A model
+# lists this file first and its family file second.
+#
+# These are plain L2/L3 switches, not PON products, so nothing here carries
+# the ont.*/pon.* OIDs the OLT files use.
+# Confirmed live against a real S5612 (sysObjectID .1.3.6.1.4.1.3320.1.283,
+# firmware "BDCOM(tm) S5612 Software, Version 127335") on 2026-09-05 —
+# every name below responded with a real value except where noted. That unit
+# is still the only one confirmed against real hardware; the names are shared
+# by construction (see above), the readings are per device.
+#
+# The switch shares the same private enterprise MIB tree BDCOM's OLT
+# products use for board/system info (3320.9.225.x) and CPU/mem
+# (3320.3.6.10.x), which is why the sys.*/resources.* names below match
+# ./gp3600.yml and ./3310c.yml exactly. It does NOT expose the OLT's fan
+# (3320.9.187.4.1.2) or CPU-temperature (3320.3.6.10.1.13) OIDs — both
+# returned "No Such Object"/"No Such Instance" live — so neither is
+# declared here; sys_resources/sys_temp are wired to a switch-specific
+# module (see Modules/BDcom/Switches/SystemResources.php) that treats
+# those two as optional instead of assuming they exist.
+
+- {name: resources.cpuUtil, oid: .1.3.6.1.4.1.3320.3.6.10.1.11}
+- {name: resources.memUtil, oid: .1.3.6.1.4.1.3320.3.6.10.1.12}
+
+# LLDP override — confirmed via BDCOM's own authoritative NMS-LLDP-MIB
+# (downloaded directly from BDCOM's site): the switch's LLDP data isn't
+# missing, it's just published under BDCOM's own private OID branch
+# instead of the standard IANA one. NMS-LLDP-MIB literally says "Published
+# as part of IEEE Std 802.1AB-2004 initial version" — i.e. it's the exact
+# same LLDP-MIB structure, just re-hosted at `nms 127` (.3320.127.1.*)
+# instead of the standard `.1.0.8802.1.1.2.1.*` that global.oids.yml's
+# lldp.* names point at (which is why BDcom\LldpInfo got "No Such Object"
+# querying it — right structure, wrong root). Field offsets underneath
+# are identical to the standard MIB (locChassisId=lldpLocalSystemData.2,
+# locPortId=...7.1.3, remChassisId=lldpRemoteSystemsData.1.1.5,
+# remPortId=...1.1.7) — only the .1.3.6.1.4.1.3320.127.1 prefix differs.
+# NOT live-tested against this device (still avoiding live SNMP here per
+# instruction) — ready to verify next time that's safe to do.
+- {name: lldp.locChassisId, oid: .1.3.6.1.4.1.3320.127.1.3.2}
+- {name: lldp.locPortId, oid: .1.3.6.1.4.1.3320.127.1.3.7.1.3}
+- {name: lldp.remChassisId, oid: .1.3.6.1.4.1.3320.127.1.4.1.1.5}
+- {name: lldp.remPortId, oid: .1.3.6.1.4.1.3320.127.1.4.1.1.7}
+
+- {name: sys.serialNum, oid: .1.3.6.1.4.1.3320.9.225.1.2.0}
+- {name: sys.boardHardwareVer, oid: .1.3.6.1.4.1.3320.9.225.1.7.0}
+- {name: sys.boardSoftwareVer, oid: .1.3.6.1.4.1.3320.9.225.1.8.0}
+- {name: sys.macAddress, oid: .1.3.6.1.4.1.3320.9.225.1.9.0}
+
+# Standard Q-BRIDGE-MIB (dot1qVlan*) — not BDCOM-specific, but not in
+# global.oids.yml either, so declared here same as the other bdcom/*.yml
+# files that already use these same three names.
+- {name: vlan.list, oid: .1.3.6.1.2.1.17.7.1.4.2.1.2.0}
+- {name: vlan.tagged, oid: .1.3.6.1.2.1.17.7.1.4.2.1.4}
+- {name: vlan.untagged, oid: .1.3.6.1.2.1.17.7.1.4.2.1.5}
+
+# SNMP SET action — triggers a running-config save on the device (same
+# action the BDCOM OLT models already use via OltSaveSettings). Only
+# fired if a user explicitly asks to save config; read-tested here only.
+- {name: olt.save, oid: .1.3.6.1.4.1.3320.20.15.1.1.0, values: {1: Action}}
+
+# SFP DDM (per-port optical RX/TX power, temp, voltage) — same private OIDs
+# gp3600.yml/3310c.yml already use via BDcom\GP3600\SfpOpticalInfo, which
+# handles both PON and plain-SFP ports and already nulls out unrealistic
+# readings (e.g. < -40dBm). Confirmed live: every port on this switch
+# returns the class's own "no DDM reading" sentinel (-65535) right now.
+# Cross-checked against LibreNMS's real BDCOM driver/MIBs (see
+# docs/bdcom-s5612-oid-reference.md): this ISN'T a universal BDCOM
+# limitation — a real captured recording from a sibling switch model shows
+# plenty of real, non-sentinel readings on that unit. What IS confirmed
+# live on THIS unit is `sfp.ddm.present` below reading "offline" (2) on
+# every single port (checked all 9) — i.e. no monitored transceiver is
+# inserted anywhere on this switch right now, which is what's actually
+# producing the all-null readings, not a firmware/DDM-support gap.
+- {name: sfp.ddm.rxPower, oid: .1.3.6.1.4.1.3320.9.63.1.7.1.3}
+- {name: sfp.ddm.txPower, oid: .1.3.6.1.4.1.3320.9.63.1.7.1.2}
+- {name: sfp.ddm.temp, oid: .1.3.6.1.4.1.3320.9.63.1.7.1.4}
+- {name: sfp.ddm.voltage, oid: .1.3.6.1.4.1.3320.9.63.1.7.1.5}
+# online(1)/offline(2) — whether a transceiver is physically present.
+# Confirmed live (single snmpget per port, not a walk): all 9 ports = 2.
+- {name: sfp.ddm.present, oid: .1.3.6.1.4.1.3320.9.63.1.7.1.20}
+
+# Confirmed NOT present on this unit (single snmpgets, not walks):
+# .9.187.4.1.2/.3 (fan status/speed) and .9.189.1 (power supply status)
+# both return "No Such Object" — unlike a sibling BDCOM model (S2900,
+# per LibreNMS's real captured test data) which does report these. This
+# specific S5612 unit's firmware/hardware genuinely doesn't expose fan or
+# PSU sensors over SNMP — not wired up here on purpose, not an oversight.
+# Chassis temperature (.3.6.10.1.13.0) also confirmed absent ("No Such
+# Instance") — consistent with the sibling model's own capture also
+# showing it unpopulated, so likely a family-wide gap rather than
+# unit-specific.
+
+# --- Everything below: found via a full SNMP walk of the device's entire
+# private-enterprise tree (.1.3.6.1.4.1.3320) on 2026-09-05, ~85k rows
+# total. Names below this line are for entries whose meaning was confirmed
+# by cross-referencing live values against what the UI/other OIDs already
+# show, or against names already used (but commented-out/unused) elsewhere
+# in this same vendor library for other BDCOM products. No module reads
+# any of these yet — they're just made available for future use.
+
+# More granular CPU load than resources.cpuUtil above (a single instant
+# snapshot) — three real time windows, same OIDs 3310c.yml/gp3600.yml
+# already declare (commented out there). Confirmed live: index .1 under
+# each returned 18/9/6 (%) — a plausible 5s/1m/5m decay pattern.
+- {name: resources.cpuUsage5sec, oid: .1.3.6.1.4.1.3320.9.109.1.1.1.1.3}
+- {name: resources.cpuUsage1min, oid: .1.3.6.1.4.1.3320.9.109.1.1.1.1.4}
+- {name: resources.cpuUsage5min, oid: .1.3.6.1.4.1.3320.9.109.1.1.1.1.5}
+
+# Last console/terminal login audit trail — confirmed live: authIp
+# "172.30.64.197", userName "pathariolt", time "Mar 12 21:17:25". Genuinely
+# useful security/audit info (who last logged in, from where, when) that
+# isn't surfaced anywhere in the app today.
+- {name: terminal.last.authIp, oid: .1.3.6.1.4.1.3320.9.188.1}
+- {name: terminal.last.authMask, oid: .1.3.6.1.4.1.3320.9.188.2}
+- {name: terminal.last.userName, oid: .1.3.6.1.4.1.3320.9.188.3}
+- {name: terminal.last.time, oid: .1.3.6.1.4.1.3320.9.188.4}
+
+# Currently-active management sessions table (web/telnet/ssh) — confirmed
+# live: one real row with a source IP (97.0.0.187) and username ("admin").
+# Distinct from terminal.last.* above (that's the single most-recent login
+# record; this is whoever is connected *right now*).
+- {name: system.activeSessions.index, oid: .1.3.6.1.4.1.3320.9.185.1.1.1.1}
+- {name: system.activeSessions.type, oid: .1.3.6.1.4.1.3320.9.185.1.1.1.2}
+- {name: system.activeSessions.ip, oid: .1.3.6.1.4.1.3320.9.185.1.1.1.3}
+- {name: system.activeSessions.userName, oid: .1.3.6.1.4.1.3320.9.185.1.1.1.4}
+
+# Combined hw;vendor;sw version string — confirmed live: "1.3;BDCOM;2.2.0C"
+# (matches sys.boardHardwareVer/boardSoftwareVer above, just pre-joined).
+- {name: sys.versionString, oid: .1.3.6.1.4.1.3320.9.255.1.1.0}
+
+# IEEE-1588 (PTP) clock-sync config block header — confirmed live: real,
+# non-zero values (priority fields defaulting to 128, the IEEE-1588
+# standard default). Whether PTP is actually in active use on this
+# specific unit wasn't checked; declared here as a starting point only.
+- {name: ptp.enabled, oid: .1.3.6.1.4.1.3320.12.1588.1.1.1.1.1.0}
+- {name: ptp.priority1, oid: .1.3.6.1.4.1.3320.12.1588.1.1.1.1.3.0}
+- {name: ptp.priority2, oid: .1.3.6.1.4.1.3320.12.1588.1.1.1.1.4.0}
+
+# --- STP (Spanning Tree) per-port table. Confirmed by decoding the raw
+# values: column 2/4 are real MAC addresses (one row's designated-bridge
+# MAC matched this switch's OWN sys.macAddress exactly), column 3 is
+# 32768 — the IEEE 802.1D default STP bridge/port priority — and the
+# table is indexed by ifIndex, matching every other per-port table in
+# this file. This is BDCOM's private mirror of the standard
+# dot1dStpPortEntry (.1.3.6.1.2.1.17.2.15.1) — declared here instead of
+# using the standard OID since it was the private tree that was actually
+# walked and confirmed on this device.
+- {name: stp.port.designatedBridge, oid: .1.3.6.1.4.1.3320.2.232.1.1.1.1.2}
+- {name: stp.port.priority, oid: .1.3.6.1.4.1.3320.2.232.1.1.1.1.3}
+- {name: stp.port.designatedRoot, oid: .1.3.6.1.4.1.3320.2.232.1.1.1.1.4}
+- {name: stp.port.state, oid: .1.3.6.1.4.1.3320.2.232.1.1.1.1.5}
+- {name: stp.port.designatedCost, oid: .1.3.6.1.4.1.3320.2.232.1.1.1.1.6}
+- {name: stp.port.forwardTransitions, oid: .1.3.6.1.4.1.3320.2.232.1.1.1.1.7}
+- {name: stp.port.designatedPort, oid: .1.3.6.1.4.1.3320.2.232.1.1.1.1.8}
+- {name: stp.bridge.maxAge, oid: .1.3.6.1.4.1.3320.2.232.1.4.0}
+- {name: stp.bridge.helloTime, oid: .1.3.6.1.4.1.3320.2.232.1.5.0}
+
+# --- IP interface table (this device's OWN configured IP addresses —
+# confirmed two real rows for its two management IPs, 172.30.64.5 and a
+# second address 10.10.64.5, each with a real netmask and the switch's
+# own MAC — this is BDCOM's private mirror of ipAddrTable/.1.3.6.1.2.1.4.20,
+# indexed by IP address rather than ifIndex).
+- {name: ip.iface.address, oid: .1.3.6.1.4.1.3320.2.237.2.1.1}
+- {name: ip.iface.index, oid: .1.3.6.1.4.1.3320.2.237.2.1.2}
+- {name: ip.iface.netmask, oid: .1.3.6.1.4.1.3320.2.237.2.1.3}
+- {name: ip.iface.macAddress, oid: .1.3.6.1.4.1.3320.2.237.2.1.5}
+
+# --- Everything below was found by walking this device's private tree and,
+# at the time, could not be matched to a meaning — it shipped under an
+# `unconfirmed.*` prefix with guessed labels. Every one of those 74 names has
+# now been resolved against BDCOM's own NMS-* MIBs, which are the published
+# definitions for the whole product line, by following each object's
+# `::= { parent N }` chain back to the enterprise root. The names below are
+# what BDCOM calls these objects; the source MIB is named on each group.
+#
+# Several of the old guesses were simply wrong, which is the point of doing
+# this from the definitions rather than from the values: `unit.uptimeTicks`
+# is really cardSysType, `portTimerOrRateLimit` is really the per-port PVID,
+# and the "~29k row FDB-adjacent table" is really the ACL-applied-on-interface
+# table. A handful of branches genuinely are not in the MIBs; those keep an
+# `undocumented.` prefix rather than a name that implies more than is known.
+
+# --- Per-card system table. NMS-CARD-SYS-MIB, cardSystemSetEntry
+# (.3320.9.181.1.1), columns 1-7. Note column 7: a CPU temperature that the
+# chassis-MIB location (sensors.temperature.cpu above) does not report on
+# every unit, so it is worth reading as a second source.
+- {name: card.sysIndex, oid: .1.3.6.1.4.1.3320.9.181.1.1.1}
+- {name: card.sysDescr, oid: .1.3.6.1.4.1.3320.9.181.1.1.2}
+- {name: card.sysType, oid: .1.3.6.1.4.1.3320.9.181.1.1.3}
+- {name: card.cpuUtilThreshold, oid: .1.3.6.1.4.1.3320.9.181.1.1.4}
+- {name: card.memUtilThreshold, oid: .1.3.6.1.4.1.3320.9.181.1.1.5}
+- {name: card.cpuTempThreshold, oid: .1.3.6.1.4.1.3320.9.181.1.1.6}
+- {name: card.cpuTempCurrent, oid: .1.3.6.1.4.1.3320.9.181.1.1.7}
+# Column 10 is past the seven the MIB defines — a real reading with no
+# published meaning.
+- {name: undocumented.cardSystemSet.column10, oid: .1.3.6.1.4.1.3320.9.181.1.1.10}
+- {name: undocumented.cardSys.branch7a, oid: .1.3.6.1.4.1.3320.9.181.7.1}
+- {name: undocumented.cardSys.branch7b, oid: .1.3.6.1.4.1.3320.9.181.7.3.1.1}
+
+# --- Card operation. NMS-CARD-OPERATION: master/slave switchover, and a
+# per-card reset table (index, type, description, reset action).
+- {name: card.masterSlaveSwitch, oid: .1.3.6.1.4.1.3320.9.184.1.0}
+- {name: card.reset.index, oid: .1.3.6.1.4.1.3320.9.184.2.1.1}
+- {name: card.reset.type, oid: .1.3.6.1.4.1.3320.9.184.2.1.2}
+
+# --- Global switch settings. NMS-HAL-GLOBAL-MIB, switchHALGlobal
+# (.3320.9.1.1.1.1). systemMTU confirms the old jumbo-frame guess; the other
+# three are the EAPS link-scan interval and the two link-aggregation
+# load-share settings.
+- {name: switch.eapsLinkScanInterval, oid: .1.3.6.1.4.1.3320.9.1.1.1.1.1.0}
+- {name: switch.systemMtu, oid: .1.3.6.1.4.1.3320.9.1.1.1.1.2.0}
+- {name: switch.shareLoad, oid: .1.3.6.1.4.1.3320.9.1.1.1.1.3.0}
+- {name: switch.shareLoadBalance, oid: .1.3.6.1.4.1.3320.9.1.1.1.1.4.0}
+
+# --- Memory pool. NMS-MEMORY-POOL-MIB (.3320.9.48) — the block previously
+# labelled "resourceSummary". Utilisation, total memory, the image/region/heap
+# ratios, heap and message-buffer utilisation, and total flash size.
+- {name: mem.pool.utilization, oid: .1.3.6.1.4.1.3320.9.48.1.0}
+- {name: mem.pool.totalMemorySize, oid: .1.3.6.1.4.1.3320.9.48.2.0}
+- {name: mem.pool.imageRatio, oid: .1.3.6.1.4.1.3320.9.48.3.0}
+- {name: mem.pool.regionRatio, oid: .1.3.6.1.4.1.3320.9.48.4.0}
+- {name: mem.pool.heapRatio, oid: .1.3.6.1.4.1.3320.9.48.5.0}
+- {name: mem.pool.heapUtilization, oid: .1.3.6.1.4.1.3320.9.48.6.0}
+- {name: mem.pool.messageBufferRatio, oid: .1.3.6.1.4.1.3320.9.48.7.0}
+- {name: mem.pool.messageBufferUtilization, oid: .1.3.6.1.4.1.3320.9.48.8.0}
+- {name: mem.pool.totalFlashSize, oid: .1.3.6.1.4.1.3320.9.48.9.0}
+
+# --- Interface extension statistics. NMS-INTERFACE-EXT (.3320.9.64) — the
+# self-indexed "portIndexTable" is that table's index column.
+- {name: iface.ext.statisticsIndex, oid: .1.3.6.1.4.1.3320.9.64.4.1.1.1}
+
+# --- Per-port PVID. NMS-VLAN-EXT-MIB (.3320.9.182), dot1qPvid. Previously
+# guessed as "a per-port rate limit or a timer"; it is the untagged VLAN each
+# port belongs to, which is real operational data.
+- {name: vlan.port.pvid, oid: .1.3.6.1.4.1.3320.9.182.3.1.1}
+
+# --- Loopback detection. NMS-LOOPBACK-DETECT-MIB (.3320.9.252): global
+# enable and the per-port enable column.
+- {name: loopdetect.enable, oid: .1.3.6.1.4.1.3320.9.252.1.0}
+- {name: loopdetect.portEnable, oid: .1.3.6.1.4.1.3320.9.252.2.1.1}
+
+# --- Spanning-tree options. NMS-STP (.3320.9.253) — the four global
+# toggles, distinct from the per-port STP state table declared above.
+- {name: stp.opt.portFast, oid: .1.3.6.1.4.1.3320.9.253.1.0}
+- {name: stp.opt.bpduGuard, oid: .1.3.6.1.4.1.3320.9.253.2.0}
+- {name: stp.opt.bpduFilter, oid: .1.3.6.1.4.1.3320.9.253.3.0}
+- {name: stp.opt.uplinkFast, oid: .1.3.6.1.4.1.3320.9.253.4.0}
+
+# --- DHCP. Server status from NMS-DHCP-SERVER-MIB (.3320.9.355), snooping
+# status from NMS-DHCP-SNOOPING-MIB (.3320.2.233).
+- {name: dhcp.server.status, oid: .1.3.6.1.4.1.3320.9.355.1.0}
+- {name: dhcp.snooping.status, oid: .1.3.6.1.4.1.3320.2.233.1.0}
+
+# --- L2 protocol tunnelling. NMS-L2-PROTOCOL-TUNNEL-MIB (.3320.9.357):
+# per-interface STP-tunnel state.
+- {name: l2pt.iface.stpTunnel, oid: .1.3.6.1.4.1.3320.9.357.1.2.1.1}
+
+# --- Ring protection. NMS-ERPS-MIB (.3320.2.231) — ring count, the
+# inconsistency check, and the PDU counters. Previously five unnamed flags.
+- {name: erps.rings, oid: .1.3.6.1.4.1.3320.2.231.1.0}
+- {name: erps.inconsistenceCheck, oid: .1.3.6.1.4.1.3320.2.231.2.0}
+- {name: erps.pduRx, oid: .1.3.6.1.4.1.3320.2.231.3.0}
+- {name: erps.pduRxDropped, oid: .1.3.6.1.4.1.3320.2.231.4.0}
+- {name: erps.pduTx, oid: .1.3.6.1.4.1.3320.2.231.5.0}
+
+# --- Remote logging. NMS-LOG-SERVER-MIB (.3320.2.235).
+- {name: log.server.off, oid: .1.3.6.1.4.1.3320.2.235.2.0}
+- {name: log.trap, oid: .1.3.6.1.4.1.3320.2.235.4.0}
+
+# --- ACLs. Total rule count from NMS-IPAcl (.3320.2.5.1); the three large
+# tables at .3320.151.* are NMS-ACL-EXT-MIB's applied-on-interface,
+# applied-on-VLAN and applied-on-slot tables — not the FDB-adjacent tables
+# they were guessed to be, which also explains the row counts.
+- {name: acl.total, oid: .1.3.6.1.4.1.3320.2.5.1.0}
+- {name: acl.appliedOnInterface, oid: .1.3.6.1.4.1.3320.151.3.1.1}
+- {name: acl.appliedOnVlan, oid: .1.3.6.1.4.1.3320.151.4.1.1}
+- {name: acl.appliedOnSlot, oid: .1.3.6.1.4.1.3320.151.5.1.1}
+
+# --- QoS. NMS-QOS-MIB and NMS-QOS-EXT-MIB (.3320.150.*): the CoS maps, the
+# per-port queue and rate tables, RED/WRED congestion control, and the trust
+# mode. Every one of the old `qos.table<N>` guesses now has its real name.
+- {name: qos.globalCosMap.cos, oid: .1.3.6.1.4.1.3320.150.3.1.1}
+- {name: qos.port.index, oid: .1.3.6.1.4.1.3320.150.4.1.1}
+- {name: qos.queue, oid: .1.3.6.1.4.1.3320.150.6.1.1}
+- {name: qos.portRate.index, oid: .1.3.6.1.4.1.3320.150.7.1.1}
+- {name: qos.red.type, oid: .1.3.6.1.4.1.3320.150.8.1.0}
+- {name: qos.red.enable, oid: .1.3.6.1.4.1.3320.150.8.2.0}
+- {name: qos.red.queue, oid: .1.3.6.1.4.1.3320.150.8.3.1.1}
+- {name: qos.iface.defaultCos, oid: .1.3.6.1.4.1.3320.150.10.1.1}
+- {name: qos.iface.queueBandwidth, oid: .1.3.6.1.4.1.3320.150.13.1.1}
+- {name: qos.trust, oid: .1.3.6.1.4.1.3320.150.18.0}
+- {name: qos.cos, oid: .1.3.6.1.4.1.3320.150.19.1.1}
+- {name: undocumented.qos.branch9, oid: .1.3.6.1.4.1.3320.150.9.0}
+- {name: undocumented.qos.branch21, oid: .1.3.6.1.4.1.3320.150.21.1.1}
+
+# --- Branches that answer on the hardware but appear in no NMS-* MIB. The
+# syslog block's shape (an interval, a severity level and an IpAddress that
+# reads 0.0.0.0 when unconfigured) is still the best available reading of
+# .3320.9.360, but BDCOM publishes no definition for it, so the names say so.
+- {name: undocumented.syslog.name, oid: .1.3.6.1.4.1.3320.9.360.1.0}
+- {name: undocumented.syslog.enabled, oid: .1.3.6.1.4.1.3320.9.360.2.0}
+- {name: undocumented.syslog.intervalSec, oid: .1.3.6.1.4.1.3320.9.360.3.0}
+- {name: undocumented.syslog.severityLevel, oid: .1.3.6.1.4.1.3320.9.360.4.0}
+- {name: undocumented.syslog.field5, oid: .1.3.6.1.4.1.3320.9.360.5.0}
+- {name: undocumented.syslog.field6, oid: .1.3.6.1.4.1.3320.9.360.6.0}
+- {name: undocumented.syslog.field7, oid: .1.3.6.1.4.1.3320.9.360.7.0}
+- {name: undocumented.syslog.serverIp, oid: .1.3.6.1.4.1.3320.9.360.8.0}
+- {name: undocumented.branch254.portState, oid: .1.3.6.1.4.1.3320.9.254.2.1.1}
+- {name: undocumented.branch256.flag, oid: .1.3.6.1.4.1.3320.9.256.1.0}
+- {name: undocumented.legacy4.flag, oid: .1.3.6.1.4.1.3320.2.4.1.0}
+- {name: undocumented.legacyAcl5.flag, oid: .1.3.6.1.4.1.3320.2.5.5.1.0}
+- {name: undocumented.legacy239.flag1, oid: .1.3.6.1.4.1.3320.2.239.1.0}
+- {name: undocumented.legacy239.flag2, oid: .1.3.6.1.4.1.3320.2.239.2.0}
+- {name: undocumented.legacy239.flag3, oid: .1.3.6.1.4.1.3320.2.239.3.0}
+
+# NOT declared: .1.3.6.1.4.1.3320.127.1.5.32962.1.2.2.1.1.<a>.<b> (~709 rows).
+# The "32962" segment sits inside the OID path rather than as a table index and
+# only one sample was ever seen, so a fixed prefix here could silently return
+# nothing on another unit. Needs a second real device to compare.

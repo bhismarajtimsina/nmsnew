@@ -1,0 +1,1 @@
+DELETE FROM system_schedule  WHERE `key` = 'check_agent';

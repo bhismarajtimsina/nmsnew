@@ -1,0 +1,143 @@
+#SYSTEM OIDS
+  - {name: sys.Descr, oid: .1.3.6.1.2.1.1.1, access: read }
+  - {name: sys.ObjId, oid: .1.3.6.1.2.1.1.2, access: read }
+  - {name: sys.IfacesCount, oid: .1.3.6.1.2.1.2.1, access: read }
+  - {name: sys.Uptime, oid: .1.3.6.1.2.1.1.3, access: read }
+  - {name: sys.Contact, oid: .1.3.6.1.2.1.1.4, access: write, type: string }
+  - {name: sys.Name, oid: .1.3.6.1.2.1.1.5, access: write, type: string }
+  - {name: sys.Location, oid: .1.3.6.1.2.1.1.6, access: write, type: string }
+  - {name: sys.macAddr, oid: .1.3.6.1.2.1.17.1.1, access: read, type: string }
+  - {name: sys.macAddrV2, oid: .1.0.8802.1.1.2.1.3.2.0}
+
+# Not all device supported
+#  - {name: sys.Revision, oid: .1.3.6.1.2.1.47.1.1.1.1.8.1, type: string }
+#  - {name: sys.Firmware, oid: .1.3.6.1.2.1.47.1.1.1.1.9.1, type: string }
+#if mib (.iso.org.dod.internet.mgmt.mib-2.interfaces + .iso.org.dod.internet.mgmt.mib-2.ifMIB.ifMIBObjects.ifXTable.ifXEntry)
+  - {name: if.Index, oid: .1.3.6.1.2.1.2.2.1.1, access: read }
+  - {name: if.Descr, oid: .1.3.6.1.2.1.2.2.1.2, access: read }
+  - {name: if.Type, oid: .1.3.6.1.2.1.2.2.1.3, access: read, values: {131: UNKNOWN, 1: UNKNOWN, 53: Virtual, 24: Loopback, 6: FE, 117: GE, 135: VLAN, 161: LACP, 136: VLAN, 137: VLAN, 207: PON, 208: PON,  209: BRIDGE, 250: GPON, 266: ONU, 142: IP, 300: EPON}}
+  - {name: if.StatsDuplexStatus, oid: .1.3.6.1.2.1.10.7.2.1.19, access: read , values: {1: Down, 2: Half, 3: Full}}
+  #Включен/отключен интерфейс
+  # 1-UP/2-DOWN/3-TESTING
+  - {name: if.AdminStatus, oid: .1.3.6.1.2.1.2.2.1.7, access: write, type: integer, values: {1: Enabled, 2: Disabled, 3: TESTING} }
+  #Текущее состояние интерфейса
+  # 1-UP/2-DOWN/6-NOT PRESENT
+  - {name: if.OperStatus, oid: .1.3.6.1.2.1.2.2.1.8, access: read, values: {1: Up, 2: Down, 6: NotPresent, 7: LLDown} }
+  #The value of sysUpTime at the time the interface entered its current operational state.  If the current state was entered prior to the last re-initialization of the local network management subsystem, then this object contains a zero value.
+  - {name: if.LastChange, oid: .1.3.6.1.2.1.2.2.1.9, access: read }
+  - {name: if.PhysAddr, oid: .1.3.6.1.2.1.2.2.1.6, access: read }
+  - {name: if.InErrors, oid: .1.3.6.1.2.1.2.2.1.14, access: read }
+  - {name: if.OutErrors, oid: .1.3.6.1.2.1.2.2.1.20, access: read }
+  - {name: if.InDiscards, oid: .1.3.6.1.2.1.2.2.1.13, access: read }
+  - {name: if.OutDiscards, oid: .1.3.6.1.2.1.2.2.1.19, access: read }
+
+  - {name: if.Speed, oid: .1.3.6.1.2.1.2.2.1.5, access: read, values: {0: "Down", 10: 10, 100: 100, 1000: 1G, 1250: 1.25G, 2000: 2G, 3000: 3G, 4000: 3G, 2488: 2.5G, 2500: 2.5G, 10000: 10G, 20000: 20G, 25000: 25G,  30000: 30G, 40000: 40G, 50000: 50G, 60000: 60G, 80000: 80G, 100000: 100G } }
+  - {name: if.InOctets, oid: .1.3.6.1.2.1.2.2.1.10, access: read}
+  - {name: if.InUcastPkts, oid: .1.3.6.1.2.1.2.2.1.11, access: read}
+  - {name: if.InNUcastPkts, oid: .1.3.6.1.2.1.2.2.1.12, access: read}
+  - {name: if.InUnknownProtos, oid: .1.3.6.1.2.1.2.2.1.15, access: read}
+  - {name: if.OutOctets, oid: .1.3.6.1.2.1.2.2.1.16, access: read}
+  - {name: if.OutUcastPkts, oid: .1.3.6.1.2.1.2.2.1.17, access: read}
+  - {name: if.OutNUcastPkts, oid: .1.3.6.1.2.1.2.2.1.18, access: read}
+
+  - {name: if.HCInOctets, oid: .1.3.6.1.2.1.31.1.1.1.6, access: read }
+  - {name: if.HCOutOctets, oid: .1.3.6.1.2.1.31.1.1.1.10, access: read }
+  - {name: if.HCOutMulticastPkts, oid: .1.3.6.1.2.1.31.1.1.1.12, access: read }
+  - {name: if.HCInMulticastPkts, oid: .1.3.6.1.2.1.31.1.1.1.8, access: read }
+  - {name: if.HCOutBroadcastPkts, oid: .1.3.6.1.2.1.31.1.1.1.13, access: read }
+  - {name: if.HCInBroadcastPkts, oid: .1.3.6.1.2.1.31.1.1.1.9, access: read }
+
+  - {name: if.HighSpeed, oid: .1.3.6.1.2.1.31.1.1.1.15, access: read, values: {0: "Down", 1000: 1G, 1250: 1.25G, 2000: 2G, 3000: 3G, 4000: 3G, 2488: 2.5G, 2500: 2.5G, 10000: 10G, 20000: 20G, 25000: 25G,  30000: 30G, 40000: 40G, 50000: 50G, 60000: 60G, 80000: 80G, 100000: 100G } }
+  - {name: if.ConnectorPresent, oid: .1.3.6.1.2.1.31.1.1.1.17, access: read, values: { 1: 'YES', 2: 'NO' } }
+  - {name: if.Name, oid: .1.3.6.1.2.1.31.1.1.1.1, access: read }
+  - {name: if.Alias, oid: .1.3.6.1.2.1.31.1.1.1.18, access: write }
+  - {name: if.stackStatus, oid: 1.3.6.1.2.1.31.1.2.1.3 } #Возвращает список родительских элементов для LACP
+  - {name: ent.physicalType, oid: .1.3.6.1.2.1.47.1.1.1.1.2}
+  - {name: ent.physicalName, oid: .1.3.6.1.2.1.47.1.1.1.1.7}
+  - {name: physical.sensor.values, oid: .1.3.6.1.2.1.99.1.1.1.4 }
+
+  - {name: ipAddrTable.ipAdEntIfIndex, oid: .1.3.6.1.2.1.4.20.1.2}
+  - {name: ipAddrTable.ipAdEntNetMask, oid: .1.3.6.1.2.1.4.20.1.3}
+  - {name: ipCidrRouteEntry.ifIndex, oid: .1.3.6.1.2.1.4.24.4.1.5}
+
+#rmon mib
+  - {name: rmon.EtherStatsCRCAlignErrors, oid: .1.3.6.1.2.1.16.1.1.1.8, access: read }
+  - {name: rmon.EtherStatsUndersizePkts, oid: .1.3.6.1.2.1.16.1.1.1.9, access: read }
+  - {name: rmon.EtherStatsOversizePkts, oid: .1.3.6.1.2.1.16.1.1.1.10, access: read }
+  - {name: rmon.EtherStatsFragments, oid: .1.3.6.1.2.1.16.1.1.1.11, access: read }
+  - {name: rmon.EtherStatsJabber, oid: .1.3.6.1.2.1.16.1.1.1.12, access: read }
+  - {name: rmon.EtherStatsCollisions, oid: .1.3.6.1.2.1.16.1.1.1.13, access: read }
+  - {name: rmon.EtherStatsDropEvents, oid: .1.3.6.1.2.1.16.1.1.1.3, access: read }
+#qBridgeMIB - dot1qVlan
+  - {name: dot1q.PortIfIndex, oid: .1.3.6.1.2.1.17.1.4.1.2, access: read}
+  - {name: dot1q.VlanStaticName, oid: .1.3.6.1.2.1.17.7.1.4.3.1.1, access: read}
+  - {name: dot1q.VlanStaticEgressPorts, oid: .1.3.6.1.2.1.17.7.1.4.3.1.2, access: read} #RETURNED HEX-STRING, must wrapped to binary. num of byte = num port; 1 = on port
+  - {name: dot1q.VlanStaticForbiddenEgressPorts, oid: .1.3.6.1.2.1.17.7.1.4.3.1.3, access: read} #RETURNED HEX-STRING, must wrapped to binary. num of byte = num port; 1 = on port
+  - {name: dot1q.VlanStaticUntaggedPorts, oid: .1.3.6.1.2.1.17.7.1.4.3.1.4, access: read } #RETURNED HEX-STRING, must wrapped to binary. num of byte = num port; 1 = on port
+  - {name: dot1q.VlanStaticRowStatus, oid: .1.3.6.1.2.1.17.7.1.4.3.1.5, access: read } #RETURNED HEX-STRING, must wrapped to binary. num of byte = num port; 1 = on port
+
+  - {name: dot1q.VlanCurrentEgressPorts, oid: .1.3.6.1.2.1.17.7.1.4.2.1.4, access: read} #RETURNED HEX-STRING, must wrapped to binary. num of byte = num port; 1 = on port
+  - {name: dot1q.VlanCurrentUntaggedPorts, oid: .1.3.6.1.2.1.17.7.1.4.2.1.5, access: read } #RETURNED HEX-STRING, must wrapped to binary. num of byte = num port; 1 = on port
+
+  - {name: dot1q.VlanFdbId, oid: .1.3.6.1.2.1.17.7.1.4.2.1.3.0, access: read} # OID for HP J9850A Switch, .1.3.6.1.2.1.17.7.1.4.2.1.3.0.[VLAN ID] = [VlanFdbId]
+
+#qBridgeMIB - dot1qBase
+  - {name: dot1q.Pvid, oid: .1.3.6.1.2.1.17.7.1.4.5.1.1, access: read}
+  - {name: dot1q.NumVlans, oid: .1.3.6.1.2.1.17.7.1.1.4, access: read}
+  - {name: dot1q.MaxVlanId, oid: .1.3.6.1.2.1.17.7.1.1.1, access: read}
+  - {name: dot1q.MaxSupportedVlans, oid: .1.3.6.1.2.1.17.7.1.1.3, access: read}
+#qBridgeMIB - dot1qTp
+# .1.3.6.1.2.1.17.7.1.2.2.1.2.[VLAN ID].[MAC-OCTET].[MAC-OCTET].[MAC-OCTET].[MAC-OCTET].[MAC-OCTET].[MAC-OCTET] = [PORT]
+  - {name: dot1q.FdbPort, oid: .1.3.6.1.2.1.17.7.1.2.2.1.2, access: read}
+# .1.3.6.1.2.1.17.7.1.2.2.1.3.[VLAN ID].[MAC-OCTET].[MAC-OCTET].[MAC-OCTET].[MAC-OCTET].[MAC-OCTET].[MAC-OCTET] = [STATUS]
+  - {name: dot1q.FdbStatus, oid: .1.3.6.1.2.1.17.7.1.2.2.1.3, access: read, values: {1: OTHER, 2: INVALID, 3: LEARNED, 4: SELF, 5: MGMT}}
+
+  - {name: dot1d.TpFdbAddress, oid: .1.3.6.1.2.1.17.4.3.1.1}
+  - {name: dot1d.TpFdbPort, oid: .1.3.6.1.2.1.17.4.3.1.2}
+  - {name: dot1d.TpFdbStatus, oid: .1.3.6.1.2.1.17.4.3.1.3, access: read, values: {1: OTHER, 2: INVALID, 3: LEARNED, 4: SELF, 5: MGMT}}
+
+  - {name: lldp.locChassisId , oid: .1.0.8802.1.1.2.1.3.2 } # МАК-адрес(идентификатор железки)
+  - {name: lldp.locPortId, oid: .1.0.8802.1.1.2.1.3.7.1.3 } # Идентификаторы портов (вид как имя порта)
+  - {name: lldp.remChassisId, oid: .1.0.8802.1.1.2.1.4.1.1.5} # Также идентификатор соседних мак-аредсов
+  - {name: lldp.remPortId, oid: .1.0.8802.1.1.2.1.4.1.1.7} # Идентификатор порта на удаленном устройстве (не ID порта)
+
+  - {name: ip.netSettings, oid: .1.3.6.1.2.1.4.20.1}
+  - {name: ip.arp.macAddr, oid: .1.3.6.1.2.1.4.22.1.2}
+  - {name: ip.arp.iface, oid: .1.3.6.1.2.1.4.22.1.3}
+  - {name: ip.routeTable.routes, oid: 1.3.6.1.2.1.4.21.1.7}
+  - {name: ip.routeTable.mask, oid: 1.3.6.1.2.1.4.21.1.11}
+  - {name: ip.routeTable.ifaceId, oid: 1.3.6.1.2.1.4.21.1.2}
+
+  - {name: bgp.version, oid: .1.3.6.1.2.1.15.1.0}
+  - {name: bgp.localAs, oid: .1.3.6.1.2.1.15.2.0}
+  - {name: bgp.identifier, oid: .1.3.6.1.2.1.15.4.0}
+  - {name: bgp.peer.identifier, oid: .1.3.6.1.2.1.15.3.1.1}
+# Syntax	 INTEGER {idle(1),
+#connect(2),
+#active(3),
+#opensent(4),
+#openconfirm(5),
+#established(6)
+#}
+  - {name: bgp.peer.state, oid: .1.3.6.1.2.1.15.3.1.2, values: {1: idle, 2: connect, 3: active, 4: opensent, 5: openconfirm, 6: established}}
+  - {name: bgp.peer.admin_status, oid: .1.3.6.1.2.1.15.3.1.3, values: {1: disabled, 2: enabled}}
+  - {name: bgp.peer.negotiated_version, oid: .1.3.6.1.2.1.15.3.1.4}
+  - {name: bgp.peer.local_addr, oid: .1.3.6.1.2.1.15.3.1.5}
+  - {name: bgp.peer.local_port, oid: .1.3.6.1.2.1.15.3.1.6}
+  - {name: bgp.peer.remote_addr, oid: .1.3.6.1.2.1.15.3.1.7}
+  - {name: bgp.peer.remote_port, oid: .1.3.6.1.2.1.15.3.1.8}
+  - {name: bgp.peer.remote_as, oid: .1.3.6.1.2.1.15.3.1.9}
+  - {name: bgp.peer.last_error, oid: .1.3.6.1.2.1.15.3.1.14}
+  - {name: bgp.peer.established_time, oid: .1.3.6.1.2.1.15.3.1.16}
+
+  - {name: bgp.4path_attr.origin, oid: .1.3.6.1.2.1.15.6.1.4, values: {1: igp, 2: egp, 3: incomplete}}
+  - {name: bgp.4path_attr.as_path_segment, oid: .1.3.6.1.2.1.15.6.1.5}
+  - {name: bgp.4path_attr.next_hop, oid: .1.3.6.1.2.1.15.6.1.6}
+  - {name: bgp.4path_attr.multi_exit_disc, oid: .1.3.6.1.2.1.15.6.1.7}
+  - {name: bgp.4path_attr.local_pref, oid: .1.3.6.1.2.1.15.6.1.8}
+  - {name: bgp.4path_attr.atomic_aggregate, oid: .1.3.6.1.2.1.15.6.1.9, 1: specific-route-not-selected, 2: specific-route-selected}
+  - {name: bgp.4path_attr.aggregator_as, oid: .1.3.6.1.2.1.15.6.1.10}
+  - {name: bgp.4path_attr.aggregator_addr, oid: .1.3.6.1.2.1.15.6.1.11}
+  - {name: bgp.4path_attr.calc_local_preg, oid: .1.3.6.1.2.1.15.6.1.12}
+  - {name: bgp.4path_attr.attr_best, oid: .1.3.6.1.2.1.15.6.1.13, values: {1: 'no', 2: 'yes'}}
+  - {name: bgp.4path_attr.attr_unknown, oid: .1.3.6.1.2.1.15.6.1.14}

@@ -1,0 +1,1321 @@
+models:
+  - name: BDCOM GP3600 series
+    key: bdcom_gp3600_series
+    inputs:
+      - snmp
+      - console
+    detect: {description: .*GP3600,  objid: ^.1.3.6.1.4.1.3320 }
+    device_type: OLT
+    rewrites:
+      oid: .1.3.6.1.4.1.3320.9.181.1.1.2.0
+      mapping:
+        - value: ^GP3600-04
+          rewrite:
+            key: bdcom_gp3600_04
+            name: BDCOM GP3600-04
+        - value: ^GP3600-08
+          rewrite:
+            key: bdcom_gp3600_08
+            name: BDCOM GP3600-08
+        - value: ^GP3600-16
+          rewrite:
+            key: bdcom_gp3600_16
+            name: BDCOM GP3600-16
+    oids:
+      - ./oids/bdcom/gp3600.yml
+    traps:
+      - ./traps/bdcom.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\BDcom\GP3600\PonPortsList
+      pon_count_registered_onts: \SwitcherCore\Modules\BDcom\GP3600\PortCountRegisteredOnts
+      parse_interface: \SwitcherCore\Modules\BDcom\GP3600\ParseInterface
+      pon_onts_status: \SwitcherCore\Modules\BDcom\GP3600\OntListWithStatuses
+      pon_onts_serial: \SwitcherCore\Modules\BDcom\GP3600\OntSerial
+      pon_onts_optical: \SwitcherCore\Modules\BDcom\GP3600\OntOpticalInfo
+      pon_onts_reasons: \SwitcherCore\Modules\BDcom\GP3600\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\BDcom\GP3600\OntVendorInfo
+      vlans: \SwitcherCore\Modules\BDcom\GP3600\VlanList
+      fdb: \SwitcherCore\Modules\BDcom\GP3600\FdbTableConsole
+      interface_descriptions: \SwitcherCore\Modules\BDcom\GP3600\InterfaceDescriptions
+      sys_resources: \SwitcherCore\Modules\BDcom\GP3600\SystemResources
+      #interface_counters: \SwitcherCore\Modules\BDcom\GP3600\InterfaceCounters
+      interface_counters: \SwitcherCore\Modules\BDcom\GP3600\InterfaceCountersNew
+      interfaces_list: \SwitcherCore\Modules\BDcom\GP3600\InterfacesList
+      uni_interfaces_status: \SwitcherCore\Modules\BDcom\GP3600\UniInterfacesStatus
+      pon_profiles: \SwitcherCore\Modules\BDcom\GP3600\GponProfiles
+      uni_interfaces_vlans: \SwitcherCore\Modules\BDcom\GP3600\UniInterfacesVlans
+      ctrl_ont_reboot: \SwitcherCore\Modules\BDcom\GP3600\OntReboot
+      ctrl_ont_disable: \SwitcherCore\Modules\BDcom\GP3600\CtrlOntDisable
+      ctrl_ont_descr: \SwitcherCore\Modules\BDcom\GP3600\CtrlOntDescription
+      ctrl_ont_delete: \SwitcherCore\Modules\BDcom\GP3600\OntDelete
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\BDcom\GP3600\UniInterfacesControlAdminStatus
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      link_info: \SwitcherCore\Modules\BDcom\GP3600\LinkInfo
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\GP3600\PortDescriptionControl
+      unregistered_onts: \SwitcherCore\Modules\BDcom\GP3600\UnregisteredOnts
+      power_status: \SwitcherCore\Modules\BDcom\GP3600\PowerStatus
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\BDcom\GP3600\SnoopingInfo
+    extra:
+      pon_port_size: 128
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM P3612-2TE
+    key: bdcom_p3612_2te
+    inputs:
+      - snmp
+      - console
+    detect: {description: ^BDCOM.*P3612-2TE.*,  objid: ^.1.3.6.1.4.1.3320.1.2010.0 }
+    device_type: OLT
+    oids:
+      - ./oids/bdcom/3310c.yml
+    traps:
+      - ./traps/bdcom.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\BDcom\PonPortsList
+      pon_count_registered_onts: \SwitcherCore\Modules\BDcom\PortCountRegisteredOnts
+      pon_onts_status: \SwitcherCore\Modules\BDcom\OntListWithStatuses
+      pon_onts_mac_addr: \SwitcherCore\Modules\BDcom\OntMacAddress
+      pon_onts_optical: \SwitcherCore\Modules\BDcom\P3608B\OntOpticalInfo
+      pon_onts_reasons: \SwitcherCore\Modules\BDcom\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\BDcom\OntVendorInfo
+      fdb: \SwitcherCore\Modules\BDcom\FdbTableConsole
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      ctrl_ont_reboot: \SwitcherCore\Modules\BDcom\OntReboot
+      ctrl_ont_reset: \SwitcherCore\Modules\BDcom\OntReset
+      ctrl_ont_delete: \SwitcherCore\Modules\BDcom\OntDelete
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      sys_resources: \SwitcherCore\Modules\BDcom\SystemResources
+      #interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCounters
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      uni_interfaces_status: \SwitcherCore\Modules\BDcom\UniInterfacesStatus
+      uni_interfaces_vlans: \SwitcherCore\Modules\BDcom\UniInterfacesVlans
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\BDcom\UniInterfacesControlAdminStatus
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      ctrl_ont_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      unregistered_onts: \SwitcherCore\Modules\BDcom\UnregisteredOnts
+      vlans: \SwitcherCore\Modules\BDcom\GP3600\VlanList
+      interface_rate_limits: \SwitcherCore\Modules\BDcom\RateLimits
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      sfp_optical: \SwitcherCore\Modules\BDcom\SfpOpticalInfo
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+    extra:
+      pon_port_size: 64 
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM P3616-2TE
+    key: bdcom_p3616_2te
+    inputs:
+      - snmp
+      - console
+    detect: {description: ^BDCOM.*P3616-2TE.*,  objid: .1.3.6.1.4.1.3320.1.2011.0 }
+    device_type: OLT
+    oids:
+      - ./oids/bdcom/3310c.yml
+    traps:
+      - ./traps/bdcom.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\BDcom\PonPortsList
+      pon_count_registered_onts: \SwitcherCore\Modules\BDcom\PortCountRegisteredOnts
+      pon_onts_status: \SwitcherCore\Modules\BDcom\OntListWithStatuses
+      pon_onts_mac_addr: \SwitcherCore\Modules\BDcom\OntMacAddress
+      pon_onts_optical: \SwitcherCore\Modules\BDcom\P3608B\OntOpticalInfo
+      pon_ports_optical: \SwitcherCore\Modules\BDcom\PonPortsOptical
+      pon_onts_reasons: \SwitcherCore\Modules\BDcom\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\BDcom\OntVendorInfo
+      fdb: \SwitcherCore\Modules\BDcom\FdbTableConsole
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      ctrl_ont_reboot: \SwitcherCore\Modules\BDcom\OntReboot
+      ctrl_ont_reset: \SwitcherCore\Modules\BDcom\OntReset
+      ctrl_ont_delete: \SwitcherCore\Modules\BDcom\OntDelete
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      sys_resources: \SwitcherCore\Modules\BDcom\SystemResources
+      #interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCounters
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      uni_interfaces_status: \SwitcherCore\Modules\BDcom\UniInterfacesStatus
+      uni_interfaces_vlans: \SwitcherCore\Modules\BDcom\UniInterfacesVlans
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\BDcom\UniInterfacesControlAdminStatus
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      ctrl_ont_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      unregistered_onts: \SwitcherCore\Modules\BDcom\UnregisteredOnts
+      vlans: \SwitcherCore\Modules\BDcom\GP3600\VlanList
+      interface_rate_limits: \SwitcherCore\Modules\BDcom\RateLimits
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      sfp_optical: \SwitcherCore\Modules\BDcom\SfpOpticalInfo
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+    extra:
+      pon_port_size: 64
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM P3608B
+    key: bdcom_p3608b
+    inputs:
+      - snmp
+      - console
+    detect: {description: ^BDCOM.*P3608B.*,  objid: ^.1.3.6.1.4.1.3320 }
+    device_type: OLT
+    oids:
+      - ./oids/bdcom/3310c.yml
+    traps:
+      - ./traps/bdcom.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\BDcom\PonPortsList
+      pon_count_registered_onts: \SwitcherCore\Modules\BDcom\PortCountRegisteredOnts
+      pon_onts_status: \SwitcherCore\Modules\BDcom\OntListWithStatuses
+      pon_onts_mac_addr: \SwitcherCore\Modules\BDcom\OntMacAddress
+      pon_onts_optical: \SwitcherCore\Modules\BDcom\P3608B\OntOpticalInfo
+      pon_ports_optical: \SwitcherCore\Modules\BDcom\PonPortsOptical
+      pon_onts_reasons: \SwitcherCore\Modules\BDcom\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\BDcom\OntVendorInfo
+      fdb: \SwitcherCore\Modules\BDcom\FdbTableConsole
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      ctrl_ont_reboot: \SwitcherCore\Modules\BDcom\OntReboot
+      ctrl_ont_reset: \SwitcherCore\Modules\BDcom\OntReset
+      ctrl_ont_delete: \SwitcherCore\Modules\BDcom\OntDelete
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      sys_resources: \SwitcherCore\Modules\BDcom\SystemResources
+      #interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCounters
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      uni_interfaces_status: \SwitcherCore\Modules\BDcom\UniInterfacesStatus
+      uni_interfaces_vlans: \SwitcherCore\Modules\BDcom\UniInterfacesVlans
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\BDcom\UniInterfacesControlAdminStatus
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      ctrl_ont_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      unregistered_onts: \SwitcherCore\Modules\BDcom\UnregisteredOnts
+      vlans: \SwitcherCore\Modules\BDcom\GP3600\VlanList
+      interface_rate_limits: \SwitcherCore\Modules\BDcom\RateLimits
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      sfp_optical: \SwitcherCore\Modules\BDcom\SfpOpticalInfo
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+    extra:
+      pon_port_size: 64
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM P36xx series
+    key: bdcom_p36xx_series
+    inputs:
+      - snmp
+      - console
+    detect: {description: '^BDCOM.*?P36.*' ,  objid: ^.1.3.6.1.4.1.3320 }
+    device_type: OLT
+    oids:
+      - ./oids/bdcom/3310c.yml
+    traps:
+      - ./traps/bdcom.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\BDcom\PonPortsList
+      pon_count_registered_onts: \SwitcherCore\Modules\BDcom\PortCountRegisteredOnts
+      pon_onts_status: \SwitcherCore\Modules\BDcom\OntListWithStatuses
+      pon_onts_mac_addr: \SwitcherCore\Modules\BDcom\OntMacAddress
+      pon_onts_optical: \SwitcherCore\Modules\BDcom\P3608B\OntOpticalInfo
+      pon_ports_optical: \SwitcherCore\Modules\BDcom\PonPortsOptical
+      pon_onts_reasons: \SwitcherCore\Modules\BDcom\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\BDcom\OntVendorInfo
+      fdb: \SwitcherCore\Modules\BDcom\FdbTableConsole
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      ctrl_ont_reboot: \SwitcherCore\Modules\BDcom\OntReboot
+      ctrl_ont_reset: \SwitcherCore\Modules\BDcom\OntReset
+      ctrl_ont_delete: \SwitcherCore\Modules\BDcom\OntDelete
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      sys_resources: \SwitcherCore\Modules\BDcom\SystemResources
+      #interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCounters
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      uni_interfaces_status: \SwitcherCore\Modules\BDcom\UniInterfacesStatus
+      uni_interfaces_vlans: \SwitcherCore\Modules\BDcom\UniInterfacesVlans
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\BDcom\UniInterfacesControlAdminStatus
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      ctrl_ont_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      unregistered_onts: \SwitcherCore\Modules\BDcom\UnregisteredOnts
+      vlans: \SwitcherCore\Modules\BDcom\GP3600\VlanList
+      interface_rate_limits: \SwitcherCore\Modules\BDcom\RateLimits
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      sfp_optical: \SwitcherCore\Modules\BDcom\SfpOpticalInfo
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+    extra:
+      pon_port_size: 64
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM P3310C
+    key: bdcom_p3310c
+    inputs:
+      - snmp
+      - console
+    detect: {description: ^BDCOM.*P3310C.*,  objid: ^.1.3.6.1.4.1.3320.1.294.0$}
+    device_type: OLT
+    oids:
+      - ./oids/bdcom/3310c.yml
+    traps:
+      - ./traps/bdcom.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\BDcom\PonPortsList
+      pon_count_registered_onts: \SwitcherCore\Modules\BDcom\PortCountRegisteredOnts
+      pon_onts_status: \SwitcherCore\Modules\BDcom\OntListWithStatuses
+      pon_onts_mac_addr: \SwitcherCore\Modules\BDcom\OntMacAddress
+      pon_onts_optical: \SwitcherCore\Modules\BDcom\OntOpticalInfo
+      pon_ports_optical: \SwitcherCore\Modules\BDcom\PonPortsOptical
+      pon_onts_reasons: \SwitcherCore\Modules\BDcom\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\BDcom\OntVendorInfo
+      fdb: \SwitcherCore\Modules\BDcom\FdbTableConsole
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      ctrl_ont_reboot: \SwitcherCore\Modules\BDcom\OntReboot
+      ctrl_ont_reset: \SwitcherCore\Modules\BDcom\OntReset
+      ctrl_ont_delete: \SwitcherCore\Modules\BDcom\OntDelete
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      sys_resources: \SwitcherCore\Modules\BDcom\SystemResources
+      #interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCounters
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      uni_interfaces_status: \SwitcherCore\Modules\BDcom\UniInterfacesStatus
+      uni_interfaces_vlans: \SwitcherCore\Modules\BDcom\UniInterfacesVlans
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\BDcom\UniInterfacesControlAdminStatus
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      ctrl_ont_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      unregistered_onts: \SwitcherCore\Modules\BDcom\UnregisteredOnts
+      vlans: \SwitcherCore\Modules\BDcom\GP3600\VlanList
+      interface_rate_limits: \SwitcherCore\Modules\BDcom\RateLimits
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      sfp_optical: \SwitcherCore\Modules\BDcom\SfpOpticalInfo
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+    extra:
+      pon_port_size: 64
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM P3310D
+    key: bdcom_p3310d
+    inputs:
+      - snmp
+      - console
+    detect: {description: ^BDCOM.*P3310D.*,  objid: ^.1.3.6.1.4.1.3320.1.441.0$}
+    device_type: OLT
+    oids:
+      - ./oids/bdcom/3310c.yml
+    traps:
+      - ./traps/bdcom.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\BDcom\PonPortsList
+      pon_count_registered_onts: \SwitcherCore\Modules\BDcom\PortCountRegisteredOnts
+      pon_onts_status: \SwitcherCore\Modules\BDcom\OntListWithStatuses
+      pon_onts_mac_addr: \SwitcherCore\Modules\BDcom\OntMacAddress
+      pon_onts_optical: \SwitcherCore\Modules\BDcom\OntOpticalInfo
+      pon_ports_optical: \SwitcherCore\Modules\BDcom\PonPortsOptical
+      pon_onts_reasons: \SwitcherCore\Modules\BDcom\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\BDcom\OntVendorInfo
+      fdb: \SwitcherCore\Modules\BDcom\FdbTableConsole
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      ctrl_ont_reboot: \SwitcherCore\Modules\BDcom\OntReboot
+      ctrl_ont_reset: \SwitcherCore\Modules\BDcom\OntReset
+      ctrl_ont_delete: \SwitcherCore\Modules\BDcom\OntDelete
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      sys_resources: \SwitcherCore\Modules\BDcom\SystemResources
+      #interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCounters
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      uni_interfaces_status: \SwitcherCore\Modules\BDcom\UniInterfacesStatus
+      uni_interfaces_vlans: \SwitcherCore\Modules\BDcom\UniInterfacesVlans
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\BDcom\UniInterfacesControlAdminStatus
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      ctrl_ont_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      unregistered_onts: \SwitcherCore\Modules\BDcom\UnregisteredOnts
+      vlans: \SwitcherCore\Modules\BDcom\GP3600\VlanList
+      interface_rate_limits: \SwitcherCore\Modules\BDcom\RateLimits
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      sfp_optical: \SwitcherCore\Modules\BDcom\SfpOpticalInfo
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+    extra:
+      pon_port_size: 64
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM P3310B
+    key: bdcom_p3310b
+    inputs:
+      - snmp
+      - console
+    detect: {description: ^BDCOM.*P3310B.*,  objid: ^.1.3.6.1.4.1.3320.* }
+    device_type: OLT
+    oids:
+      - ./oids/bdcom/3310c.yml
+      - ./oids/bdcom/3310b.yml
+    traps:
+      - ./traps/bdcom.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\BDcom\PonPortsList
+      pon_count_registered_onts: \SwitcherCore\Modules\BDcom\PortCountRegisteredOnts
+      pon_onts_status: \SwitcherCore\Modules\BDcom\OntListWithStatuses
+      pon_onts_mac_addr: \SwitcherCore\Modules\BDcom\OntMacAddress
+      pon_onts_optical: \SwitcherCore\Modules\BDcom\OntOpticalInfo
+      pon_ports_optical: \SwitcherCore\Modules\BDcom\PonPortsOptical
+      pon_onts_reasons: \SwitcherCore\Modules\BDcom\P3310B\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\BDcom\P3310B\OntVendorInfo
+      fdb: \SwitcherCore\Modules\BDcom\FdbTableConsole
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      ctrl_ont_reboot: \SwitcherCore\Modules\BDcom\OntReboot
+      ctrl_ont_reset: \SwitcherCore\Modules\BDcom\OntReset
+      ctrl_ont_delete: \SwitcherCore\Modules\BDcom\OntDelete
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      sys_resources: \SwitcherCore\Modules\BDcom\SystemResources
+      #interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCounters
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      uni_interfaces_status: \SwitcherCore\Modules\BDcom\UniInterfacesStatus
+      uni_interfaces_vlans: \SwitcherCore\Modules\BDcom\UniInterfacesVlans
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\BDcom\UniInterfacesControlAdminStatus
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      ctrl_ont_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      unregistered_onts: \SwitcherCore\Modules\BDcom\UnregisteredOnts
+      vlans: \SwitcherCore\Modules\BDcom\GP3600\VlanList
+      interface_rate_limits: \SwitcherCore\Modules\BDcom\RateLimits
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      sfp_optical: \SwitcherCore\Modules\BDcom\SfpOpticalInfo
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+    extra:
+      pon_port_size: 64
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+  # Plain L2/L3 Ethernet switch, not a PON/OLT product — confirmed live
+  # against a real unit on 2026-09-05 (sysDescr "BDCOM(tm) S5612 Software,
+  # Version 127335", sysObjectID .1.3.6.1.4.1.3320.1.283.0). It shares the
+  # OLT products' private system/resources MIB tree (see ./oids/bdcom/
+  # s5612.yml for exactly which names were confirmed present), but doesn't
+  # expose their PON/ONT features at all, so none of those modules are
+  # wired up here. CPU/mem are read through a switch-specific
+  # sys_resources module (Modules/BDcom/Switches/SystemResources.php)
+  # since this unit's fan-status and CPU-temperature OIDs — present on the
+  # OLT chassis models — don't exist on it (confirmed live: both returned
+  # "No Such Object"/"No Such Instance").
+  - name: BDCOM S5612
+    key: bdcom_s5612
+    inputs:
+      - snmp
+      - console
+    detect: {description: ^BDCOM.*S5612, objid: ^.1.3.6.1.4.1.3320.1.283.0 }
+    device_type: SWITCH
+    traps:
+      - ./traps/bdcom.yml
+    oids:
+      - ./oids/bdcom/switch-common.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      lldp_info: \SwitcherCore\Modules\BDcom\LldpInfo
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      # The console FDB module below stays unused — confirmed live it HANGS
+      # (not just fails) when called: telnet:23 accepts the TCP connection
+      # then immediately closes it with no prompt, and the console client
+      # library blocks indefinitely waiting for a login prompt that will
+      # never come, rather than timing out. Since `fdb` gets unconditionally
+      # bundled into every "get interface info" request once a model
+      # declares it, this tied up a live PHP/RoadRunner worker for 90+
+      # seconds on a single request — a real risk of exhausting the whole
+      # worker pool if it happened repeatedly. Re-enable only after real,
+      # tested console (SSH/Telnet) credentials are confirmed working for
+      # this specific switch. MAC lookup is served instead by the SNMP
+      # reader below, which walks the standard Q-BRIDGE table this switch
+      # answers — no console, no blocking.
+      fdb: \SwitcherCore\Modules\BDcom\Switches\FdbDot1Bridge
+      vlans: \SwitcherCore\Modules\BDcom\Vlans
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      sys_resources: \SwitcherCore\Modules\BDcom\Switches\SystemResources
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+    extra:
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+# ---------------------------------------------------------------------------
+# BDCOM Ethernet switches.
+#
+# Everything below is a plain L2/L3 switch, detected from the model name
+# BDCOM puts in sysDescr ("BDCOM(tm) S5612 Software, Version 127335"), with
+# the enterprise root as a second guard so another vendor's device can never
+# land here. Product sysObjectIDs are assigned per model and BDCOM does not
+# publish them in the MIBs, so the root (.1.3.6.1.4.1.3320) is as specific as
+# detection can honestly be for a family; the one model with a confirmed
+# product OID, S5612, keeps its exact match above.
+#
+# They all share configs/oids/bdcom/s5612.yml and one module set: the private
+# tree that file documents (system, CPU/memory, VLANs, LLDP at BDCOM's own
+# .3320.127 root, SFP DDM) is the same across the switch line — families
+# differ in port count and silicon, not in where they publish those.
+#
+# `fdb` is deliberately absent everywhere here, exactly as on bdcom_s5612:
+# the only FDB module for BDCOM reads the console, and that was confirmed to
+# hang a worker for 90+ seconds on a switch whose telnet accepts then drops
+# the connection. Wire it up per model once console credentials are proven.
+#
+# Sub-model names under `rewrites` come from BDCOM's own product catalogue;
+# the OID they read is cardSysDescr, which on the live S5612 returns its bare
+# model name. A family whose device does not answer that OID keeps the series
+# name, which is why the series entry is the one that carries the modules.
+# ---------------------------------------------------------------------------
+
+  - name: BDCOM S1000 series
+    key: bdcom_s1000_series
+    inputs:
+      - snmp
+      - console
+    detect: {description: '^BDCOM.*\bS10\d\d', objid: '^.1.3.6.1.4.1.3320'}
+    device_type: SWITCH
+    traps:
+      - ./traps/bdcom.yml
+    oids:
+      - ./oids/bdcom/switch-common.yml
+      - ./oids/bdcom/s1000.yml
+      - ./oids/bdcom/s1000.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      lldp_info: \SwitcherCore\Modules\BDcom\LldpInfo
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      vlans: \SwitcherCore\Modules\BDcom\Vlans
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      sys_resources: \SwitcherCore\Modules\BDcom\Switches\SystemResources
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      fdb: \SwitcherCore\Modules\BDcom\Switches\FdbDot1Bridge
+      power_status: \SwitcherCore\Modules\BDcom\Switches\PowerStatus
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+    extra:
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM S2200 series
+    key: bdcom_s2200_series
+    inputs:
+      - snmp
+      - console
+    detect: {description: '^BDCOM.*\bS22\d\d', objid: '^.1.3.6.1.4.1.3320'}
+    device_type: SWITCH
+    rewrites:
+      oid: .1.3.6.1.4.1.3320.9.181.1.1.2.0
+      mapping:
+        - value: '^S2200-B'
+          rewrite:
+            key: bdcom_s2200_b
+            name: BDCOM S2200-B
+    traps:
+      - ./traps/bdcom.yml
+    oids:
+      - ./oids/bdcom/switch-common.yml
+      - ./oids/bdcom/s2200.yml
+      - ./oids/bdcom/s2200.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      lldp_info: \SwitcherCore\Modules\BDcom\LldpInfo
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      vlans: \SwitcherCore\Modules\BDcom\Vlans
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      sys_resources: \SwitcherCore\Modules\BDcom\Switches\SystemResources
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      fdb: \SwitcherCore\Modules\BDcom\Switches\FdbDot1Bridge
+      power_status: \SwitcherCore\Modules\BDcom\Switches\PowerStatus
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+    extra:
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM S2500 series
+    key: bdcom_s2500_series
+    inputs:
+      - snmp
+      - console
+    detect: {description: '^BDCOM.*\bS25\d\d', objid: '^.1.3.6.1.4.1.3320'}
+    device_type: SWITCH
+    rewrites:
+      oid: .1.3.6.1.4.1.3320.9.181.1.1.2.0
+      mapping:
+        - value: '^S2510-C'
+          rewrite:
+            key: bdcom_s2510_c
+            name: BDCOM S2510-C
+        - value: '^S2528-C'
+          rewrite:
+            key: bdcom_s2528_c
+            name: BDCOM S2528-C
+        - value: '^S2500-C-BR'
+          rewrite:
+            key: bdcom_s2500_c_br
+            name: BDCOM S2500-C-BR
+        - value: '^S2500-P'
+          rewrite:
+            key: bdcom_s2500_p
+            name: BDCOM S2500-P
+    traps:
+      - ./traps/bdcom.yml
+    oids:
+      - ./oids/bdcom/switch-common.yml
+      - ./oids/bdcom/s2500.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      lldp_info: \SwitcherCore\Modules\BDcom\LldpInfo
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      vlans: \SwitcherCore\Modules\BDcom\Vlans
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      sys_resources: \SwitcherCore\Modules\BDcom\Switches\SystemResources
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      fdb: \SwitcherCore\Modules\BDcom\Switches\FdbDot1Bridge
+      power_status: \SwitcherCore\Modules\BDcom\Switches\PowerStatus
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+    extra:
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM S2900 series
+    key: bdcom_s2900_series
+    inputs:
+      - snmp
+      - console
+    detect: {description: '^BDCOM.*\bS29\d\d', objid: '^.1.3.6.1.4.1.3320'}
+    device_type: SWITCH
+    rewrites:
+      oid: .1.3.6.1.4.1.3320.9.181.1.1.2.0
+      mapping:
+        - value: '^S2900-2T10X'
+          rewrite:
+            key: bdcom_s2900_2t10x
+            name: BDCOM S2900-2T10X
+        - value: '^S2900-8T4X'
+          rewrite:
+            key: bdcom_s2900_8t4x
+            name: BDCOM S2900-8T4X
+        - value: '^S2900-8TG4X'
+          rewrite:
+            key: bdcom_s2900_8tg4x
+            name: BDCOM S2900-8TG4X
+        - value: '^S2900-24T4X'
+          rewrite:
+            key: bdcom_s2900_24t4x
+            name: BDCOM S2900-24T4X
+        - value: '^S2900-24P4X'
+          rewrite:
+            key: bdcom_s2900_24p4x
+            name: BDCOM S2900-24P4X
+        - value: '^S2900-24S8C4X'
+          rewrite:
+            key: bdcom_s2900_24s8c4x
+            name: BDCOM S2900-24S8C4X
+        - value: '^S2900-48T4X'
+          rewrite:
+            key: bdcom_s2900_48t4x
+            name: BDCOM S2900-48T4X
+        - value: '^S2900-48T6X'
+          rewrite:
+            key: bdcom_s2900_48t6x
+            name: BDCOM S2900-48T6X
+        - value: '^S2900-48S6X'
+          rewrite:
+            key: bdcom_s2900_48s6x
+            name: BDCOM S2900-48S6X
+        - value: '^S2900-48S6X-2AC'
+          rewrite:
+            key: bdcom_s2900_48s6x_2ac
+            name: BDCOM S2900-48S6X-2AC
+        - value: '^S2928-P'
+          rewrite:
+            key: bdcom_s2928_p
+            name: BDCOM S2928-P
+    traps:
+      - ./traps/bdcom.yml
+    oids:
+      - ./oids/bdcom/switch-common.yml
+      - ./oids/bdcom/s2900.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      lldp_info: \SwitcherCore\Modules\BDcom\LldpInfo
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      vlans: \SwitcherCore\Modules\BDcom\Vlans
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      sys_resources: \SwitcherCore\Modules\BDcom\Switches\SystemResources
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      fdb: \SwitcherCore\Modules\BDcom\Switches\FdbDot1Bridge
+      power_status: \SwitcherCore\Modules\BDcom\Switches\PowerStatus
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+    extra:
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM S3700 series
+    key: bdcom_s3700_series
+    inputs:
+      - snmp
+      - console
+    detect: {description: '^BDCOM.*\bS37\d\d', objid: '^.1.3.6.1.4.1.3320'}
+    device_type: SWITCH
+    rewrites:
+      oid: .1.3.6.1.4.1.3320.9.181.1.1.2.0
+      mapping:
+        - value: '^S3740'
+          rewrite:
+            key: bdcom_s3740
+            name: BDCOM S3740
+    traps:
+      - ./traps/bdcom.yml
+    oids:
+      - ./oids/bdcom/switch-common.yml
+      - ./oids/bdcom/s3700.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      lldp_info: \SwitcherCore\Modules\BDcom\LldpInfo
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      vlans: \SwitcherCore\Modules\BDcom\Vlans
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      sys_resources: \SwitcherCore\Modules\BDcom\Switches\SystemResources
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      fdb: \SwitcherCore\Modules\BDcom\Switches\FdbDot1Bridge
+      power_status: \SwitcherCore\Modules\BDcom\Switches\PowerStatus
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+    extra:
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM S3900 series
+    key: bdcom_s3900_series
+    inputs:
+      - snmp
+      - console
+    detect: {description: '^BDCOM.*\bS39\d\d', objid: '^.1.3.6.1.4.1.3320'}
+    device_type: SWITCH
+    rewrites:
+      oid: .1.3.6.1.4.1.3320.9.181.1.1.2.0
+      mapping:
+        - value: '^S3900-24T6X'
+          rewrite:
+            key: bdcom_s3900_24t6x
+            name: BDCOM S3900-24T6X
+        - value: '^S3900-P'
+          rewrite:
+            key: bdcom_s3900_p
+            name: BDCOM S3900-P
+    traps:
+      - ./traps/bdcom.yml
+    oids:
+      - ./oids/bdcom/switch-common.yml
+      - ./oids/bdcom/s3900.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      lldp_info: \SwitcherCore\Modules\BDcom\LldpInfo
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      vlans: \SwitcherCore\Modules\BDcom\Vlans
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      sys_resources: \SwitcherCore\Modules\BDcom\Switches\SystemResources
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      fdb: \SwitcherCore\Modules\BDcom\Switches\FdbDot1Bridge
+      power_status: \SwitcherCore\Modules\BDcom\Switches\PowerStatus
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+    extra:
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM S5600 series
+    key: bdcom_s5600_series
+    # No family OID file: this is the S5612's own family, and that unit is the
+    # one BDCOM switch confirmed against real hardware here. It answers "No Such
+    # Object" for the whole power branch (.9.189) and for fan and card
+    # temperature, so declaring those sensors would contradict the evidence.
+    inputs:
+      - snmp
+      - console
+    detect: {description: '^BDCOM.*\bS56\d\d', objid: '^.1.3.6.1.4.1.3320'}
+    device_type: SWITCH
+    rewrites:
+      oid: .1.3.6.1.4.1.3320.9.181.1.1.2.0
+      mapping:
+        - value: '^S5612E'
+          rewrite:
+            key: bdcom_s5612e
+            name: BDCOM S5612E
+        - value: '^S5612E-2AC'
+          rewrite:
+            key: bdcom_s5612e_2ac
+            name: BDCOM S5612E-2AC
+    traps:
+      - ./traps/bdcom.yml
+    oids:
+      - ./oids/bdcom/switch-common.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      lldp_info: \SwitcherCore\Modules\BDcom\LldpInfo
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      vlans: \SwitcherCore\Modules\BDcom\Vlans
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      sys_resources: \SwitcherCore\Modules\BDcom\Switches\SystemResources
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      fdb: \SwitcherCore\Modules\BDcom\Switches\FdbDot1Bridge
+    extra:
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM S5700 series
+    key: bdcom_s5700_series
+    inputs:
+      - snmp
+      - console
+    detect: {description: '^BDCOM.*\bS57\d\d', objid: '^.1.3.6.1.4.1.3320'}
+    device_type: SWITCH
+    rewrites:
+      oid: .1.3.6.1.4.1.3320.9.181.1.1.2.0
+      mapping:
+        - value: '^S5700-8ET4X'
+          rewrite:
+            key: bdcom_s5700_8et4x
+            name: BDCOM S5700-8ET4X
+        - value: '^S5700-24ET6X'
+          rewrite:
+            key: bdcom_s5700_24et6x
+            name: BDCOM S5700-24ET6X
+        - value: '^S5700-P'
+          rewrite:
+            key: bdcom_s5700_p
+            name: BDCOM S5700-P
+    traps:
+      - ./traps/bdcom.yml
+    oids:
+      - ./oids/bdcom/switch-common.yml
+      - ./oids/bdcom/s5700.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      lldp_info: \SwitcherCore\Modules\BDcom\LldpInfo
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      vlans: \SwitcherCore\Modules\BDcom\Vlans
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      sys_resources: \SwitcherCore\Modules\BDcom\Switches\SystemResources
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      fdb: \SwitcherCore\Modules\BDcom\Switches\FdbDot1Bridge
+      power_status: \SwitcherCore\Modules\BDcom\Switches\PowerStatus
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+    extra:
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM S5800 series
+    key: bdcom_s5800_series
+    inputs:
+      - snmp
+      - console
+    detect: {description: '^BDCOM.*\bS58\d\d', objid: '^.1.3.6.1.4.1.3320'}
+    device_type: SWITCH
+    rewrites:
+      oid: .1.3.6.1.4.1.3320.9.181.1.1.2.0
+      mapping:
+        - value: '^S5800-24X2C'
+          rewrite:
+            key: bdcom_s5800_24x2c
+            name: BDCOM S5800-24X2C
+        - value: '^S5800-32C2X-S'
+          rewrite:
+            key: bdcom_s5800_32c2x_s
+            name: BDCOM S5800-32C2X-S
+        - value: '^S5800-48X8C-S'
+          rewrite:
+            key: bdcom_s5800_48x8c_s
+            name: BDCOM S5800-48X8C-S
+        - value: '^S5800-48Y8C-S'
+          rewrite:
+            key: bdcom_s5800_48y8c_s
+            name: BDCOM S5800-48Y8C-S
+        - value: '^S5864HB'
+          rewrite:
+            key: bdcom_s5864hb
+            name: BDCOM S5864HB
+    traps:
+      - ./traps/bdcom.yml
+    oids:
+      - ./oids/bdcom/switch-common.yml
+      - ./oids/bdcom/s5800.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      lldp_info: \SwitcherCore\Modules\BDcom\LldpInfo
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      vlans: \SwitcherCore\Modules\BDcom\Vlans
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      sys_resources: \SwitcherCore\Modules\BDcom\Switches\SystemResources
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      fdb: \SwitcherCore\Modules\BDcom\Switches\FdbDot1Bridge
+      power_status: \SwitcherCore\Modules\BDcom\Switches\PowerStatus
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+    extra:
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM S6500 series
+    key: bdcom_s6500_series
+    inputs:
+      - snmp
+      - console
+    detect: {description: '^BDCOM.*\bS65\d\d', objid: '^.1.3.6.1.4.1.3320'}
+    device_type: SWITCH
+    rewrites:
+      oid: .1.3.6.1.4.1.3320.9.181.1.1.2.0
+      mapping:
+        - value: '^S6506'
+          rewrite:
+            key: bdcom_s6506
+            name: BDCOM S6506
+        - value: '^S6508'
+          rewrite:
+            key: bdcom_s6508
+            name: BDCOM S6508
+    traps:
+      - ./traps/bdcom.yml
+    oids:
+      - ./oids/bdcom/switch-common.yml
+      - ./oids/bdcom/s6500.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      lldp_info: \SwitcherCore\Modules\BDcom\LldpInfo
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      vlans: \SwitcherCore\Modules\BDcom\Vlans
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      sys_resources: \SwitcherCore\Modules\BDcom\Switches\SystemResources
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      fdb: \SwitcherCore\Modules\BDcom\Switches\FdbDot1Bridge
+      power_status: \SwitcherCore\Modules\BDcom\Switches\PowerStatus
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+    extra:
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM S8500 series
+    key: bdcom_s8500_series
+    inputs:
+      - snmp
+      - console
+    detect: {description: '^BDCOM.*\bS85\d\d', objid: '^.1.3.6.1.4.1.3320'}
+    device_type: SWITCH
+    rewrites:
+      oid: .1.3.6.1.4.1.3320.9.181.1.1.2.0
+      mapping:
+        - value: '^S8500E'
+          rewrite:
+            key: bdcom_s8500e
+            name: BDCOM S8500E
+    traps:
+      - ./traps/bdcom.yml
+    oids:
+      - ./oids/bdcom/switch-common.yml
+      - ./oids/bdcom/s8500.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      lldp_info: \SwitcherCore\Modules\BDcom\LldpInfo
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      vlans: \SwitcherCore\Modules\BDcom\Vlans
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      sys_resources: \SwitcherCore\Modules\BDcom\Switches\SystemResources
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      fdb: \SwitcherCore\Modules\BDcom\Switches\FdbDot1Bridge
+      power_status: \SwitcherCore\Modules\BDcom\Switches\PowerStatus
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+    extra:
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM S9500 series
+    key: bdcom_s9500_series
+    inputs:
+      - snmp
+      - console
+    detect: {description: '^BDCOM.*\bS95\d\d', objid: '^.1.3.6.1.4.1.3320'}
+    device_type: SWITCH
+    traps:
+      - ./traps/bdcom.yml
+    oids:
+      - ./oids/bdcom/switch-common.yml
+      - ./oids/bdcom/s9500.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      lldp_info: \SwitcherCore\Modules\BDcom\LldpInfo
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      vlans: \SwitcherCore\Modules\BDcom\Vlans
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      sys_resources: \SwitcherCore\Modules\BDcom\Switches\SystemResources
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      fdb: \SwitcherCore\Modules\BDcom\Switches\FdbDot1Bridge
+      power_status: \SwitcherCore\Modules\BDcom\Switches\PowerStatus
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+    extra:
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM IES industrial series
+    key: bdcom_ies_series
+    inputs:
+      - snmp
+      - console
+    detect: {description: '^BDCOM.*\bIES\d{3,4}', objid: '^.1.3.6.1.4.1.3320'}
+    device_type: SWITCH
+    rewrites:
+      oid: .1.3.6.1.4.1.3320.9.181.1.1.2.0
+      mapping:
+        - value: '^IES200-V25-2S8P'
+          rewrite:
+            key: bdcom_ies200_v25_2s8p
+            name: BDCOM IES200-V25-2S8P
+    traps:
+      - ./traps/bdcom.yml
+    oids:
+      - ./oids/bdcom/switch-common.yml
+      - ./oids/bdcom/ies.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      lldp_info: \SwitcherCore\Modules\BDcom\LldpInfo
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      vlans: \SwitcherCore\Modules\BDcom\Vlans
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      sys_resources: \SwitcherCore\Modules\BDcom\Switches\SystemResources
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      fdb: \SwitcherCore\Modules\BDcom\Switches\FdbDot1Bridge
+      power_status: \SwitcherCore\Modules\BDcom\Switches\PowerStatus
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+    extra:
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM legacy S2xxx/S3xxx switch
+    key: bdcom_legacy_switch
+    inputs:
+      - snmp
+      - console
+    detect: {description: '^BDCOM.*\bS(2008|2026|2108|2116|3224|3448|3512)', objid: '^.1.3.6.1.4.1.3320'}
+    device_type: SWITCH
+    traps:
+      - ./traps/bdcom.yml
+    oids:
+      - ./oids/bdcom/switch-common.yml
+      - ./oids/bdcom/legacy-switch.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      lldp_info: \SwitcherCore\Modules\BDcom\LldpInfo
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      vlans: \SwitcherCore\Modules\BDcom\Vlans
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      sys_resources: \SwitcherCore\Modules\BDcom\Switches\SystemResources
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      fdb: \SwitcherCore\Modules\BDcom\Switches\FdbDot1Bridge
+      power_status: \SwitcherCore\Modules\BDcom\Switches\PowerStatus
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+    extra:
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+
+  - name: BDCOM switch (generic)
+    key: bdcom_switch_generic
+    # No family OID file: nothing is known about a model that matched nothing
+    # above, so it gets the shared base and no assumptions on top.
+    # Anything BDCOM with a switch-shaped model name that no entry above
+    # claims. Must stay last: first match wins, so a family entry earlier
+    # in this file always beats it. The model-name shape (S/IES + digits)
+    # is what keeps it off the P-series and GP-series OLTs above.
+    inputs:
+      - snmp
+      - console
+    detect: {description: '^BDCOM.*\b(S|IES)\d{3,4}', objid: '^.1.3.6.1.4.1.3320'}
+    device_type: SWITCH
+    traps:
+      - ./traps/bdcom.yml
+    oids:
+      - ./oids/bdcom/switch-common.yml
+    modules:
+      system: \SwitcherCore\Modules\BDcom\SystemInformation
+      parse_interface: \SwitcherCore\Modules\BDcom\ParseInterface
+      interfaces_list: \SwitcherCore\Modules\BDcom\InterfacesList
+      interface_counters: \SwitcherCore\Modules\BDcom\InterfaceCountersNew
+      interface_descriptions: \SwitcherCore\Modules\BDcom\InterfaceDescriptions
+      link_info: \SwitcherCore\Modules\BDcom\LinkInfo
+      lldp_info: \SwitcherCore\Modules\BDcom\LldpInfo
+      sfp_optical: \SwitcherCore\Modules\BDcom\GP3600\SfpOpticalInfo
+      vlans: \SwitcherCore\Modules\BDcom\Vlans
+      ctrl_port_descr: \SwitcherCore\Modules\BDcom\DescriptionControl
+      sys_resources: \SwitcherCore\Modules\BDcom\Switches\SystemResources
+      save_config: \SwitcherCore\Modules\BDcom\OltSaveSettings
+      console_command: \SwitcherCore\Modules\BDcom\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\BDcom\MultiRawConsoleCommand
+      snooping_info: \SwitcherCore\Modules\BDcom\SnoopingInfo
+      net_settings: \SwitcherCore\Modules\General\NetSettings
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sfp_diag: \SwitcherCore\Modules\General\SfpDiag
+      fdb: \SwitcherCore\Modules\BDcom\Switches\FdbDot1Bridge
+    extra:
+      console_conn_type: bdcom
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0

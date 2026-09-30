@@ -1,0 +1,2 @@
+INSERT INTO system_schedule (`key`, created_at, latest, component_id, crontab, command, state, editable)
+VALUES ('sys_logrotate', NOW(), null, null, '0 0 * * *', 'logrotate /etc/logrotate.d/support.conf', 1, 0);

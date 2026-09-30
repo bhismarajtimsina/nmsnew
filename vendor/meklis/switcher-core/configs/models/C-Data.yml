@@ -1,0 +1,901 @@
+models:
+  - name: C-Data FD1104SN
+    key: c_data_fd1104sn
+    inputs:
+      - snmp
+      - console
+    detect: {description: (GEPON OLT)|(FD1104),  objid: ^.1.3.6.1.4.1.34592$, ifacesCount: 8}
+    device_type: OLT
+    oids:
+      - ./oids/cdata/fd-1100-series.yml
+    traps:
+      - ./traps/cdata.yml
+    modules:
+      system: \SwitcherCore\Modules\CData\FD11XX\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\CData\FD11XX\PonPortsList
+      pon_count_registered_onts: \SwitcherCore\Modules\CData\FD11XX\PortCountRegisteredOnts
+      pon_onts_status: \SwitcherCore\Modules\CData\FD11XX\OntListWithStatuses
+      pon_onts_mac_addr: \SwitcherCore\Modules\CData\FD11XX\OntMacAddress
+      pon_onts_optical: \SwitcherCore\Modules\CData\FD11XX\OntOpticalInfo
+      pon_ports_optical: \SwitcherCore\Modules\CData\FD11XX\PonPortsOptical
+      pon_onts_vendor: \SwitcherCore\Modules\CData\FD11XX\OntVendorInfo
+      fdb: \SwitcherCore\Modules\CData\FD11XX\OntFDBTable
+      uni_interfaces_status: \SwitcherCore\Modules\CData\FD11XX\OntUniPortsStatus
+      save_config: \SwitcherCore\Modules\CData\FD11XX\OltSaveSettings
+      ctrl_ont_reboot: \SwitcherCore\Modules\CData\FD11XX\OntReboot
+      ctrl_ont_reset: \SwitcherCore\Modules\CData\FD11XX\OntReset
+      ctrl_ont_delete: \SwitcherCore\Modules\CData\FD11XX\OntDelete
+      parse_interface: \SwitcherCore\Modules\CData\FD11XX\ParseInterface
+      sys_resources: \SwitcherCore\Modules\CData\FD11XX\SystemResources
+      interface_descriptions: \SwitcherCore\Modules\CData\FD11XX\InterfaceDescriptions
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\CData\FD11XX\UniInterfacesControlAdminStatus
+      ctrl_ont_descr: \SwitcherCore\Modules\CData\FD11XX\CtrlOntDescription
+      console_command: \SwitcherCore\Modules\CData\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\CData\MultiRawConsoleCommand
+      #ctrl_port_descr: \SwitcherCore\Modules\CData\FD11XX\PortDescriptionControl
+      link_info: \SwitcherCore\Modules\CData\FD11XX\LinkInfo
+      pon_onts_reasons: \SwitcherCore\Modules\CData\FD11XX\OntReasons
+      interface_counters: \SwitcherCore\Modules\CData\FD11XX\InterfaceCounters
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\CData\FD11XX\SnoopingInfo
+    extra:
+      pon_port_size: 64
+      pon_type: EPON
+      console_conn_type: stels
+      interfaces:
+        - {name: ge1,  id: 100001,  xid: null, type: 1G-SFP, phys_snmp_id: 1}
+        - {name: ge2,  id: 100002,  xid: null, type: 1G-SFP, phys_snmp_id: 2}
+        - {name: ge3,  id: 100003,  xid: null, type: 1G-SFP, phys_snmp_id: 3}
+        - {name: ge4,  id: 100004,  xid: null, type: 1G-SFP, phys_snmp_id: 4}
+        - {name: ge5,  id: 100005,  xid: null, type: 1G-SFP, phys_snmp_id: 5}
+        - {name: ge6,  id: 100006,  xid: null, type: 1G-SFP, phys_snmp_id: 6}
+        - {name: ge7,  id: 100007,  xid: null, type: 1G-SFP, phys_snmp_id: 7}
+        - {name: ge8,  id: 100008,  xid: null, type: 1G-SFP, phys_snmp_id: 8}
+        - {name: pon1/1, id: 9,  xid: 1, type: PON, phys_snmp_id: 9}
+        - {name: pon1/2, id: 10,  xid: 2, type: PON, phys_snmp_id: 10}
+        - {name: pon1/3, id: 11,  xid: 3, type: PON, phys_snmp_id: 11}
+        - {name: pon1/4, id: 12,  xid: 4, type: PON, phys_snmp_id: 12}
+
+  - name: C-Data FD1108S
+    key: c_data_fd1108s
+    inputs:
+      - snmp
+      - console
+    detect: {description: (GEPON OLT)|(FD1108S)|(OLT1-8),  objid: ^.1.3.6.1.4.1.34592$, ifacesCount: 16}
+    device_type: OLT
+    oids:
+      - ./oids/cdata/fd-1100-series.yml
+    traps:
+      - ./traps/cdata.yml
+    modules:
+      system: \SwitcherCore\Modules\CData\FD11XX\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\CData\FD11XX\PonPortsList
+      pon_count_registered_onts: \SwitcherCore\Modules\CData\FD11XX\PortCountRegisteredOnts
+      pon_onts_status: \SwitcherCore\Modules\CData\FD11XX\OntListWithStatuses
+      pon_onts_mac_addr: \SwitcherCore\Modules\CData\FD11XX\OntMacAddress
+      pon_onts_optical: \SwitcherCore\Modules\CData\FD11XX\OntOpticalInfo
+      pon_onts_reasons: \SwitcherCore\Modules\CData\FD11XX\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\CData\FD11XX\OntVendorInfo
+      fdb: \SwitcherCore\Modules\CData\FD11XX\OntFDBTable
+      uni_interfaces_status: \SwitcherCore\Modules\CData\FD11XX\OntUniPortsStatus
+      save_config: \SwitcherCore\Modules\CData\FD11XX\OltSaveSettings
+      ctrl_ont_reboot: \SwitcherCore\Modules\CData\FD11XX\OntReboot
+      ctrl_ont_reset: \SwitcherCore\Modules\CData\FD11XX\OntReset
+      ctrl_ont_delete: \SwitcherCore\Modules\CData\FD11XX\OntDelete
+      parse_interface: \SwitcherCore\Modules\CData\FD11XX\ParseInterface
+      sys_resources: \SwitcherCore\Modules\CData\FD11XX\SystemResources
+      interface_descriptions: \SwitcherCore\Modules\CData\FD11XX\InterfaceDescriptions
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\CData\FD11XX\UniInterfacesControlAdminStatus
+      ctrl_ont_descr: \SwitcherCore\Modules\CData\FD11XX\CtrlOntDescription
+      console_command: \SwitcherCore\Modules\CData\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\CData\MultiRawConsoleCommand
+      #ctrl_port_descr: \SwitcherCore\Modules\CData\FD11XX\PortDescriptionControl
+      interfaces_list: \SwitcherCore\Modules\CData\FD11XX\PonPortsList
+      link_info: \SwitcherCore\Modules\CData\FD11XX\LinkInfo
+      interface_counters: \SwitcherCore\Modules\CData\FD11XX\InterfaceCounters
+      pon_ports_optical: \SwitcherCore\Modules\CData\FD11XX\PonPortsOptical
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sys_temp: \SwitcherCore\Modules\General\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\CData\FD11XX\SnoopingInfo
+    extra:
+      pon_type: EPON
+      console_conn_type: stels
+      pon_port_size: 64
+      interfaces:
+        - { name: ge1,  id: 100001,  xid: null, type: 1G-SFP, phys_snmp_id: 1 }
+        - { name: ge2,  id: 100002,  xid: null, type: 1G-SFP, phys_snmp_id: 2 }
+        - { name: ge3,  id: 100003,  xid: null, type: 1G-SFP, phys_snmp_id: 3 }
+        - { name: ge4,  id: 100004,  xid: null, type: 1G-SFP, phys_snmp_id: 4 }
+        - { name: ge5,  id: 100005,  xid: null, type: 1G-SFP, phys_snmp_id: 5 }
+        - { name: ge6,  id: 100006,  xid: null, type: 1G-SFP, phys_snmp_id: 6 }
+        - { name: ge7,  id: 100007,  xid: null, type: 1G-SFP, phys_snmp_id: 7 }
+        - { name: ge8,  id: 100008,  xid: null, type: 1G-SFP, phys_snmp_id: 8 }
+        - { name: pon1/1, id: 9,  xid: 1, type: PON, phys_snmp_id: 9, _slot: 1, _port: 1 }
+        - { name: pon1/2, id: 10,  xid: 2, type: PON, phys_snmp_id: 10 , _slot: 1, _port: 2}
+        - { name: pon1/3, id: 11,  xid: 3, type: PON, phys_snmp_id: 11 , _slot: 1, _port: 3}
+        - { name: pon1/4, id: 12,  xid: 4, type: PON, phys_snmp_id: 12 , _slot: 1, _port: 4}
+        - { name: pon1/5, id: 13,  xid: 5, type: PON, phys_snmp_id: 13 , _slot: 1, _port: 5}
+        - { name: pon1/6, id: 14,  xid: 6, type: PON, phys_snmp_id: 14 , _slot: 1, _port: 6}
+        - { name: pon1/7, id: 15,  xid: 7, type: PON, phys_snmp_id: 15 , _slot: 1, _port: 7}
+        - { name: pon1/8, id: 16,  xid: 8, type: PON, phys_snmp_id: 16 , _slot: 1, _port: 8}
+
+  - name: C-Data FD1204SN
+    key: c_data_fd1204sn
+    inputs:
+      - snmp
+      - console
+    detect: {description: EasyPath Ethernet-PON,  objid: ^.1.3.6.1.4.1.17409$, ifacesCount: 10}
+    device_type: OLT
+    oids:
+      - ./oids/cdata/fd-epon-series.yml
+    traps:
+      - ./traps/cdata.yml
+    modules:
+      system: \SwitcherCore\Modules\CData\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\CData\PonPortsList
+      interfaces_list: \SwitcherCore\Modules\CData\PonPortsList
+      link_info: \SwitcherCore\Modules\CData\LinkInfo
+      pon_count_registered_onts: \SwitcherCore\Modules\CData\PortCountRegisteredOnts
+      pon_onts_status: \SwitcherCore\Modules\CData\OntListWithStatuses
+      pon_onts_mac_addr: \SwitcherCore\Modules\CData\OntMacAddress
+      pon_onts_optical: \SwitcherCore\Modules\CData\OntOpticalInfo
+      pon_onts_reasons: \SwitcherCore\Modules\CData\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\CData\OntVendorInfo
+      uni_interfaces_status: \SwitcherCore\Modules\CData\OntUniPortsStatus
+      fdb: \SwitcherCore\Modules\CData\FdbTableConsole
+      interface_counters: \SwitcherCore\Modules\CData\InterfaceCountersFD12
+      save_config: \SwitcherCore\Modules\CData\OltSaveSettings
+      ctrl_ont_reboot: \SwitcherCore\Modules\CData\OntReboot
+      ctrl_ont_reset: \SwitcherCore\Modules\CData\OntReset
+      ctrl_ont_delete: \SwitcherCore\Modules\CData\OntDelete
+      ctrl_ont_clear_counters: \SwitcherCore\Modules\CData\OntUniClearCounters
+      parse_interface: \SwitcherCore\Modules\CData\ParseInterface
+      sys_resources: \SwitcherCore\Modules\CData\SystemResources
+      #interface_descriptions: \SwitcherCore\Modules\CData\InterfaceDescriptions
+      interface_descriptions: \SwitcherCore\Modules\CData\InterfaceDescriptionsFD12
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\CData\UniInterfacesControlAdminStatus
+      ctrl_ont_descr: \SwitcherCore\Modules\CData\CtrlOntDescription
+      console_command: \SwitcherCore\Modules\CData\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\CData\MultiRawConsoleCommand
+      ctrl_port_descr: \SwitcherCore\Modules\CData\PortDescriptionControl
+      unregistered_onts: \SwitcherCore\Modules\CData\UnregisteredOnts
+      pon_profiles: \SwitcherCore\Modules\CData\GetProfiles
+      pon_onts_configuration: \SwitcherCore\Modules\CData\PonOntsConfiguration
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sys_temp: \SwitcherCore\Modules\CData\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\CData\SnoopingInfo
+
+    extra:
+      pon_type: EPON
+      pon_port_size: 64
+      console_conn_type: cdata
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - config
+        - vty output show-all
+      interfaces:
+        - {name: ge0/0/1, id: 16777472,  xid: 1, type: 1G-SFP}
+        - {name: ge0/0/2, id: 16777728,  xid: 2, type: 1G-SFP}
+        - {name: ge0/0/3, id: 16777984,  xid: 3, type: 1G-SFP}
+        - {name: ge0/0/4, id: 16778240,  xid: 4, type: 1G-SFP}
+        - {name: xge0/0/1, id: 16778240,  xid: 5, type: 10G-SFP}
+        - {name: xge0/0/2, id: 16778752,  xid: 6, type: 10G-SFP}
+        - {name: pon0/0/1, id: 16779008,  xid: 7, type: PON, pontype: epon, _slot: 0, _port: 1}
+        - {name: pon0/0/2, id: 16779264,  xid: 8, type: PON, pontype: epon, _slot: 0, _port: 2}
+        - {name: pon0/0/3, id: 16779520,  xid: 9, type: PON, pontype: epon, _slot: 0, _port: 3}
+        - {name: pon0/0/4, id: 16779776,  xid: 10, type: PON, pontype: epon, _slot: 0, _port: 4}
+
+  - name: C-Data FD1208S
+    key: c_data_fd1208s
+    inputs:
+      - snmp
+      - console
+    detect: {description: EasyPath Ethernet-PON,  objid: ^.1.3.6.1.4.1.17409$, ifacesCount: 20}
+    device_type: OLT
+    oids:
+      - ./oids/cdata/fd-epon-series.yml
+      - ./oids/cdata/fd-1208s-r1.yml
+    traps:
+      - ./traps/cdata.yml
+    modules:
+      system: \SwitcherCore\Modules\CData\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\CData\PonPortsList
+      pon_count_registered_onts: \SwitcherCore\Modules\CData\PortCountRegisteredOnts
+      pon_onts_status: \SwitcherCore\Modules\CData\OntListWithStatuses
+      pon_onts_mac_addr: \SwitcherCore\Modules\CData\OntMacAddress
+      uni_interfaces_status: \SwitcherCore\Modules\CData\OntUniPortsStatus
+      pon_onts_optical: \SwitcherCore\Modules\CData\OntOpticalInfo
+      pon_onts_reasons: \SwitcherCore\Modules\CData\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\CData\OntVendorInfo
+      fdb: \SwitcherCore\Modules\CData\FdbTableConsole
+      interface_counters: \SwitcherCore\Modules\CData\InterfaceCountersFD12
+      save_config: \SwitcherCore\Modules\CData\OltSaveSettings
+      ctrl_ont_reboot: \SwitcherCore\Modules\CData\OntReboot
+      ctrl_ont_reset: \SwitcherCore\Modules\CData\OntReset
+      ctrl_ont_delete: \SwitcherCore\Modules\CData\OntDelete
+      ctrl_ont_clear_counters: \SwitcherCore\Modules\CData\OntUniClearCounters
+      parse_interface: \SwitcherCore\Modules\CData\ParseInterface
+      sys_resources: \SwitcherCore\Modules\CData\SystemResources
+      #interface_descriptions: \SwitcherCore\Modules\CData\InterfaceDescriptions
+      interface_descriptions: \SwitcherCore\Modules\CData\InterfaceDescriptionsFD12
+      interfaces_list: \SwitcherCore\Modules\CData\PonPortsList
+      link_info: \SwitcherCore\Modules\CData\LinkInfo
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\CData\UniInterfacesControlAdminStatus
+      ctrl_ont_descr: \SwitcherCore\Modules\CData\CtrlOntDescription
+      console_command: \SwitcherCore\Modules\CData\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\CData\MultiRawConsoleCommand
+      ctrl_port_descr: \SwitcherCore\Modules\CData\PortDescriptionControl
+      unregistered_onts: \SwitcherCore\Modules\CData\UnregisteredOnts
+      pon_profiles: \SwitcherCore\Modules\CData\GetProfiles
+      pon_onts_configuration: \SwitcherCore\Modules\CData\PonOntsConfiguration
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sys_temp: \SwitcherCore\Modules\CData\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\CData\SnoopingInfo
+
+    extra:
+      pon_type: EPON
+      pon_port_size: 64
+      console_conn_type: cdata
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - config
+        - vty output show-all
+      interfaces:
+        - {name: ge0/0/1, id: 16777472,  xid: 1, type: 1G-SFP}
+        - {name: ge0/0/2, id: 16777728,  xid: 2, type: 1G-SFP}
+        - {name: ge0/0/3, id: 16777984,  xid: 3, type: 1G-SFP}
+        - {name: ge0/0/4, id: 16778240,  xid: 4, type: 1G-SFP}
+        - {name: ge0/0/5, id: 16778496,  xid: 5, type: 1G-SFP}
+        - {name: ge0/0/6, id: 16778752,  xid: 6, type: 1G-SFP}
+        - {name: ge0/0/7, id: 16779008,  xid: 7, type: 1G-SFP}
+        - {name: ge0/0/8, id: 16779264,  xid: 8, type: 1G-SFP}
+        - {name: xge0/0/1, id: 16779520,  xid: 9, type: 10G-SFP}
+        - {name: xge0/0/2, id: 16779776,  xid: 10, type: 10G-SFP}
+        - {name: xge0/0/3, id: 16780032,  xid: 11, type: 10G-SFP}
+        - {name: xge0/0/4, id: 16780288,  xid: 12, type: 10G-SFP}
+        - {name: pon0/0/1, id: 16780544,  xid: 13, type: PON, pontype: epon, _slot: 0, _port: 1}
+        - {name: pon0/0/2, id: 16780800,  xid: 14, type: PON, pontype: epon, _slot: 0, _port: 2}
+        - {name: pon0/0/3, id: 16781056,  xid: 15, type: PON, pontype: epon, _slot: 0, _port: 3}
+        - {name: pon0/0/4, id: 16781312,  xid: 16, type: PON, pontype: epon, _slot: 0, _port: 4}
+        - {name: pon0/0/5, id: 16781568,  xid: 17, type: PON, pontype: epon, _slot: 0, _port: 5}
+        - {name: pon0/0/6, id: 16781824,  xid: 18, type: PON, pontype: epon, _slot: 0, _port: 6}
+        - {name: pon0/0/7, id: 16782080,  xid: 19, type: PON, pontype: epon, _slot: 0, _port: 7}
+        - {name: pon0/0/8, id: 16782336,  xid: 20, type: PON, pontype: epon, _slot: 0, _port: 8}
+
+  - name: C-Data FD1216S-R1
+    key: c_data_fd1216s_r1
+    inputs:
+      - snmp
+      - console
+    detect: {description: EasyPath Ethernet-PON,  objid: ^.1.3.6.1.4.1.17409$, ifacesCount: 26}
+    device_type: OLT
+    oids:
+      - ./oids/cdata/fd-epon-series.yml
+      - ./oids/cdata/fd-1208s-r1.yml
+    traps:
+      - ./traps/cdata.yml
+    modules:
+      system: \SwitcherCore\Modules\CData\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\CData\PonPortsList
+      pon_count_registered_onts: \SwitcherCore\Modules\CData\PortCountRegisteredOnts
+      pon_onts_status: \SwitcherCore\Modules\CData\OntListWithStatuses
+      pon_onts_mac_addr: \SwitcherCore\Modules\CData\OntMacAddress
+      uni_interfaces_status: \SwitcherCore\Modules\CData\OntUniPortsStatus
+      pon_onts_optical: \SwitcherCore\Modules\CData\OntOpticalInfo
+      pon_onts_reasons: \SwitcherCore\Modules\CData\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\CData\OntVendorInfo
+      fdb: \SwitcherCore\Modules\CData\FdbTableConsole
+      interface_counters: \SwitcherCore\Modules\CData\InterfaceCountersFD12
+      save_config: \SwitcherCore\Modules\CData\OltSaveSettings
+      ctrl_ont_reboot: \SwitcherCore\Modules\CData\OntReboot
+      ctrl_ont_reset: \SwitcherCore\Modules\CData\OntReset
+      ctrl_ont_delete: \SwitcherCore\Modules\CData\OntDelete
+      ctrl_ont_clear_counters: \SwitcherCore\Modules\CData\OntUniClearCounters
+      parse_interface: \SwitcherCore\Modules\CData\ParseInterface
+      sys_resources: \SwitcherCore\Modules\CData\SystemResources
+      #interface_descriptions: \SwitcherCore\Modules\CData\InterfaceDescriptions
+      interface_descriptions: \SwitcherCore\Modules\CData\InterfaceDescriptionsFD12
+      interfaces_list: \SwitcherCore\Modules\CData\PonPortsList
+      link_info: \SwitcherCore\Modules\CData\LinkInfo
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\CData\UniInterfacesControlAdminStatus
+      ctrl_ont_descr: \SwitcherCore\Modules\CData\CtrlOntDescription
+      console_command: \SwitcherCore\Modules\CData\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\CData\MultiRawConsoleCommand
+      ctrl_port_descr: \SwitcherCore\Modules\CData\PortDescriptionControl
+      unregistered_onts: \SwitcherCore\Modules\CData\UnregisteredOnts
+      pon_profiles: \SwitcherCore\Modules\CData\GetProfiles
+      pon_onts_configuration: \SwitcherCore\Modules\CData\PonOntsConfiguration
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sys_temp: \SwitcherCore\Modules\CData\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\CData\SnoopingInfo
+
+    extra:
+      pon_type: EPON
+      pon_port_size: 64
+      console_conn_type: cdata
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - config
+      interfaces:
+        - {name: ge0/0/1, id: 16777472,  xid: 1, type: 1G-SFP}
+        - {name: ge0/0/2, id: 16777728,  xid: 2, type: 1G-SFP}
+        - {name: ge0/0/3, id: 16777984,  xid: 3, type: 1G-SFP}
+        - {name: ge0/0/4, id: 16778240,  xid: 4, type: 1G-SFP}
+        - {name: ge0/0/5, id: 16778496,  xid: 5, type: 1G-SFP}
+        - {name: ge0/0/6, id: 16778752,  xid: 6, type: 1G-SFP}
+        - {name: ge0/0/7, id: 16779008,  xid: 7, type: 1G-SFP}
+        - {name: ge0/0/8, id: 16779264,  xid: 8, type: 1G-SFP}
+        - {name: xge0/0/1, id: 16779520,  xid: 9, type: 10G-SFP}
+        - {name: xge0/0/2, id: 16779776,  xid: 10, type: 10G-SFP}
+        - {name: pon0/0/1, id: 16780032,  xid: 11, type: PON, pontype: epon, _slot: 0, _port: 1}
+        - {name: pon0/0/2, id: 16780288,  xid: 12, type: PON, pontype: epon, _slot: 0, _port: 2}
+        - {name: pon0/0/3, id: 16780544,  xid: 13, type: PON, pontype: epon, _slot: 0, _port: 3}
+        - {name: pon0/0/4, id: 16780800,  xid: 14, type: PON, pontype: epon, _slot: 0, _port: 4}
+        - {name: pon0/0/5, id: 16781056,  xid: 15, type: PON, pontype: epon, _slot: 0, _port: 5}
+        - {name: pon0/0/6, id: 16781312,  xid: 16, type: PON, pontype: epon, _slot: 0, _port: 6}
+        - {name: pon0/0/7, id: 16781568,  xid: 17, type: PON, pontype: epon, _slot: 0, _port: 7}
+        - {name: pon0/0/8, id: 16781824,  xid: 18, type: PON, pontype: epon, _slot: 0, _port: 8}
+        - {name: pon0/0/9, id: 16782080,  xid: 19, type: PON, pontype: epon, _slot: 0, _port: 9}
+        - {name: pon0/0/10, id: 16782336,  xid: 20, type: PON, pontype: epon, _slot: 0, _port: 10}
+        - {name: pon0/0/11, id: 16782592,  xid: 21, type: PON, pontype: epon, _slot: 0, _port: 11}
+        - {name: pon0/0/12, id: 16782848,  xid: 22, type: PON, pontype: epon, _slot: 0, _port: 12}
+        - {name: pon0/0/13, id: 16783104,  xid: 23, type: PON, pontype: epon, _slot: 0, _port: 13}
+        - {name: pon0/0/14, id: 16783360,  xid: 24, type: PON, pontype: epon, _slot: 0, _port: 14}
+        - {name: pon0/0/15, id: 16783616,  xid: 25, type: PON, pontype: epon, _slot: 0, _port: 15}
+        - {name: pon0/0/16, id: 16783872,  xid: 26, type: PON, pontype: epon, _slot: 0, _port: 16}
+
+  - name: C-Data FD1604
+    key: c_data_fd1604
+    inputs:
+      - snmp
+      - console
+    detect: {description: FD1604,  objid: ^.1.3.6.1.4.1.17409$}
+    device_type: OLT
+    oids:
+      - ./oids/cdata/fd-gpon-series.yml
+    traps:
+      - ./traps/cdata.yml
+    rewrites:
+      oid: .1.3.6.1.4.1.17409.2.3.1.3.1.1.9.1.0
+      mapping:
+        - value: ^V3.*
+          rewrite:
+            name: C-Data FD1604 (FW 3)
+            key: c_data_fd1604_fw3
+            modules:
+              system: \SwitcherCore\Modules\CData\FD16xxV3\SystemInformation
+              pon_ports_list: \SwitcherCore\Modules\CData\FD16xxV3\PonPortsList
+              pon_onts_status: \SwitcherCore\Modules\CData\FD16xxV3\OntListWithStatuses
+              pon_onts_serial: \SwitcherCore\Modules\CData\FD16xxV3\GponOntSerial
+              pon_onts_optical: \SwitcherCore\Modules\CData\FD16xxV3\OntOpticalInfoFD16
+              pon_onts_reasons: \SwitcherCore\Modules\CData\FD16xxV3\OntReasons
+              pon_onts_vendor: \SwitcherCore\Modules\CData\FD16xxV3\OntVendorInfo
+              fdb: \SwitcherCore\Modules\CData\FD16xxV3\FdbTableConsoleFD1616
+              interface_counters: \SwitcherCore\Modules\CData\FD16xxV3\InterfaceCountersFD16
+              ctrl_ont_reboot: \SwitcherCore\Modules\CData\FD16xxV3\OntRebootTelnetGpon
+              ctrl_ont_reset: \SwitcherCore\Modules\CData\FD16xxV3\OntResetTelnetGpon
+              save_config: \SwitcherCore\Modules\CData\FD16xxV3\OltSaveSettings
+              parse_interface: \SwitcherCore\Modules\CData\FD16xxV3\ParseInterface
+              interface_descriptions: \SwitcherCore\Modules\CData\FD16xxV3\InterfaceDescriptionsFD16
+              sys_resources: \SwitcherCore\Modules\CData\FD16xxV3\SystemResources
+              interfaces_list: \SwitcherCore\Modules\CData\FD16xxV3\InterfacesList
+              link_info: \SwitcherCore\Modules\CData\FD16xxV3\LinkInfo
+              ctrl_ont_uni_admin_state: \SwitcherCore\Modules\CData\FD16xxV3\UniInterfacesControlAdminStatus
+              ctrl_ont_descr: \SwitcherCore\Modules\CData\FD16xxV3\CtrlOntDescription
+              console_command: \SwitcherCore\Modules\CData\FD16xxV3\RawConsoleCommand
+              multi_console_command: \SwitcherCore\Modules\CData\FD16xxV3\MultiRawConsoleCommand
+              #ctrl_port_descr: \SwitcherCore\Modules\CData\FD16xxV3\PortDescriptionControl
+              ctrl_ont_delete: \SwitcherCore\Modules\CData\FD16xxV3\OntDeleteGpon
+              sfp_media: \SwitcherCore\Modules\CData\FD16xxV3\SfpMediaInfo
+              sfp_optical: \SwitcherCore\Modules\CData\FD16xxV3\SfpOpticalInfo
+              sfp_diag: \SwitcherCore\Modules\CData\FD16xxV3\SfpDiag
+              uni_interfaces_status: \SwitcherCore\Modules\CData\FD16xxV3\OntUniPortsStatus
+              unregistered_onts: \SwitcherCore\Modules\CData\FD16xxV3\UnregisteredOnts
+              pon_profiles: \SwitcherCore\Modules\CData\FD16xxV3\GetProfiles
+              pon_onts_configuration: \SwitcherCore\Modules\CData\FD16xxV3\PonOntsConfiguration
+              pon_onts_service_profile: \SwitcherCore\Modules\CData\FD16xxV3\OntsServiceProfile
+              supported_modules: \SwitcherCore\Modules\General\SupportedModules
+              sys_temp: \SwitcherCore\Modules\CData\FD16xxV3\SystemTemperatures
+              snooping_info: \SwitcherCore\Modules\CData\FD16xxV3\SnoopingInfo
+            extra:
+              pon_type: GPON
+              pon_port_size: 128
+              console_conn_type: cdata
+              console_commands_after_connect:
+                - { command: enable, check_password: true }
+                - terminal length 0
+                - config
+    modules:
+      system: \SwitcherCore\Modules\CData\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\CData\PonPortsList
+      pon_onts_status: \SwitcherCore\Modules\CData\OntListWithStatuses
+      pon_onts_serial: \SwitcherCore\Modules\CData\GponOntSerial
+      pon_onts_optical: \SwitcherCore\Modules\CData\OntOpticalInfoFD16
+      pon_onts_reasons: \SwitcherCore\Modules\CData\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\CData\OntVendorInfo
+      fdb: \SwitcherCore\Modules\CData\FdbTableConsoleFD1616
+      uni_interfaces_status: \SwitcherCore\Modules\CData\OntUniPortsStatus
+      interface_counters: \SwitcherCore\Modules\CData\InterfaceCountersFD16
+      ctrl_ont_reboot: \SwitcherCore\Modules\CData\OntRebootTelnetGpon
+      ctrl_ont_reset: \SwitcherCore\Modules\CData\OntResetTelnetGpon
+      save_config: \SwitcherCore\Modules\CData\OltSaveSettings
+      parse_interface: \SwitcherCore\Modules\CData\ParseInterface
+      interface_descriptions: \SwitcherCore\Modules\CData\InterfaceDescriptionsFD16
+      sys_resources: \SwitcherCore\Modules\CData\SystemResources
+      interfaces_list: \SwitcherCore\Modules\CData\InterfacesList
+      link_info: \SwitcherCore\Modules\CData\LinkInfo
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\CData\UniInterfacesControlAdminStatus
+      ctrl_ont_descr: \SwitcherCore\Modules\CData\CtrlOntDescription
+      console_command: \SwitcherCore\Modules\CData\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\CData\MultiRawConsoleCommand
+      ctrl_port_descr: \SwitcherCore\Modules\CData\PortDescriptionControl
+      ctrl_ont_delete: \SwitcherCore\Modules\CData\OntDeleteGpon
+      unregistered_onts: \SwitcherCore\Modules\CData\UnregisteredOnts
+      pon_profiles: \SwitcherCore\Modules\CData\GetProfiles
+      pon_onts_configuration: \SwitcherCore\Modules\CData\PonOntsConfiguration
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sys_temp: \SwitcherCore\Modules\CData\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\CData\SnoopingInfo
+    extra:
+      pon_type: GPON
+      pon_port_size: 128
+      console_conn_type: cdata
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - config
+        - vty output show-more
+      interfaces:
+        - { name: ge0/0/1, id: 16777472,  xid: 1, type: 1G-SFP }
+        - { name: ge0/0/2, id: 16777728,  xid: 2, type: 1G-SFP }
+        - { name: ge0/0/3, id: 16777984,  xid: 3, type: 1G-SFP }
+        - { name: ge0/0/4, id: 16778240,  xid: 4, type: 1G-SFP }
+        - { name: xge0/0/1, id: 16778496,  xid: 5, type: 10G-SFP }
+        - { name: xge0/0/2, id: 16778752,  xid: 6, type: 10G-SFP }
+        - { name: pon0/0/1, id: 16779008,  xid: 7, type: PON, pontype: gpon, _slot: 0, _port: 1 }
+        - { name: pon0/0/2, id: 16779264,  xid: 8, type: PON, pontype: gpon, _slot: 0, _port: 2 }
+        - { name: pon0/0/3, id: 16779520,  xid: 9, type: PON, pontype: gpon, _slot: 0, _port: 3 }
+        - { name: pon0/0/4, id: 16779776,  xid: 10, type: PON, pontype: gpon, _slot: 0, _port: 4 }
+
+  - name: C-Data FD1601
+    key: c_data_fd1601
+    inputs:
+      - snmp
+      - console
+    detect: {description: FD1601,  objid: ^.1.3.6.1.4.1.17409$}
+    device_type: OLT
+    oids:
+      - ./oids/cdata/fd-gpon-series.yml
+    traps:
+      - ./traps/cdata.yml
+    rewrites:
+      oid: .1.3.6.1.4.1.17409.2.3.1.3.1.1.9.1.0
+      mapping:
+        - value: ^V3.*
+          rewrite:
+            name: C-Data FD1601 (FW 3)
+            key: c_data_fd1601_fw3
+            modules:
+              system: \SwitcherCore\Modules\CData\FD16xxV3\SystemInformation
+              pon_ports_list: \SwitcherCore\Modules\CData\FD16xxV3\PonPortsList
+              pon_onts_status: \SwitcherCore\Modules\CData\FD16xxV3\OntListWithStatuses
+              pon_onts_serial: \SwitcherCore\Modules\CData\FD16xxV3\GponOntSerial
+              pon_onts_optical: \SwitcherCore\Modules\CData\FD16xxV3\OntOpticalInfoFD16
+              pon_onts_reasons: \SwitcherCore\Modules\CData\FD16xxV3\OntReasons
+              pon_onts_vendor: \SwitcherCore\Modules\CData\FD16xxV3\OntVendorInfo
+              fdb: \SwitcherCore\Modules\CData\FD16xxV3\FdbTableConsoleFD1616
+              interface_counters: \SwitcherCore\Modules\CData\FD16xxV3\InterfaceCountersFD16
+              ctrl_ont_reboot: \SwitcherCore\Modules\CData\FD16xxV3\OntRebootTelnetGpon
+              ctrl_ont_reset: \SwitcherCore\Modules\CData\FD16xxV3\OntResetTelnetGpon
+              save_config: \SwitcherCore\Modules\CData\FD16xxV3\OltSaveSettings
+              parse_interface: \SwitcherCore\Modules\CData\FD16xxV3\ParseInterface
+              interface_descriptions: \SwitcherCore\Modules\CData\FD16xxV3\InterfaceDescriptionsFD16
+              sys_resources: \SwitcherCore\Modules\CData\FD16xxV3\SystemResources
+              interfaces_list: \SwitcherCore\Modules\CData\FD16xxV3\InterfacesList
+              link_info: \SwitcherCore\Modules\CData\FD16xxV3\LinkInfo
+              ctrl_ont_uni_admin_state: \SwitcherCore\Modules\CData\FD16xxV3\UniInterfacesControlAdminStatus
+              ctrl_ont_descr: \SwitcherCore\Modules\CData\FD16xxV3\CtrlOntDescription
+              console_command: \SwitcherCore\Modules\CData\FD16xxV3\RawConsoleCommand
+              multi_console_command: \SwitcherCore\Modules\CData\FD16xxV3\MultiRawConsoleCommand
+              #ctrl_port_descr: \SwitcherCore\Modules\CData\FD16xxV3\PortDescriptionControl
+              ctrl_ont_delete: \SwitcherCore\Modules\CData\FD16xxV3\OntDeleteGpon
+              sfp_media: \SwitcherCore\Modules\CData\FD16xxV3\SfpMediaInfo
+              sfp_optical: \SwitcherCore\Modules\CData\FD16xxV3\SfpOpticalInfo
+              sfp_diag: \SwitcherCore\Modules\CData\FD16xxV3\SfpDiag
+              uni_interfaces_status: \SwitcherCore\Modules\CData\FD16xxV3\OntUniPortsStatus
+              unregistered_onts: \SwitcherCore\Modules\CData\FD16xxV3\UnregisteredOnts
+              pon_profiles: \SwitcherCore\Modules\CData\FD16xxV3\GetProfiles
+              pon_onts_configuration: \SwitcherCore\Modules\CData\FD16xxV3\PonOntsConfiguration
+              pon_onts_service_profile: \SwitcherCore\Modules\CData\FD16xxV3\OntsServiceProfile
+              supported_modules: \SwitcherCore\Modules\General\SupportedModules
+              sys_temp: \SwitcherCore\Modules\CData\FD16xxV3\SystemTemperatures
+              snooping_info: \SwitcherCore\Modules\CData\FD16xxV3\SnoopingInfo
+            extra:
+              pon_type: GPON
+              pon_port_size: 128
+              console_conn_type: cdata
+              console_commands_after_connect:
+                - { command: enable, check_password: true }
+                - terminal length 0
+                - config
+    modules:
+      system: \SwitcherCore\Modules\CData\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\CData\PonPortsList
+      pon_onts_status: \SwitcherCore\Modules\CData\OntListWithStatuses
+      pon_onts_serial: \SwitcherCore\Modules\CData\GponOntSerial
+      pon_onts_optical: \SwitcherCore\Modules\CData\OntOpticalInfoFD16
+      pon_onts_reasons: \SwitcherCore\Modules\CData\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\CData\OntVendorInfo
+      fdb: \SwitcherCore\Modules\CData\FdbTableConsoleFD1616
+      uni_interfaces_status: \SwitcherCore\Modules\CData\OntUniPortsStatus
+      interface_counters: \SwitcherCore\Modules\CData\InterfaceCountersFD16
+      ctrl_ont_reboot: \SwitcherCore\Modules\CData\OntRebootTelnetGpon
+      ctrl_ont_reset: \SwitcherCore\Modules\CData\OntResetTelnetGpon
+      save_config: \SwitcherCore\Modules\CData\OltSaveSettings
+      parse_interface: \SwitcherCore\Modules\CData\ParseInterface
+      interface_descriptions: \SwitcherCore\Modules\CData\InterfaceDescriptionsFD16
+      sys_resources: \SwitcherCore\Modules\CData\SystemResources
+      interfaces_list: \SwitcherCore\Modules\CData\InterfacesList
+      link_info: \SwitcherCore\Modules\CData\LinkInfo
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\CData\UniInterfacesControlAdminStatus
+      ctrl_ont_descr: \SwitcherCore\Modules\CData\CtrlOntDescription
+      console_command: \SwitcherCore\Modules\CData\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\CData\MultiRawConsoleCommand
+      ctrl_port_descr: \SwitcherCore\Modules\CData\PortDescriptionControl
+      ctrl_ont_delete: \SwitcherCore\Modules\CData\OntDeleteGpon
+      sfp_media: \SwitcherCore\Modules\CData\FD16xxV3\SfpMediaInfo
+      sfp_optical: \SwitcherCore\Modules\CData\FD16xxV3\SfpOpticalInfo
+      sfp_diag: \SwitcherCore\Modules\CData\FD16xxV3\SfpDiag
+      unregistered_onts: \SwitcherCore\Modules\CData\UnregisteredOnts
+      pon_profiles: \SwitcherCore\Modules\CData\GetProfiles
+      pon_onts_configuration: \SwitcherCore\Modules\CData\PonOntsConfiguration
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sys_temp: \SwitcherCore\Modules\CData\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\CData\SnoopingInfo
+    extra:
+      pon_type: GPON
+      pon_port_size: 128
+      console_conn_type: cdata
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - config
+        - vty output show-more
+      interfaces:
+        - { name: ge0/0/1, id: 16777472,  xid: 1, type: 1G-SFP }
+        - { name: ge0/0/2, id: 16777728,  xid: 2, type: 1G-SFP }
+        - { name: ge0/0/3, id: 16777984,  xid: 3, type: 1G-SFP }
+        - { name: ge0/0/4, id: 16778240,  xid: 4, type: 1G-SFP }
+        - { name: xge0/0/1, id: 16778496,  xid: 5, type: 10G-SFP }
+        - { name: xge0/0/2, id: 16778752,  xid: 6, type: 10G-SFP }
+        - { name: pon0/0/1, id: 16779008,  xid: 7, type: PON, pontype: gpon, _slot: 0, _port: 1 }
+        - { name: pon0/0/2, id: 16779264,  xid: 8, type: PON, pontype: gpon, _slot: 0, _port: 2 }
+        - { name: pon0/0/3, id: 16779520,  xid: 9, type: PON, pontype: gpon, _slot: 0, _port: 3 }
+        - { name: pon0/0/4, id: 16779776,  xid: 10, type: PON, pontype: gpon, _slot: 0, _port: 4 }
+
+
+  - name: C-Data FD1608
+    key: c_data_fd1608
+    detect: {description: .*,  objid: ^.1.3.6.1.4.1.17409$, ifacesCount: 14}
+    oids:
+      - ./oids/cdata/fd-gpon-series.yml
+    inputs:
+      - snmp
+      - console
+    device_type: OLT
+    traps:
+      - ./traps/cdata.yml
+    rewrites:
+      oid: .1.3.6.1.4.1.17409.2.3.1.3.1.1.9.1.0
+      mapping:
+        - value: ^V3.*
+          rewrite:
+            name: C-Data FD1608 (FW 3)
+            key: c_data_fd1608_fw3
+            modules:
+              system: \SwitcherCore\Modules\CData\FD16xxV3\SystemInformation
+              pon_ports_list: \SwitcherCore\Modules\CData\FD16xxV3\PonPortsList
+              pon_onts_status: \SwitcherCore\Modules\CData\FD16xxV3\OntListWithStatuses
+              pon_onts_serial: \SwitcherCore\Modules\CData\FD16xxV3\GponOntSerial
+              pon_onts_optical: \SwitcherCore\Modules\CData\FD16xxV3\OntOpticalInfoFD16
+              pon_onts_reasons: \SwitcherCore\Modules\CData\FD16xxV3\OntReasons
+              pon_onts_vendor: \SwitcherCore\Modules\CData\FD16xxV3\OntVendorInfo
+              fdb: \SwitcherCore\Modules\CData\FD16xxV3\FdbTableConsoleFD1616
+              interface_counters: \SwitcherCore\Modules\CData\FD16xxV3\InterfaceCountersFD16
+              ctrl_ont_reboot: \SwitcherCore\Modules\CData\FD16xxV3\OntRebootTelnetGpon
+              ctrl_ont_reset: \SwitcherCore\Modules\CData\FD16xxV3\OntResetTelnetGpon
+              save_config: \SwitcherCore\Modules\CData\FD16xxV3\OltSaveSettings
+              parse_interface: \SwitcherCore\Modules\CData\FD16xxV3\ParseInterface
+              interface_descriptions: \SwitcherCore\Modules\CData\FD16xxV3\InterfaceDescriptionsFD16
+              sys_resources: \SwitcherCore\Modules\CData\FD16xxV3\SystemResources
+              interfaces_list: \SwitcherCore\Modules\CData\FD16xxV3\InterfacesList
+              link_info: \SwitcherCore\Modules\CData\FD16xxV3\LinkInfo
+              ctrl_ont_uni_admin_state: \SwitcherCore\Modules\CData\FD16xxV3\UniInterfacesControlAdminStatus
+              ctrl_ont_descr: \SwitcherCore\Modules\CData\FD16xxV3\CtrlOntDescription
+              console_command: \SwitcherCore\Modules\CData\FD16xxV3\RawConsoleCommand
+              multi_console_command: \SwitcherCore\Modules\CData\FD16xxV3\MultiRawConsoleCommand
+              #ctrl_port_descr: \SwitcherCore\Modules\CData\FD16xxV3\PortDescriptionControl
+#              sfp_media: \SwitcherCore\Modules\CData\FD16xxV3\SfpMediaInfo
+#              sfp_optical: \SwitcherCore\Modules\CData\FD16xxV3\SfpOpticalInfo
+#              sfp_diag: \SwitcherCore\Modules\CData\FD16xxV3\SfpDiag
+              ctrl_ont_delete: \SwitcherCore\Modules\CData\FD16xxV3\OntDeleteGpon
+              uni_interfaces_status: \SwitcherCore\Modules\CData\FD16xxV3\OntUniPortsStatus
+              unregistered_onts: \SwitcherCore\Modules\CData\FD16xxV3\UnregisteredOnts
+              pon_profiles: \SwitcherCore\Modules\CData\FD16xxV3\GetProfiles
+              pon_onts_configuration: \SwitcherCore\Modules\CData\FD16xxV3\PonOntsConfiguration
+              pon_onts_service_profile: \SwitcherCore\Modules\CData\FD16xxV3\OntsServiceProfile
+              supported_modules: \SwitcherCore\Modules\General\SupportedModules
+              sys_temp: \SwitcherCore\Modules\CData\FD16xxV3\SystemTemperatures
+              snooping_info: \SwitcherCore\Modules\CData\FD16xxV3\SnoopingInfo
+            extra:
+              pon_type: GPON
+              pon_port_size: 128
+              console_conn_type: cdata
+              console_commands_after_connect:
+                - { command: enable, check_password: true }
+                - terminal length 0
+                - config
+
+    modules:
+      system: \SwitcherCore\Modules\CData\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\CData\PonPortsList
+      pon_onts_status: \SwitcherCore\Modules\CData\OntListWithStatuses
+      pon_onts_serial: \SwitcherCore\Modules\CData\GponOntSerial
+      pon_onts_optical: \SwitcherCore\Modules\CData\OntOpticalInfoFD16
+      pon_onts_reasons: \SwitcherCore\Modules\CData\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\CData\OntVendorInfo
+      fdb: \SwitcherCore\Modules\CData\FdbTableConsoleFD1616
+      uni_interfaces_status: \SwitcherCore\Modules\CData\OntUniPortsStatus
+      interface_counters: \SwitcherCore\Modules\CData\InterfaceCountersFD16
+      ctrl_ont_reboot: \SwitcherCore\Modules\CData\OntRebootTelnetGpon
+      ctrl_ont_reset: \SwitcherCore\Modules\CData\OntResetTelnetGpon
+      save_config: \SwitcherCore\Modules\CData\OltSaveSettings
+      parse_interface: \SwitcherCore\Modules\CData\ParseInterface
+      interface_descriptions: \SwitcherCore\Modules\CData\InterfaceDescriptionsFD16
+      sys_resources: \SwitcherCore\Modules\CData\SystemResources
+      interfaces_list: \SwitcherCore\Modules\CData\InterfacesList
+      link_info: \SwitcherCore\Modules\CData\LinkInfo
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\CData\UniInterfacesControlAdminStatus
+      ctrl_ont_descr: \SwitcherCore\Modules\CData\CtrlOntDescription
+      console_command: \SwitcherCore\Modules\CData\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\CData\MultiRawConsoleCommand
+      ctrl_port_descr: \SwitcherCore\Modules\CData\PortDescriptionControl
+      ctrl_ont_delete: \SwitcherCore\Modules\CData\OntDeleteGpon
+      unregistered_onts: \SwitcherCore\Modules\CData\UnregisteredOnts
+      pon_profiles: \SwitcherCore\Modules\CData\GetProfiles
+      pon_onts_configuration: \SwitcherCore\Modules\CData\PonOntsConfiguration
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sys_temp: \SwitcherCore\Modules\CData\SystemTemperatures
+    extra:
+      pon_type: GPON
+      pon_port_size: 128
+      console_conn_type: cdata
+      console_commands_after_connect:
+        - { command: enable, check_password: true }
+        - config
+        - vty output show-more
+      interfaces:
+        - { name: ge0/0/1, id: 16777472,  xid: 1, type: 1G-SFP }
+        - { name: ge0/0/2, id: 16777728,  xid: 2, type: 1G-SFP }
+        - { name: ge0/0/3, id: 16777984,  xid: 3, type: 1G-SFP }
+        - { name: ge0/0/4, id: 16778240,  xid: 4, type: 1G-SFP }
+        - { name: xge0/0/1, id: 16778496,  xid: 5, type: 10G-SFP }
+        - { name: xge0/0/2, id: 16778752,  xid: 6, type: 10G-SFP }
+        - { name: pon0/0/1, id: 16779008,  xid: 7, type: PON, pontype: gpon, _slot: 0, _port: 1 }
+        - { name: pon0/0/2, id: 16779264,  xid: 8, type: PON, pontype: gpon, _slot: 0, _port: 2 }
+        - { name: pon0/0/3, id: 16779520,  xid: 9, type: PON, pontype: gpon, _slot: 0, _port: 3 }
+        - { name: pon0/0/4, id: 16779776,  xid: 10, type: PON, pontype: gpon, _slot: 0, _port: 4 }
+        - { name: pon0/0/5, id: 16780032,  xid: 11, type: PON, pontype: gpon, _slot: 0, _port: 5 }
+        - { name: pon0/0/6, id: 16780288,  xid: 12, type: PON, pontype: gpon, _slot: 0, _port: 6 }
+        - { name: pon0/0/7, id: 16780544,  xid: 13, type: PON, pontype: gpon, _slot: 0, _port: 7 }
+        - { name: pon0/0/8, id: 16780800,  xid: 14, type: PON, pontype: gpon, _slot: 0, _port: 8 }
+
+
+  - name: C-Data FD1616
+    key: c_data_fd1616
+    inputs:
+      - snmp
+      - console
+    detect: {description: FD1616,  objid: ^.1.3.6.1.4.1.17409$}
+    device_type: OLT
+    oids:
+      - ./oids/cdata/fd-gpon-series.yml
+    traps:
+      - ./traps/cdata.yml
+    rewrites:
+      oid: .1.3.6.1.4.1.17409.2.3.1.3.1.1.9.1.0
+      mapping:
+        - value: ^V3.*
+          rewrite:
+            name: C-Data FD1616 (FW 3)
+            key: c_data_fd1616_fw3
+            modules:
+              system: \SwitcherCore\Modules\CData\FD16xxV3\SystemInformation
+              pon_ports_list: \SwitcherCore\Modules\CData\FD16xxV3\PonPortsList
+              pon_onts_status: \SwitcherCore\Modules\CData\FD16xxV3\OntListWithStatuses
+              pon_onts_serial: \SwitcherCore\Modules\CData\FD16xxV3\GponOntSerial
+              pon_onts_optical: \SwitcherCore\Modules\CData\FD16xxV3\OntOpticalInfoFD16
+              pon_onts_reasons: \SwitcherCore\Modules\CData\FD16xxV3\OntReasons
+              pon_onts_vendor: \SwitcherCore\Modules\CData\FD16xxV3\OntVendorInfo
+              fdb: \SwitcherCore\Modules\CData\FD16xxV3\FdbTableConsoleFD1616
+              interface_counters: \SwitcherCore\Modules\CData\FD16xxV3\InterfaceCountersFD16
+              ctrl_ont_reboot: \SwitcherCore\Modules\CData\FD16xxV3\OntRebootTelnetGpon
+              ctrl_ont_reset: \SwitcherCore\Modules\CData\FD16xxV3\OntResetTelnetGpon
+              save_config: \SwitcherCore\Modules\CData\FD16xxV3\OltSaveSettings
+              parse_interface: \SwitcherCore\Modules\CData\FD16xxV3\ParseInterface
+              interface_descriptions: \SwitcherCore\Modules\CData\FD16xxV3\InterfaceDescriptionsFD16
+              sys_resources: \SwitcherCore\Modules\CData\FD16xxV3\SystemResources
+              interfaces_list: \SwitcherCore\Modules\CData\FD16xxV3\InterfacesList
+              link_info: \SwitcherCore\Modules\CData\FD16xxV3\LinkInfo
+              ctrl_ont_uni_admin_state: \SwitcherCore\Modules\CData\FD16xxV3\UniInterfacesControlAdminStatus
+              ctrl_ont_descr: \SwitcherCore\Modules\CData\FD16xxV3\CtrlOntDescription
+              console_command: \SwitcherCore\Modules\CData\FD16xxV3\RawConsoleCommand
+              multi_console_command: \SwitcherCore\Modules\CData\FD16xxV3\MultiRawConsoleCommand
+              #ctrl_port_descr: \SwitcherCore\Modules\CData\FD16xxV3\PortDescriptionControl
+              ctrl_ont_delete: \SwitcherCore\Modules\CData\FD16xxV3\OntDeleteGpon
+              uni_interfaces_status: \SwitcherCore\Modules\CData\FD16xxV3\OntUniPortsStatus
+              unregistered_onts: \SwitcherCore\Modules\CData\FD16xxV3\UnregisteredOnts
+              pon_profiles: \SwitcherCore\Modules\CData\FD16xxV3\GetProfiles
+              pon_onts_configuration: \SwitcherCore\Modules\CData\FD16xxV3\PonOntsConfiguration
+              pon_onts_service_profile: \SwitcherCore\Modules\CData\FD16xxV3\OntsServiceProfile
+              sfp_media: \SwitcherCore\Modules\CData\FD16xxV3\SfpMediaInfo
+              sfp_optical: \SwitcherCore\Modules\CData\FD16xxV3\SfpOpticalInfo
+              sfp_diag: \SwitcherCore\Modules\CData\FD16xxV3\SfpDiag
+              supported_modules: \SwitcherCore\Modules\General\SupportedModules
+              sys_temp: \SwitcherCore\Modules\CData\FD16xxV3\SystemTemperatures
+              snooping_info: \SwitcherCore\Modules\CData\FD16xxV3\SnoopingInfo
+            extra:
+              pon_type: GPON
+              pon_port_size: 128
+              console_conn_type: cdata
+              console_commands_after_connect:
+                - { command: enable, check_password: true }
+                - terminal length 0
+                - config
+    modules:
+      system: \SwitcherCore\Modules\CData\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\CData\PonPortsList
+      pon_onts_status: \SwitcherCore\Modules\CData\OntListWithStatuses
+      pon_onts_serial: \SwitcherCore\Modules\CData\GponOntSerial
+      pon_onts_optical: \SwitcherCore\Modules\CData\OntOpticalInfoFD16
+      pon_onts_reasons: \SwitcherCore\Modules\CData\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\CData\OntVendorInfo
+      fdb: \SwitcherCore\Modules\CData\FdbTableConsoleFD1616
+      uni_interfaces_status: \SwitcherCore\Modules\CData\OntUniPortsStatus
+      interface_counters: \SwitcherCore\Modules\CData\InterfaceCountersFD16
+      ctrl_ont_reboot: \SwitcherCore\Modules\CData\OntRebootTelnetGpon
+      ctrl_ont_reset: \SwitcherCore\Modules\CData\OntResetTelnetGpon
+      save_config: \SwitcherCore\Modules\CData\OltSaveSettings
+      parse_interface: \SwitcherCore\Modules\CData\ParseInterface
+      interface_descriptions: \SwitcherCore\Modules\CData\InterfaceDescriptionsFD16
+      sys_resources: \SwitcherCore\Modules\CData\SystemResources
+      interfaces_list: \SwitcherCore\Modules\CData\InterfacesList
+      link_info: \SwitcherCore\Modules\CData\LinkInfo
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\CData\UniInterfacesControlAdminStatus
+      ctrl_ont_descr: \SwitcherCore\Modules\CData\CtrlOntDescription
+      console_command: \SwitcherCore\Modules\CData\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\CData\MultiRawConsoleCommand
+      ctrl_port_descr: \SwitcherCore\Modules\CData\PortDescriptionControl
+      ctrl_ont_delete: \SwitcherCore\Modules\CData\OntDeleteGpon
+      unregistered_onts: \SwitcherCore\Modules\CData\UnregisteredOnts
+      pon_profiles: \SwitcherCore\Modules\CData\GetProfiles
+      pon_onts_configuration: \SwitcherCore\Modules\CData\PonOntsConfiguration
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sys_temp: \SwitcherCore\Modules\CData\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\CData\SnoopingInfo
+    extra:
+      pon_type: GPON
+      pon_port_size: 128
+      console_conn_type: cdata
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - config
+        - vty output show-more
+      interfaces:
+        - {name: ge0/0/1, id: 16777472,  xid: 1, type: 1G-SFP}
+        - {name: ge0/0/2, id: 16777728,  xid: 2, type: 1G-SFP}
+        - {name: ge0/0/3, id: 16777984,  xid: 3, type: 1G-SFP}
+        - {name: ge0/0/4, id: 16778240,  xid: 4, type: 1G-SFP}
+        - {name: xge0/0/1, id: 16778496,  xid: 5, type: 10G-SFP}
+        - {name: xge0/0/2, id: 16778752,  xid: 6, type: 10G-SFP}
+        - {name: pon0/0/1, id: 16779008,  xid: 7, type: PON, pontype: gpon, _slot: 0, _port: 1}
+        - {name: pon0/0/2, id: 16779264,  xid: 8, type: PON, pontype: gpon, _slot: 0, _port: 2}
+        - {name: pon0/0/3, id: 16779520,  xid: 9, type: PON, pontype: gpon, _slot: 0, _port: 3}
+        - {name: pon0/0/4, id: 16779776,  xid: 10, type: PON, pontype: gpon, _slot: 0, _port: 4}
+        - {name: pon0/0/5, id: 16780032,  xid: 11, type: PON, pontype: gpon, _slot: 0, _port: 5}
+        - {name: pon0/0/6, id: 16780288,  xid: 12, type: PON, pontype: gpon, _slot: 0, _port: 6}
+        - {name: pon0/0/7, id: 16780544,  xid: 13, type: PON, pontype: gpon, _slot: 0, _port: 7}
+        - {name: pon0/0/8, id: 16780800,  xid: 14, type: PON, pontype: gpon, _slot: 0, _port: 8}
+        - {name: pon0/0/9, id: 16781056,  xid: 15, type: PON, pontype: gpon, _slot: 0, _port: 9}
+        - {name: pon0/0/10, id: 16781312,  xid: 16, type: PON, pontype: gpon, _slot: 0, _port: 10}
+        - {name: pon0/0/11, id: 16781568,  xid: 17, type: PON, pontype: gpon, _slot: 0, _port: 11}
+        - {name: pon0/0/12, id: 16781824,  xid: 18, type: PON, pontype: gpon, _slot: 0, _port: 12}
+        - {name: pon0/0/13, id: 16782080,  xid: 19, type: PON, pontype: gpon, _slot: 0, _port: 13}
+        - {name: pon0/0/14, id: 16782336,  xid: 20, type: PON, pontype: gpon, _slot: 0, _port: 14}
+        - {name: pon0/0/15, id: 16782592,  xid: 21, type: PON, pontype: gpon, _slot: 0, _port: 15}
+        - {name: pon0/0/16, id: 16782848,  xid: 22, type: PON, pontype: gpon, _slot: 0, _port: 16}
+
+  - name: C-Data FD1700S (FW.3)
+    key: c_data_fd1700s_fw3
+    device_type: OLT
+    inputs: 
+      - snmp
+      - console
+    detect: {description: FD1700S,  objid: ^.1.3.6.1.4.1.17409$}
+    oids:
+      - ./oids/cdata/fd-gpon-series.yml
+      - ./oids/cdata/fd-1700-series.yml
+    extra:
+      pon_type: GPON
+      pon_port_size: 128
+      console_conn_type: cdata
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - terminal length 0
+        - config
+    modules:
+      system: \SwitcherCore\Modules\CData\FD17xxV3\SystemInformation
+      pon_ports_list: \SwitcherCore\Modules\CData\FD17xxV3\PonPortsList
+      pon_onts_status: \SwitcherCore\Modules\CData\FD17xxV3\OntListWithStatuses
+      pon_onts_serial: \SwitcherCore\Modules\CData\FD17xxV3\GponOntSerial
+      pon_onts_optical: \SwitcherCore\Modules\CData\FD17xxV3\OntOpticalInfoFD17
+      pon_onts_reasons: \SwitcherCore\Modules\CData\FD17xxV3\OntReasons
+      pon_onts_vendor: \SwitcherCore\Modules\CData\FD17xxV3\OntVendorInfo
+      fdb: \SwitcherCore\Modules\CData\FD17xxV3\FdbTableConsoleFD17xx
+      interface_counters: \SwitcherCore\Modules\CData\FD17xxV3\InterfaceCountersFD17
+      ctrl_ont_reboot: \SwitcherCore\Modules\CData\FD17xxV3\OntRebootTelnetGpon
+      ctrl_ont_reset: \SwitcherCore\Modules\CData\FD17xxV3\OntResetTelnetGpon
+      save_config: \SwitcherCore\Modules\CData\FD17xxV3\OltSaveSettings
+      parse_interface: \SwitcherCore\Modules\CData\FD17xxV3\ParseInterface
+      interface_descriptions: \SwitcherCore\Modules\CData\FD17xxV3\InterfaceDescriptionsFD17
+      sys_resources: \SwitcherCore\Modules\CData\FD17xxV3\SystemResources
+      interfaces_list: \SwitcherCore\Modules\CData\FD17xxV3\InterfacesList
+      link_info: \SwitcherCore\Modules\CData\FD17xxV3\LinkInfo
+      ctrl_ont_uni_admin_state: \SwitcherCore\Modules\CData\FD17xxV3\UniInterfacesControlAdminStatus
+      ctrl_ont_descr: \SwitcherCore\Modules\CData\FD17xxV3\CtrlOntDescription
+      console_command: \SwitcherCore\Modules\CData\FD17xxV3\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\CData\FD17xxV3\MultiRawConsoleCommand
+      ctrl_port_descr: \SwitcherCore\Modules\CData\FD17xxV3\PortDescriptionControl
+      ctrl_ont_delete: \SwitcherCore\Modules\CData\FD17xxV3\OntDeleteGpon
+      uni_interfaces_status: \SwitcherCore\Modules\CData\FD17xxV3\OntUniPortsStatus
+      unregistered_onts: \SwitcherCore\Modules\CData\FD17xxV3\UnregisteredOnts
+      pon_profiles: \SwitcherCore\Modules\CData\GetProfiles
+      pon_onts_configuration: \SwitcherCore\Modules\CData\FD17xxV3\PonOntsConfiguration
+      sfp_media: \SwitcherCore\Modules\CData\FD17xxV3\SfpMediaInfo
+      sfp_optical: \SwitcherCore\Modules\CData\FD17xxV3\SfpOpticalInfo
+      sfp_diag: \SwitcherCore\Modules\CData\FD17xxV3\SfpDiag
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+      sys_temp: \SwitcherCore\Modules\CData\FD17xxV3\SystemTemperatures
+      snooping_info: \SwitcherCore\Modules\CData\FD17xxV3\SnoopingInfo
+
+  - name: C-Data FD5008-FD5016
+    key: c_data_fd5008_fd5016
+    device_type: ONU
+    inputs:
+      - snmp
+      - console
+    extra:
+      console_conn_type: cdata-onu
+      console_commands_after_connect:
+        - {command: enable, check_password: true}
+        - config
+    detect: {description: CDATAONU,  objid: ^.1.3.6.1.4.1.17409$ }
+    modules:
+      parse_interface: \SwitcherCore\Modules\CData\FD5008\ParseInterface
+      link_info: \SwitcherCore\Modules\CData\FD5008\LinkInfo
+      interface_counters: \SwitcherCore\Modules\CData\FD5008\Counters
+      system: \SwitcherCore\Modules\CData\FD5008\System
+      vlans: \SwitcherCore\Modules\CData\FD5008\VlansDot1q
+      pvid: \SwitcherCore\Modules\CData\FD5008\PvidDot1q
+      errors: \SwitcherCore\Modules\CData\FD5008\Errors
+      fdb: \SwitcherCore\Modules\CData\FD5008\FdbDot1Bridge
+#      rmon: \SwitcherCore\Modules\General\Switches\Rmon
+      vlans_by_port: \SwitcherCore\Modules\CData\FD5008\VlanByPorts
+#      interface_descriptions: \SwitcherCore\Modules\General\Switches\Descriptions
+      interfaces_list: \SwitcherCore\Modules\CData\FD5008\InterfacesList
+      console_command: \SwitcherCore\Modules\CData\FD5008\RawConsoleCommand
+      multi_console_command: \SwitcherCore\Modules\CData\FD5008\MultiRawConsoleCommand
+#      lldp_info: \SwitcherCore\Modules\General\LldpInfo
+#      net_settings: \SwitcherCore\Modules\General\NetSettings
+      ctrl_port_state: \SwitcherCore\Modules\CData\FD5008\StatePortControl
+      supported_modules: \SwitcherCore\Modules\General\SupportedModules
+

@@ -1,0 +1,1 @@
+UPDATE device_models SET pollers = '[]' WHERE `key` like 'mikrotik_%'

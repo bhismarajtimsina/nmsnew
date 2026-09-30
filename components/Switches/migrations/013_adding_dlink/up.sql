@@ -1,0 +1,2 @@
+
+INSERT IGNORE INTO device_models (`key`, name, params, vendor, model, type, icon, controller, pollers) VALUES ( 'dlink_des_3200_52_c1', 'D-Link DES-3200-52/C1', '{}', 'D-Link', 'DES-3200-52/C1', 'SWITCH', '/upload/icons/dlink.png', '\\WCC\\Switches\\Controllers\\SwitchesController', '{"system": 300, "counters": 120, "fdb_table": 600, "interfaces_list": 1800, "interfaces_status": 120}');

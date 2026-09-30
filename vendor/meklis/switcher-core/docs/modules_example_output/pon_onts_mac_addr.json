@@ -1,0 +1,31 @@
+{
+    "data": [
+        {
+            "interface": {
+                "name": "pon0\/0\/2:1",
+                "parent": 16780800,
+                "id": 16780801,
+                "xid": 14,
+                "type": "ONU",
+                "onu_num": 1,
+                "uni": null,
+                "onu_id": "16780801"
+            },
+            "mac_address": "E0:E8:E6:B9:57:99"
+        },
+        {
+            "interface": {
+                "name": "pon0\/0\/2:2",
+                "parent": 16780800,
+                "id": 16780802,
+                "xid": 14,
+                "type": "ONU",
+                "onu_num": 2,
+                "uni": null,
+                "onu_id": "16780802"
+            },
+            "mac_address": "E0:E8:E6:B9:57:9F"
+        }
+    ],
+    "arguments": []
+}

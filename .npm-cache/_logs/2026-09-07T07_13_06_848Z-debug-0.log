@@ -1,0 +1,23 @@
+0 verbose cli /root/.nvm/versions/node/v24.19.0/bin/node /root/.nvm/versions/node/v24.19.0/lib/node_modules/npm/bin/npm-cli.js
+1 info using npm@11.17.0
+2 info using node@v24.19.0
+3 silly config load:file:/root/.nvm/versions/node/v24.19.0/lib/node_modules/npm/npmrc
+4 silly config load:file:/root/nms/.npmrc
+5 silly config load:file:/root/.npmrc
+6 silly config load:file:/root/.nvm/versions/node/v24.19.0/etc/npmrc
+7 verbose title npm exec vite build
+8 verbose argv "exec" "--" "vite" "build"
+9 verbose logfile logs-max:10 dir:/root/nms/.npm-cache/_logs/2026-09-07T07_13_06_848Z-
+10 verbose logfile /root/nms/.npm-cache/_logs/2026-09-07T07_13_06_848Z-debug-0.log
+11 silly logfile start cleaning logs, removing 1 files
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+13 silly logfile done cleaning log files
+14 http fetch GET 200 https://registry.npmjs.org/vite 653ms (cache revalidated)
+15 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+16 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+17 verbose cwd /root/nms
+18 verbose os Linux 5.15.0-191-generic
+19 verbose node v24.19.0
+20 verbose npm  v11.17.0
+21 verbose exit 1
+22 verbose code 1

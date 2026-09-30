@@ -1,0 +1,11 @@
+console:
+  port: 2323
+  timeout: 30
+  type: telnet
+
+snmp:
+  repeats: 2
+  timeout: 3
+
+miktotik_api:
+  port: 44044

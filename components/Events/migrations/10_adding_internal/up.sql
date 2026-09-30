@@ -1,0 +1,4 @@
+alter table c_events_alertmanager_rules
+    add internal tinyint default 0 not null;
+
+INSERT IGNORE INTO c_events_alertmanager_rules (created_at, updated_at, group_name, alert_name, expression, `for`, severity, annotation_summary, annotation_description, enabled, internal) VALUES ( NOW(), NOW(), 'analytics', 'bad_optical_level_olt_rx', 'optical_olt_rx > -10 or optical_olt_rx < -28', '15m', 'warning', 'Signal Level Issues', 'The OLT RX signal level on OLT for ONU {{ $labels.iface_name }}, OLT {{ $labels.ip }} has exceeded the limit - {{ humanize $value }}dBm', 1, 1), (NOW(), NOW(), 'analytics', 'bad_optical_level_rx', 'optical_rx > -10 or optical_rx < -28', '15m', 'warning', 'Signal Level Issues', 'The RX signal level on ONU {{ $labels.iface_name }}, OLT {{ $labels.ip }} has exceeded the limit - {{ humanize $value }}dBm', 1, 1);

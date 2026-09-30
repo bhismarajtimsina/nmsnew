@@ -1,0 +1,2 @@
+DROP TABLE collector_ont_optical_history;
+DROP TABLE collector_interfaces_status_history;

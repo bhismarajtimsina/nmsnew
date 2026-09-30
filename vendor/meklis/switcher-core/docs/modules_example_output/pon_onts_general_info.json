@@ -1,0 +1,35 @@
+{
+    "data": [
+        {
+            "interface": {
+                "name": "pon0\/0\/2:1",
+                "parent": 16780800,
+                "id": 16780801,
+                "xid": 14,
+                "type": "ONU",
+                "onu_num": 1,
+                "uni": null
+            },
+            "ver_software": "V1.2.3",
+            "ver_hardware": "F680.1A",
+            "vendor": "43 44 54 00 ",
+            "model": "110F"
+        },
+        {
+            "interface": {
+                "name": "pon0\/0\/2:2",
+                "parent": 16780800,
+                "id": 16780802,
+                "xid": 14,
+                "type": "ONU",
+                "onu_num": 2,
+                "uni": null
+            },
+            "ver_software": "V1.2.2",
+            "ver_hardware": "F680.1A",
+            "vendor": "43 44 54 00 ",
+            "model": "110F"
+        }
+    ],
+    "arguments": []
+}

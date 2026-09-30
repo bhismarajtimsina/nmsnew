@@ -1,0 +1,1 @@
+DROP table collector_fdb_history;
