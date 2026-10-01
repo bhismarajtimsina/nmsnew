@@ -165,7 +165,7 @@ and groups those cards. The legacy build makes the same calls as before. With `V
 
 Known gaps with the new login, all deliberate for now:
 
-- No live updates. The new API publishes no device-change events yet (Plan 22), so the list refreshes on Reload.
+- ~~No live updates.~~ Added the same day; see "Live device list" below.
 - ~~Clicking a card opens the legacy device detail page.~~ Fixed the same day: see the next section.
 - Disabled devices are shown with "(disabled)", read from `polling_enabled`, where legacy hid them. Which new flag
   stands for legacy's `enabled` is still the open Plan 9/20 question. Showing them hides nothing until that is
@@ -208,6 +208,38 @@ Tests:
 - 10 vitest tests: permissions per tab, request shapes, error handling, ping wording, the route switch, and a check
   that the new page makes no legacy or device-reaching call. 8 mutations checked, all caught.
 - 64 frontend tests in total.
+- Not checked in a browser (R-09).
+
+### Live device list (2026-10-01)
+
+Creating, editing or deleting a device now publishes `devices.changed` on the realtime channel. Under the new login
+the device list subscribes and reloads itself. Several changes within a second cause a single reload.
+
+**The notice carries no device data, only `{"action": "created" | "updated" | "deleted"}`.** The realtime
+dispatcher (`ConnectionManager.dispatch`) checks the channel permission (`devices.view`) but not device scope. A
+device record in the notice would therefore reach every reseller holding `devices.view`, including those who must not
+see that device. The reload goes through the scoped `GET /devices/overview`, so each user only ever sees their own
+devices.
+
+Other details:
+
+- The notice is sent after the change commits.
+- A refused change (wrong confirmation, invisible device, invalid input) sends nothing.
+- A Redis outage never fails the change; the page just waits for its next reload.
+
+The legacy build keeps its own WebSocket merge, unchanged.
+
+Not covered yet: the pinger's up/down changes do not trigger a reload, so the online state refreshes on Reload. They
+would need the same no-data notice from the pinger worker.
+
+Tests:
+
+- 4 backend tests, including one that ties the frontend's channel name to the backend's. That one exists because the
+  first round of mutations showed a renamed channel went unnoticed. A wildcard would also be refused for scoped
+  users. 7 mutations checked, all caught.
+- 3 vitest tests: one reload per burst, unsubscribe and dropping a pending reload on leaving, and wiring only under
+  the new login. 3 mutations checked, all caught.
+- 67 frontend tests in total.
 - Not checked in a browser (R-09).
 
 Still not done in this plan: the remaining pages on the typed client.

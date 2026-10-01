@@ -1,6 +1,11 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import { createApiClient } from '@/api/client';
 import {
+  DEVICES_CHANGED,
+  RELOAD_DELAY_MS,
+  watchDeviceChanges,
   MAX_PAGES,
   fromLegacy,
   legacyPatch,
@@ -171,5 +176,74 @@ describe('new API', () => {
       { id: 'm1', label: 'Alpha', description: '' },
       { id: 'm2', label: 'Zeta', description: '' },
     ]);
+  });
+});
+
+describe('live reload under the new login', () => {
+  function fakes() {
+    const handlers = new Map<string, () => void>();
+    const unsubscribed: string[] = [];
+    const subscribe = (channel: string, handler: () => void) => {
+      handlers.set(channel, handler);
+      return () => {
+        unsubscribed.push(channel);
+        handlers.delete(channel);
+      };
+    };
+    let next = 0;
+    const timers = new Map<number, { fn: () => void; ms: number }>();
+    const clock = {
+      set: (fn: () => void, ms: number) => {
+        timers.set(++next, { fn, ms });
+        return next;
+      },
+      clear: (handle: unknown) => {
+        timers.delete(handle as number);
+      },
+    };
+    const fire = () =>
+      [...timers.entries()].forEach(([id, t]) => {
+        timers.delete(id);
+        t.fn();
+      });
+    return { handlers, unsubscribed, subscribe, timers, clock, fire };
+  }
+
+  it('subscribes to the change notice and reloads once after a burst of changes', () => {
+    const f = fakes();
+    const reload = vi.fn();
+    watchDeviceChanges(f.subscribe, reload, f.clock);
+    expect([...f.handlers.keys()]).toEqual([DEVICES_CHANGED]);
+    f.handlers.get(DEVICES_CHANGED)!();
+    f.handlers.get(DEVICES_CHANGED)!();
+    f.handlers.get(DEVICES_CHANGED)!();
+    expect(reload).not.toHaveBeenCalled();
+    expect(f.timers.size).toBe(1);
+    expect([...f.timers.values()][0].ms).toBe(RELOAD_DELAY_MS);
+    f.fire();
+    expect(reload).toHaveBeenCalledTimes(1);
+    f.handlers.get(DEVICES_CHANGED)!();
+    f.fire();
+    expect(reload).toHaveBeenCalledTimes(2);
+  });
+
+  it('leaving the page unsubscribes and drops a pending reload', () => {
+    const f = fakes();
+    const reload = vi.fn();
+    const stop = watchDeviceChanges(f.subscribe, reload, f.clock);
+    f.handlers.get(DEVICES_CHANGED)!();
+    stop();
+    expect(f.unsubscribed).toEqual([DEVICES_CHANGED]);
+    expect(f.timers.size).toBe(0);
+    f.fire();
+    expect(reload).not.toHaveBeenCalled();
+  });
+});
+
+describe('the list page', () => {
+  it('watches for changes only under the new login, and unsubscribes on leaving', () => {
+    const page = readFileSync(resolve(__dirname, 'DevicesListPage.vue'), 'utf8');
+    expect(page).toMatch(/const unsubChanges = newApi \? watchDeviceChanges\(/);
+    expect(page).toMatch(/onBeforeUnmount\(\(\) => \{\s+unsubChanges\(\);/);
   });
 });

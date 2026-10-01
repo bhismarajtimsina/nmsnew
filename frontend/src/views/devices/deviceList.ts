@@ -128,3 +128,39 @@ export function modelOptionsFrom(cards: DeviceCard[]): Option[] {
   }
   return [...seen.values()].sort((a, b) => a.label.localeCompare(b.label));
 }
+
+export const DEVICES_CHANGED = 'devices.changed';
+/** Several changes close together (a bulk edit, an import) cause one reload, not one each. */
+export const RELOAD_DELAY_MS = 1000;
+
+export interface Timers {
+  set(fn: () => void, ms: number): unknown;
+  clear(handle: unknown): void;
+}
+
+const browserTimers: Timers = { set: (fn, ms) => setTimeout(fn, ms), clear: (h) => clearTimeout(h as number) };
+
+/**
+ * Reloads the list when the new API announces a device change. The notice carries no device data (the server's
+ * realtime dispatch does not apply device scope), so the reload goes through the scoped API instead of merging
+ * anything. Returns the unsubscribe function.
+ */
+export function watchDeviceChanges(
+  subscribe: (channel: string, handler: () => void) => () => void,
+  reload: () => void,
+  timers: Timers = browserTimers,
+): () => void {
+  let pending: unknown = null;
+  const unsubscribe = subscribe(DEVICES_CHANGED, () => {
+    if (pending !== null) timers.clear(pending);
+    pending = timers.set(() => {
+      pending = null;
+      reload();
+    }, RELOAD_DELAY_MS);
+  });
+  return () => {
+    if (pending !== null) timers.clear(pending);
+    pending = null;
+    unsubscribe();
+  };
+}

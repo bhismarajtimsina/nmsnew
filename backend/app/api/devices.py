@@ -15,6 +15,7 @@ from app.core.database import get_conn
 from app.core.netutil import validate_management_ip
 from app.core.redis import get_redis
 from app.core.security import CurrentUser, require, require_dangerous
+from app.realtime.bus import notify_devices_changed
 from app.repositories.device_groups import NotVisible
 from app.services.discovery import queue_discovery
 from app.repositories import devices as device_repo
@@ -299,6 +300,7 @@ async def create_device(
         raise _rejected(exc) from exc
     if discovery["status"] == "queued":
         await _publish(redis, discovery["job_id"], conn)
+    await notify_devices_changed(redis, "created")
     return {"device": device, "discovery": discovery}
 
 
@@ -315,6 +317,7 @@ async def update_device(
     request: Request,
     user: Annotated[CurrentUser, Depends(require("devices.manage"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
+    redis: Annotated[Redis, Depends(get_redis)],
 ) -> dict[str, Any]:
     did = _uuid_or_404(device_id)
     changes = payload.model_dump(exclude_unset=True)
@@ -337,6 +340,7 @@ async def update_device(
         raise _not_found() from exc
     except device_repo.Rejected as exc:
         raise _rejected(exc) from exc
+    await notify_devices_changed(redis, "updated")
     return after
 
 
@@ -347,6 +351,7 @@ async def delete_device(
     confirm: Annotated[str, Query(description="The device's exact name, typed to confirm")],
     user: Annotated[CurrentUser, Depends(require_dangerous("devices.delete"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
+    redis: Annotated[Redis, Depends(get_redis)],
 ) -> dict[str, str]:
     did = _uuid_or_404(device_id)
     try:
@@ -361,6 +366,7 @@ async def delete_device(
                               ip=user.client_ip, user_agent=request.headers.get("user-agent"), before=device_repo.as_dict(before))
     except NotVisible as exc:
         raise _not_found() from exc
+    await notify_devices_changed(redis, "deleted")
     return {"status": "deleted"}
 
 

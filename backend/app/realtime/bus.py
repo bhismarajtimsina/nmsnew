@@ -22,6 +22,22 @@ async def publish(redis: Redis, name: str, data: dict) -> None:
     await redis.publish(REALTIME_CHANNEL, json.dumps({"name": name, "data": data}))
 
 
+DEVICES_CHANGED = "devices.changed"
+
+
+async def notify_devices_changed(redis: Redis, action: str) -> None:
+    """Tells subscribed pages that the device list changed, so they reload it through the API.
+
+    Deliberately carries no device data. `ConnectionManager.dispatch` does not apply device scope, so a record here
+    would reach every `devices.view` holder, including resellers who must not see that device. The reload goes
+    through the scoped API, which shows each user only what they may see. Called after the change has committed, and
+    never fails the request that made it: a missed notification only means a page waits for its next reload."""
+    try:
+        await publish(redis, DEVICES_CHANGED, {"action": action})
+    except Exception:  # noqa: BLE001 - Redis being down must not undo a committed change for the caller
+        logger.warning("could not publish %s (%s)", DEVICES_CHANGED, action, exc_info=True)
+
+
 async def run_subscriber(redis: Redis, manager: ConnectionManager, *, stop: asyncio.Event) -> None:
     """Runs until `stop` is set. One of these runs per process alongside its WebSocket connections - started at
     application startup, not per connection."""

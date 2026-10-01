@@ -7,7 +7,8 @@ import { wsClient } from '@/services/wsClient';
 import { mergeById, removeById } from '@/utility/listMerge';
 import { api, ApiError } from '@/api/client';
 import { authBackend } from '@/auth/session';
-import { fromLegacy, legacyPatch, loadGroupOptions, loadOverview, modelOptionsFrom, type DeviceCard, type Id, type LegacyRow, type Option } from './deviceList';
+import { useRealtimeStore } from '@/stores/realtime';
+import { fromLegacy, legacyPatch, loadGroupOptions, loadOverview, modelOptionsFrom, watchDeviceChanges, type DeviceCard, type Id, type LegacyRow, type Option } from './deviceList';
 import { Main } from '../styled';
 
 const router = useRouter();
@@ -167,7 +168,7 @@ onMounted(async () => {
 // it still matched (updated).
 //
 // The pushed record is a legacy device row; legacyPatch maps just the fields it carries onto the card shape.
-// The new API publishes no device changes yet (Plan 22), so with the new login the list refreshes on Reload only.
+// With the new login the new API's `devices.changed` notice triggers a reload through the scoped API instead.
 function onDeviceChanged(record: LegacyRow) {
   if (filters.query) {
     load();
@@ -176,10 +177,12 @@ function onDeviceChanged(record: LegacyRow) {
   mergeById(devices, legacyPatch(record));
 }
 const noop = () => {};
+const unsubChanges = newApi ? watchDeviceChanges((channel, handler) => useRealtimeStore().subscribe(channel, handler), load) : noop;
 const unsubAdded = newApi ? noop : wsClient.subscribe('event:device:added', (msg) => onDeviceChanged(msg.data));
 const unsubUpdated = newApi ? noop : wsClient.subscribe('event:device:updated', (msg) => onDeviceChanged(msg.data));
 const unsubDeleted = newApi ? noop : wsClient.subscribe('event:device:deleted', (msg) => removeById(devices, msg.data.id));
 onBeforeUnmount(() => {
+  unsubChanges();
   unsubAdded();
   unsubUpdated();
   unsubDeleted();
