@@ -61,6 +61,8 @@ Legacy names appear in exactly one place: the compatibility shim ([Plan 41](41-l
   `cybersathy_pinger_host_status` - a deliberate, documented exception to the usual metric prefix below, since
   renaming it would mean editing a legacy-ported rule kept byte-for-byte otherwise) with `ip`, `device_id` and `name`
   labels, and decides no alarm itself.
+- A pass in which any device went up or down ends with one data-free `devices.changed` realtime notice, so open
+  device pages reload through the scoped API (Plan 25, risk K-24). Redis being unavailable only skips the notice.
 - Runs on the management network only and holds no device credentials.
 - **Verification:** unit tests for the debounce with no ICMP at all, a fake `async_ping` for the "down" and
   error-handling cases, and one real loopback integration test (127.0.0.1) for the "up" path. No test pings any

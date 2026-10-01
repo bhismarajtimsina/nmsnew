@@ -87,10 +87,42 @@ async def test_run_cycle_summarizes_up_and_down_targets(db, monkeypatch):
 
     monkeypatch.setattr(service, "async_ping", _selective)
     summary = await service.run_cycle(db, count=1, timeout=1.0, misses_for_down=3, privileged=False)
-    assert summary == {"targets": 2, "up": 1, "down": 1}
+    assert summary == {"targets": 2, "up": 1, "down": 1, "changed": 1}  # unknown -> up; one miss is not yet down
 
 
 def _fake_ping(*, alive: bool, latency: float | None = None):
     async def _ping(ip, **kwargs):
         return SimpleNamespace(is_alive=alive, avg_rtt=latency)
     return _ping
+
+
+async def test_a_pass_with_transitions_notifies_once_and_a_quiet_pass_not_at_all(db, monkeypatch):
+    """Fake ICMP only. Three targets go down in the same pass: one notice, not three."""
+    devices = [await make_device(db, f"d{n}", ip=f"10.70.1.{n}") for n in range(1, 4)]
+    for device in devices:
+        await _enable(db, device)
+    monkeypatch.setattr(service, "async_ping", _fake_ping(alive=False))
+    notices = []
+
+    async def on_change():
+        notices.append(1)
+
+    for expected_changed in (0, 0, 3, 0):  # down only after the third consecutive miss
+        summary = await service.run_cycle(db, count=1, timeout=1.0, misses_for_down=3, on_change=on_change)
+        assert summary["changed"] == expected_changed
+    assert notices == [1]
+
+    monkeypatch.setattr(service, "async_ping", _fake_ping(alive=True, latency=2.0))
+    summary = await service.run_cycle(db, count=1, timeout=1.0, misses_for_down=3, on_change=on_change)
+    assert summary == {"targets": 3, "up": 3, "down": 0, "changed": 3} and notices == [1, 1]
+    summary = await service.run_cycle(db, count=1, timeout=1.0, misses_for_down=3, on_change=on_change)
+    assert summary["changed"] == 0 and notices == [1, 1]
+
+
+def test_the_running_pinger_sends_the_data_free_device_notice():
+    import inspect
+
+    from app.pinger import __main__ as pinger_main
+
+    source = inspect.getsource(pinger_main.run)
+    assert 'on_change=lambda: notify_devices_changed(redis, "status")' in source

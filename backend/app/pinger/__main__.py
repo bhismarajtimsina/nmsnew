@@ -11,17 +11,20 @@ import logging
 import signal
 
 from prometheus_client import start_http_server
+from redis.asyncio import Redis
 
 from app.core.config import settings
 from app.core.database import create_pool
 from app.core.logging import configure_logging
 from app.pinger.service import run_cycle
+from app.realtime.bus import notify_devices_changed
 
 
 async def run() -> int:
     configure_logging()
     log = logging.getLogger("cybersathy.pinger")
     pool = await create_pool()
+    redis = Redis.from_url(settings.redis_dsn)
     start_http_server(settings.pinger_metrics_port)
     log.info("pinger metrics on :%d, cycling every %ds", settings.pinger_metrics_port, settings.pinger_cycle_seconds)
     stop = asyncio.Event()
@@ -34,6 +37,8 @@ async def run() -> int:
                 summary = await run_cycle(
                     conn, count=settings.pinger_count, timeout=settings.pinger_timeout_seconds,
                     misses_for_down=settings.pinger_misses_for_down, privileged=settings.pinger_privileged,
+                    # Open device pages reload their online state; the notice carries no device data (risk K-24).
+                    on_change=lambda: notify_devices_changed(redis, "status"),
                 )
             log.info("cycle: %s", summary)
             try:
@@ -42,6 +47,7 @@ async def run() -> int:
                 pass
     finally:
         await pool.close()
+        await redis.aclose()
     log.info("pinger stopped")
     return 0
 

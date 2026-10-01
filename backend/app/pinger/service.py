@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import Awaitable, Callable
 
 import asyncpg
 from icmplib import async_ping
@@ -52,6 +53,14 @@ async def check_one(
 ) -> bool:
     """Pings one target, applies the debounce, updates its status row and, on a transition, its history and the
     gauge. Returns whether the target answered this check."""
+    alive, _ = await _check(conn, target, count=count, timeout=timeout, misses_for_down=misses_for_down, privileged=privileged)
+    return alive
+
+
+async def _check(
+    conn: asyncpg.Connection, target: Target, *, count: int, timeout: float, misses_for_down: int, privileged: bool
+) -> tuple[bool, bool]:
+    """check_one's work; also returns whether the target's up/down status changed."""
     try:
         host = await async_ping(target.ip, count=count, timeout=timeout, privileged=privileged)
         alive = host.is_alive
@@ -80,16 +89,21 @@ async def check_one(
         )
 
     PINGER_HOST_STATUS.labels(ip=target.ip, device_id=target.device_id, name=target.name).set(latency_ms if alive else 0)
-    return alive
+    return alive, changed
 
 
 async def run_cycle(
-    conn: asyncpg.Connection, *, count: int = 3, timeout: float = 1.0, misses_for_down: int = 3, privileged: bool = False
+    conn: asyncpg.Connection, *, count: int = 3, timeout: float = 1.0, misses_for_down: int = 3, privileged: bool = False,
+    on_change: Callable[[], Awaitable[None]] | None = None,
 ) -> dict[str, int]:
-    """One pass over every current target."""
+    """One pass over every current target. `on_change` is awaited once at the end of a pass in which any target
+    went up or down (not once per target, so a site-wide outage is one notice, not thousands)."""
     targets = await list_targets(conn)
-    up = down = 0
+    up = down = changed = 0
     for target in targets:
-        alive = await check_one(conn, target, count=count, timeout=timeout, misses_for_down=misses_for_down, privileged=privileged)
+        alive, flipped = await _check(conn, target, count=count, timeout=timeout, misses_for_down=misses_for_down, privileged=privileged)
         up, down = (up + 1, down) if alive else (up, down + 1)
-    return {"targets": len(targets), "up": up, "down": down}
+        changed += flipped
+    if changed and on_change is not None:
+        await on_change()
+    return {"targets": len(targets), "up": up, "down": down, "changed": changed}

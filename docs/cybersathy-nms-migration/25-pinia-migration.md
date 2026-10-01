@@ -229,8 +229,14 @@ Other details:
 
 The legacy build keeps its own WebSocket merge, unchanged.
 
-Not covered yet: the pinger's up/down changes do not trigger a reload, so the online state refreshes on Reload. They
-would need the same no-data notice from the pinger worker.
+~~Not covered yet: the pinger's up/down changes.~~ Added the same day. A pinger pass in which any device goes up or
+down ends with one `devices.changed` notice, `{"action": "status"}`. It is one notice per pass, not one per device,
+so a site-wide outage is a single reload. The list's online state now follows the pinger without a manual Reload.
+
+- 2 backend tests: a pass with three transitions notifies once and quiet passes not at all (fake ICMP only), and the
+  running pinger is wired to the notice. 4 mutations checked, all caught.
+- The existing loopback cycle test now also expects `changed: 1`. That test needs real ICMP, which this container
+  does not allow, so the updated expectation is not verified here.
 
 Tests:
 
