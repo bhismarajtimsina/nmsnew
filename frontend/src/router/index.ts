@@ -2,9 +2,9 @@ import { createWebHistory, createRouter } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import adminRoutes from './adminRoutes';
 import authRoutes from './authRoutes';
-import store from '@/vuex/store';
+import { decide } from './guard';
+import { isLoggedIn } from '@/auth/session';
 
-const stores: any = store;
 const routes: Array<RouteRecordRaw> = [
   {
     name: 'Admin',
@@ -29,13 +29,9 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  if (to.meta.auth && stores.state.auth.login) {
-    next({ path: '/' });
-  } else if (!to.meta.auth && !stores.state.auth.login) {
-    next({ name: 'login' });
-  } else {
-    next();
-  }
+  const decision = decide(!!to.meta.auth, isLoggedIn());
+  if (decision === true) next();
+  else next(decision);
   window.scrollTo(0, 0); // reset scroll position to top of page
 });
 

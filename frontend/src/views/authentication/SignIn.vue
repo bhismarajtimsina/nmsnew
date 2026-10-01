@@ -1,6 +1,6 @@
 <script lang="ts">
 import { computed, reactive, defineComponent, ref } from 'vue';
-import { useStore } from 'vuex';
+import { isSigningIn, signIn } from '@/auth/session';
 import { AuthWrapper } from './style';
 import { useRouter } from 'vue-router';
 import { notification } from 'ant-design-vue';
@@ -9,29 +9,40 @@ const SignIn = defineComponent({
   name: 'SignIn',
   components: { AuthWrapper },
   setup() {
-    const { state, dispatch } = useStore();
-    const isLoading = computed(() => state.auth.loading);
+    const isLoading = computed(() => isSigningIn());
     const rememberMe = ref(false);
     const router = useRouter();
+    // Only the new API asks for a second factor; the legacy sign-in never sets this.
+    const needs2fa = ref(false);
 
     const formState = reactive({
       login: '',
       password: '',
+      twofaPin: '',
     });
 
     const handleSubmit = async () => {
-      const ok = await dispatch('login', { login: formState.login, password: formState.password });
-      if (ok) {
-        const userName = state.auth.user?.name || formState.login;
+      const result = await signIn({
+        login: formState.login,
+        password: formState.password,
+        twofaPin: needs2fa.value ? formState.twofaPin : undefined,
+      });
+      if (result.ok) {
         notification.success({
           message: 'Signed in',
-          description: `Welcome back, ${userName}.`,
+          description: `Welcome back, ${result.userName}.`,
         });
         router.push('/');
+      } else if (result.needs2fa) {
+        needs2fa.value = true;
+        notification.info({
+          message: 'Two-factor code required',
+          description: 'Enter the 6-digit code from your authenticator app.',
+        });
       } else {
         notification.error({
           message: 'Sign in failed',
-          description: state.auth.error || 'Sign in failed — check your credentials.',
+          description: result.error || 'Sign in failed — check your credentials.',
         });
       }
     };
@@ -41,6 +52,7 @@ const SignIn = defineComponent({
       rememberMe,
       handleSubmit,
       formState,
+      needs2fa,
     };
   },
 });
@@ -73,6 +85,15 @@ export default SignIn;
               v-model:value="formState.password"
               placeholder="Password"
               autocomplete="current-password"
+            />
+          </a-form-item>
+          <a-form-item v-if="needs2fa" name="twofaPin" label="Authenticator code">
+            <a-input
+              v-model:value="formState.twofaPin"
+              inputmode="numeric"
+              maxlength="8"
+              autocomplete="one-time-code"
+              placeholder="6-digit code"
             />
           </a-form-item>
           <div class="ninjadash-auth-extra-links">

@@ -42,6 +42,7 @@
     "leaflet.fullscreen": "^5.3.3",
     "leaflet.markercluster": "^1.5.3",
     "openapi-fetch": "^0.14.1",
+    "pinia": "^3.0.4",
     "svgmap": "^2.10.1",
     "v-calendar": "3.0.0-alpha.8",
     "vis-data": "^8.0.5",
