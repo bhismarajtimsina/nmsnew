@@ -1,6 +1,120 @@
 {
   "components": {
     "schemas": {
+      "AccessProfileOut": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "devices_using": {
+            "title": "Devices Using",
+            "type": "integer"
+          },
+          "has_auth_secret": {
+            "title": "Has Auth Secret",
+            "type": "boolean"
+          },
+          "has_community": {
+            "title": "Has Community",
+            "type": "boolean"
+          },
+          "has_priv_secret": {
+            "title": "Has Priv Secret",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "legacy_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legacy Id"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "retries": {
+            "title": "Retries",
+            "type": "integer"
+          },
+          "snmp_v3_auth_protocol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snmp V3 Auth Protocol"
+          },
+          "snmp_v3_priv_protocol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snmp V3 Priv Protocol"
+          },
+          "snmp_v3_username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snmp V3 Username"
+          },
+          "snmp_version": {
+            "title": "Snmp Version",
+            "type": "string"
+          },
+          "timeout_ms": {
+            "title": "Timeout Ms",
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "snmp_version",
+          "timeout_ms",
+          "retries",
+          "snmp_v3_username",
+          "snmp_v3_auth_protocol",
+          "snmp_v3_priv_protocol",
+          "has_community",
+          "has_auth_secret",
+          "has_priv_secret",
+          "legacy_id",
+          "created_at",
+          "updated_at",
+          "devices_using"
+        ],
+        "title": "AccessProfileOut",
+        "type": "object"
+      },
       "AlarmRuleOut": {
         "additionalProperties": false,
         "properties": {
@@ -150,6 +264,35 @@
         "title": "AuthUser",
         "type": "object"
       },
+      "CapabilityOut": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "enabled_by_default": {
+            "title": "Enabled By Default",
+            "type": "boolean"
+          },
+          "risk": {
+            "title": "Risk",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "description",
+          "risk",
+          "enabled_by_default"
+        ],
+        "title": "CapabilityOut",
+        "type": "object"
+      },
       "CheckRequest": {
         "properties": {
           "name": {
@@ -171,6 +314,84 @@
           "numeric_oid"
         ],
         "title": "CheckRequest",
+        "type": "object"
+      },
+      "DeadLetterOut": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "deliveries": {
+            "title": "Deliveries",
+            "type": "integer"
+          },
+          "fields": {
+            "additionalProperties": true,
+            "title": "Fields",
+            "type": "object"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
+          },
+          "message_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message Id"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
+          "stream": {
+            "title": "Stream",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "stream",
+          "message_id",
+          "job_id",
+          "reason",
+          "deliveries",
+          "fields",
+          "created_at",
+          "resolved_at"
+        ],
+        "title": "DeadLetterOut",
         "type": "object"
       },
       "DetectRequest": {
@@ -407,6 +628,118 @@
           "devices"
         ],
         "title": "DeviceGroupOut",
+        "type": "object"
+      },
+      "DeviceModelOut": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "device_type": {
+            "title": "Device Type",
+            "type": "string"
+          },
+          "family_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Family Slug"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "legacy_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legacy Id"
+          },
+          "legacy_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legacy Key"
+          },
+          "model_name": {
+            "title": "Model Name",
+            "type": "string"
+          },
+          "priority": {
+            "title": "Priority",
+            "type": "integer"
+          },
+          "source_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Note"
+          },
+          "sysdescr_pattern": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sysdescr Pattern"
+          },
+          "sysobjectid_matcher": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sysobjectid Matcher"
+          },
+          "vendor": {
+            "title": "Vendor",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "vendor",
+          "family_slug",
+          "legacy_key",
+          "model_name",
+          "device_type",
+          "sysobjectid_matcher",
+          "sysdescr_pattern",
+          "priority",
+          "source_note",
+          "legacy_id",
+          "created_at"
+        ],
+        "title": "DeviceModelOut",
         "type": "object"
       },
       "DeviceOut": {
@@ -973,6 +1306,83 @@
         "title": "EventPage",
         "type": "object"
       },
+      "FamilyCapabilityOut": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "enabled_by_default": {
+            "title": "Enabled By Default",
+            "type": "boolean"
+          },
+          "fixture_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fixture Ref"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "risk": {
+            "title": "Risk",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "verified_by_fixture": {
+            "title": "Verified By Fixture",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "description",
+          "risk",
+          "enabled_by_default",
+          "status",
+          "verified_by_fixture",
+          "fixture_ref",
+          "note"
+        ],
+        "title": "FamilyCapabilityOut",
+        "type": "object"
+      },
+      "FavoriteOut": {
+        "additionalProperties": false,
+        "properties": {
+          "favorite": {
+            "title": "Favorite",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "favorite"
+        ],
+        "title": "FavoriteOut",
+        "type": "object"
+      },
       "FavoriteSet": {
         "properties": {
           "favorite": {
@@ -1079,6 +1489,20 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "HealthOut": {
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "HealthOut",
+        "type": "object"
+      },
       "IncidentList": {
         "additionalProperties": false,
         "properties": {
@@ -1183,6 +1607,250 @@
           "event_ids"
         ],
         "title": "IncidentOut",
+        "type": "object"
+      },
+      "InterfaceHistoryPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/InterfaceStatusChange"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "InterfaceHistoryPage",
+        "type": "object"
+      },
+      "InterfaceMarks": {
+        "additionalProperties": false,
+        "properties": {
+          "favorite": {
+            "title": "Favorite",
+            "type": "boolean"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "favorite",
+          "tags"
+        ],
+        "title": "InterfaceMarks",
+        "type": "object"
+      },
+      "InterfaceOut": {
+        "additionalProperties": false,
+        "properties": {
+          "admin_status": {
+            "title": "Admin Status",
+            "type": "string"
+          },
+          "alias": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alias"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "device_id": {
+            "title": "Device Id",
+            "type": "string"
+          },
+          "device_name": {
+            "title": "Device Name",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "if_index": {
+            "title": "If Index",
+            "type": "integer"
+          },
+          "if_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "If Type"
+          },
+          "legacy_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legacy Id"
+          },
+          "mac_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mac Address"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "oper_status": {
+            "title": "Oper Status",
+            "type": "string"
+          },
+          "parent_interface_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Interface Id"
+          },
+          "speed_bps": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speed Bps"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "device_id",
+          "device_name",
+          "parent_interface_id",
+          "if_index",
+          "name",
+          "alias",
+          "if_type",
+          "admin_status",
+          "oper_status",
+          "speed_bps",
+          "mac_address",
+          "legacy_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "InterfaceOut",
+        "type": "object"
+      },
+      "InterfacePage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/InterfaceOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "InterfacePage",
+        "type": "object"
+      },
+      "InterfaceStatusChange": {
+        "additionalProperties": false,
+        "properties": {
+          "admin_status": {
+            "title": "Admin Status",
+            "type": "string"
+          },
+          "changed_at": {
+            "format": "date-time",
+            "title": "Changed At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "oper_status": {
+            "title": "Oper Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "changed_at",
+          "admin_status",
+          "oper_status"
+        ],
+        "title": "InterfaceStatusChange",
         "type": "object"
       },
       "JobUpdate": {
@@ -1547,36 +2215,581 @@
         "title": "MaintenanceWindowPage",
         "type": "object"
       },
-      "Page": {
+      "MibCheckOut": {
+        "additionalProperties": false,
         "properties": {
-          "items": {
+          "declared_oid": {
+            "title": "Declared Oid",
+            "type": "string"
+          },
+          "mib_matches": {
             "items": {
-              "additionalProperties": true,
-              "type": "object"
+              "$ref": "#/components/schemas/MibMatch"
             },
-            "title": "Items",
+            "title": "Mib Matches",
             "type": "array"
           },
-          "limit": {
-            "title": "Limit",
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "declared_oid",
+          "status",
+          "mib_matches"
+        ],
+        "title": "MibCheckOut",
+        "type": "object"
+      },
+      "MibFileOut": {
+        "additionalProperties": false,
+        "properties": {
+          "filename": {
+            "title": "Filename",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "imported_at": {
+            "format": "date-time",
+            "title": "Imported At",
+            "type": "string"
+          },
+          "object_count": {
+            "title": "Object Count",
             "type": "integer"
           },
-          "offset": {
-            "title": "Offset",
+          "resolved_count": {
+            "title": "Resolved Count",
             "type": "integer"
           },
-          "total": {
-            "title": "Total",
+          "vendor_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vendor Slug"
+          }
+        },
+        "required": [
+          "id",
+          "filename",
+          "vendor_slug",
+          "object_count",
+          "resolved_count",
+          "imported_at"
+        ],
+        "title": "MibFileOut",
+        "type": "object"
+      },
+      "MibMatch": {
+        "additionalProperties": false,
+        "properties": {
+          "filename": {
+            "title": "Filename",
+            "type": "string"
+          },
+          "numeric_oid": {
+            "title": "Numeric Oid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "filename",
+          "numeric_oid"
+        ],
+        "title": "MibMatch",
+        "type": "object"
+      },
+      "MibObjectOut": {
+        "additionalProperties": false,
+        "properties": {
+          "filename": {
+            "title": "Filename",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "numeric_oid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Numeric Oid"
+          },
+          "parent_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Name"
+          },
+          "sub_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sub Id"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "numeric_oid",
+          "parent_name",
+          "sub_id",
+          "filename"
+        ],
+        "title": "MibObjectOut",
+        "type": "object"
+      },
+      "ModelFamilyOut": {
+        "additionalProperties": false,
+        "properties": {
+          "device_type": {
+            "title": "Device Type",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "polling_disabled_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Polling Disabled Reason"
+          },
+          "polling_enabled": {
+            "title": "Polling Enabled",
+            "type": "boolean"
+          },
+          "polling_toggled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Polling Toggled At"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "vendor_slug": {
+            "title": "Vendor Slug",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "vendor_slug",
+          "slug",
+          "name",
+          "device_type",
+          "notes",
+          "polling_enabled",
+          "polling_disabled_reason",
+          "polling_toggled_at"
+        ],
+        "title": "ModelFamilyOut",
+        "type": "object"
+      },
+      "OidProfileDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "activated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activated At"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/OidProfileEntryOut"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "family_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Family Slug"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "vendor_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vendor Slug"
+          },
+          "version": {
+            "title": "Version",
             "type": "integer"
           }
         },
         "required": [
-          "items",
-          "total",
-          "limit",
-          "offset"
+          "id",
+          "name",
+          "version",
+          "status",
+          "description",
+          "created_at",
+          "activated_at",
+          "vendor_slug",
+          "family_slug",
+          "entries"
         ],
-        "title": "Page",
+        "title": "OidProfileDetail",
+        "type": "object"
+      },
+      "OidProfileEntryOut": {
+        "additionalProperties": false,
+        "properties": {
+          "access": {
+            "title": "Access",
+            "type": "string"
+          },
+          "factor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Factor"
+          },
+          "logical_name": {
+            "title": "Logical Name",
+            "type": "string"
+          },
+          "max_rows": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Rows"
+          },
+          "mib_object": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mib Object"
+          },
+          "module": {
+            "title": "Module",
+            "type": "string"
+          },
+          "numeric_oid": {
+            "title": "Numeric Oid",
+            "type": "string"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "safety_level": {
+            "title": "Safety Level",
+            "type": "string"
+          },
+          "source_note": {
+            "title": "Source Note",
+            "type": "string"
+          },
+          "timeout_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timeout Ms"
+          },
+          "transform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transform"
+          },
+          "transform_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transform Kind"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "valid_max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid Max"
+          },
+          "valid_min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid Min"
+          },
+          "walk_strategy": {
+            "title": "Walk Strategy",
+            "type": "string"
+          }
+        },
+        "required": [
+          "logical_name",
+          "numeric_oid",
+          "module",
+          "access",
+          "safety_level",
+          "unit",
+          "mib_object",
+          "source_note",
+          "walk_strategy",
+          "max_rows",
+          "timeout_ms",
+          "position",
+          "transform",
+          "transform_kind",
+          "factor",
+          "valid_min",
+          "valid_max"
+        ],
+        "title": "OidProfileEntryOut",
+        "type": "object"
+      },
+      "OidProfileSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "activated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activated At"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "entries": {
+            "title": "Entries",
+            "type": "integer"
+          },
+          "family_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Family Slug"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "vendor_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vendor Slug"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "version",
+          "status",
+          "description",
+          "created_at",
+          "activated_at",
+          "vendor_slug",
+          "family_slug",
+          "entries"
+        ],
+        "title": "OidProfileSummary",
         "type": "object"
       },
       "PasswordChange": {
@@ -1686,6 +2899,59 @@
         "title": "PermissionItem",
         "type": "object"
       },
+      "PollHistory": {
+        "additionalProperties": false,
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/PollResultOut"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PollStateOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "results"
+        ],
+        "title": "PollHistory",
+        "type": "object"
+      },
+      "PollQueued": {
+        "additionalProperties": false,
+        "properties": {
+          "job_id": {
+            "title": "Job Id",
+            "type": "string"
+          },
+          "profile": {
+            "title": "Profile",
+            "type": "string"
+          },
+          "status": {
+            "const": "queued",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id",
+          "status",
+          "profile"
+        ],
+        "title": "PollQueued",
+        "type": "object"
+      },
       "PollRequest": {
         "properties": {
           "profile": {
@@ -1700,6 +2966,158 @@
           "profile"
         ],
         "title": "PollRequest",
+        "type": "object"
+      },
+      "PollResultOut": {
+        "additionalProperties": false,
+        "properties": {
+          "duration_ms": {
+            "title": "Duration Ms",
+            "type": "integer"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "outcome": {
+            "title": "Outcome",
+            "type": "string"
+          },
+          "profile_name": {
+            "title": "Profile Name",
+            "type": "string"
+          },
+          "profile_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Version"
+          },
+          "rows": {
+            "title": "Rows",
+            "type": "integer"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "truncated": {
+            "title": "Truncated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "profile_name",
+          "profile_version",
+          "outcome",
+          "rows",
+          "truncated",
+          "duration_ms",
+          "error",
+          "started_at"
+        ],
+        "title": "PollResultOut",
+        "type": "object"
+      },
+      "PollStateOut": {
+        "additionalProperties": false,
+        "properties": {
+          "breaker_open": {
+            "title": "Breaker Open",
+            "type": "boolean"
+          },
+          "breaker_open_until": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Breaker Open Until"
+          },
+          "consecutive_failures": {
+            "title": "Consecutive Failures",
+            "type": "integer"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "last_failure_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Failure At"
+          },
+          "last_polled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Polled At"
+          },
+          "last_success_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Success At"
+          }
+        },
+        "required": [
+          "consecutive_failures",
+          "breaker_open",
+          "breaker_open_until",
+          "last_error",
+          "last_polled_at",
+          "last_success_at",
+          "last_failure_at"
+        ],
+        "title": "PollStateOut",
         "type": "object"
       },
       "PollingToggle": {
@@ -1998,6 +3416,47 @@
         "title": "ProfileUpdate",
         "type": "object"
       },
+      "ReadyOut": {
+        "additionalProperties": false,
+        "properties": {
+          "checks": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Checks",
+            "type": "object"
+          },
+          "ready": {
+            "title": "Ready",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ready",
+          "checks"
+        ],
+        "title": "ReadyOut",
+        "type": "object"
+      },
+      "RealtimeTicket": {
+        "additionalProperties": false,
+        "properties": {
+          "expires_in": {
+            "title": "Expires In",
+            "type": "integer"
+          },
+          "ticket": {
+            "title": "Ticket",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket",
+          "expires_in"
+        ],
+        "title": "RealtimeTicket",
+        "type": "object"
+      },
       "ResellerAssign": {
         "properties": {
           "user_ids": {
@@ -2039,6 +3498,80 @@
           "name"
         ],
         "title": "ResellerCreate",
+        "type": "object"
+      },
+      "ResellerCreated": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "ResellerCreated",
+        "type": "object"
+      },
+      "ResellerOut": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "users": {
+            "title": "Users",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "is_active",
+          "users"
+        ],
+        "title": "ResellerOut",
+        "type": "object"
+      },
+      "ResellerUsers": {
+        "additionalProperties": false,
+        "properties": {
+          "users": {
+            "title": "Users",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "users"
+        ],
+        "title": "ResellerUsers",
         "type": "object"
       },
       "RoleItem": {
@@ -2087,6 +3620,191 @@
           "permissions"
         ],
         "title": "RoleItem",
+        "type": "object"
+      },
+      "ScheduleJobOut": {
+        "additionalProperties": false,
+        "properties": {
+          "catch_up_max": {
+            "title": "Catch Up Max",
+            "type": "integer"
+          },
+          "crontab": {
+            "title": "Crontab",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "editable": {
+            "title": "Editable",
+            "type": "boolean"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "job_type": {
+            "title": "Job Type",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "last_run_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Run At"
+          },
+          "max_runtime_seconds": {
+            "title": "Max Runtime Seconds",
+            "type": "integer"
+          },
+          "misfire_grace_seconds": {
+            "title": "Misfire Grace Seconds",
+            "type": "integer"
+          },
+          "misfire_policy": {
+            "title": "Misfire Policy",
+            "type": "string"
+          },
+          "next_run_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Run At"
+          },
+          "overlap_policy": {
+            "title": "Overlap Policy",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          },
+          "upcoming": {
+            "items": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "title": "Upcoming",
+            "type": "array"
+          }
+        },
+        "required": [
+          "key",
+          "job_type",
+          "params",
+          "crontab",
+          "timezone",
+          "enabled",
+          "editable",
+          "description",
+          "misfire_policy",
+          "misfire_grace_seconds",
+          "catch_up_max",
+          "overlap_policy",
+          "max_runtime_seconds",
+          "next_run_at",
+          "last_run_at",
+          "upcoming"
+        ],
+        "title": "ScheduleJobOut",
+        "type": "object"
+      },
+      "ScheduleRunOut": {
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output"
+          },
+          "scheduled_for": {
+            "format": "date-time",
+            "title": "Scheduled For",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "scheduled_for",
+          "started_at",
+          "finished_at",
+          "status",
+          "output",
+          "error"
+        ],
+        "title": "ScheduleRunOut",
         "type": "object"
       },
       "ScopeAssignment": {
@@ -2277,6 +3995,23 @@
           "status"
         ],
         "title": "StatusOut",
+        "type": "object"
+      },
+      "TagsOut": {
+        "additionalProperties": false,
+        "properties": {
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "tags"
+        ],
+        "title": "TagsOut",
         "type": "object"
       },
       "TagsSet": {
@@ -2570,6 +4305,174 @@
           "otpauth_uri"
         ],
         "title": "TotpEnroll",
+        "type": "object"
+      },
+      "TrapHistoryOut": {
+        "additionalProperties": false,
+        "properties": {
+          "device_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Id"
+          },
+          "device_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Name"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "received_at": {
+            "format": "date-time",
+            "title": "Received At",
+            "type": "string"
+          },
+          "source_ip": {
+            "title": "Source Ip",
+            "type": "string"
+          },
+          "trap_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trap Name"
+          },
+          "trap_oid": {
+            "title": "Trap Oid",
+            "type": "string"
+          },
+          "varbinds": {
+            "additionalProperties": true,
+            "title": "Varbinds",
+            "type": "object"
+          },
+          "vendor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vendor"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "received_at",
+          "source_ip",
+          "device_id",
+          "device_name",
+          "version",
+          "trap_oid",
+          "trap_name",
+          "vendor",
+          "varbinds"
+        ],
+        "title": "TrapHistoryOut",
+        "type": "object"
+      },
+      "TrapHistoryPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TrapHistoryOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "TrapHistoryPage",
+        "type": "object"
+      },
+      "TrapProfileOut": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "is_interface": {
+            "title": "Is Interface",
+            "type": "boolean"
+          },
+          "modules": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Modules",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "oid": {
+            "title": "Oid",
+            "type": "string"
+          },
+          "vendor": {
+            "title": "Vendor",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "vendor",
+          "name",
+          "oid",
+          "description",
+          "is_interface",
+          "modules"
+        ],
+        "title": "TrapProfileOut",
         "type": "object"
       },
       "TwoFactorEnabled": {
@@ -2943,6 +4846,192 @@
         "title": "ValidationError",
         "type": "object"
       },
+      "VendorDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "discovery_oids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Discovery Oids",
+            "type": "array"
+          },
+          "discovery_retries": {
+            "title": "Discovery Retries",
+            "type": "integer"
+          },
+          "discovery_timeout_ms": {
+            "title": "Discovery Timeout Ms",
+            "type": "integer"
+          },
+          "families": {
+            "title": "Families",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "model_families": {
+            "items": {
+              "$ref": "#/components/schemas/ModelFamilyOut"
+            },
+            "title": "Model Families",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "polling_disabled_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Polling Disabled Reason"
+          },
+          "polling_enabled": {
+            "title": "Polling Enabled",
+            "type": "boolean"
+          },
+          "polling_toggled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Polling Toggled At"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "notes",
+          "discovery_oids",
+          "discovery_timeout_ms",
+          "discovery_retries",
+          "polling_enabled",
+          "polling_disabled_reason",
+          "polling_toggled_at",
+          "families",
+          "model_families"
+        ],
+        "title": "VendorDetail",
+        "type": "object"
+      },
+      "VendorOut": {
+        "additionalProperties": false,
+        "properties": {
+          "discovery_oids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Discovery Oids",
+            "type": "array"
+          },
+          "discovery_retries": {
+            "title": "Discovery Retries",
+            "type": "integer"
+          },
+          "discovery_timeout_ms": {
+            "title": "Discovery Timeout Ms",
+            "type": "integer"
+          },
+          "families": {
+            "title": "Families",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "polling_disabled_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Polling Disabled Reason"
+          },
+          "polling_enabled": {
+            "title": "Polling Enabled",
+            "type": "boolean"
+          },
+          "polling_toggled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Polling Toggled At"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "notes",
+          "discovery_oids",
+          "discovery_timeout_ms",
+          "discovery_retries",
+          "polling_enabled",
+          "polling_disabled_reason",
+          "polling_toggled_at",
+          "families"
+        ],
+        "title": "VendorOut",
+        "type": "object"
+      },
       "VendorUpdate": {
         "properties": {
           "discovery_retries": {
@@ -3053,6 +5142,53 @@
           "reason"
         ],
         "title": "WindowCreate",
+        "type": "object"
+      },
+      "WorkerOut": {
+        "additionalProperties": false,
+        "properties": {
+          "healthy": {
+            "title": "Healthy",
+            "type": "boolean"
+          },
+          "info": {
+            "additionalProperties": true,
+            "title": "Info",
+            "type": "object"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "last_seen": {
+            "format": "date-time",
+            "title": "Last Seen",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "worker_id": {
+            "title": "Worker Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "worker_id",
+          "kind",
+          "status",
+          "started_at",
+          "last_seen",
+          "healthy",
+          "info"
+        ],
+        "title": "WorkerOut",
         "type": "object"
       }
     }
@@ -4076,8 +6212,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/CapabilityOut"
                   },
                   "title": "Response List Capabilities Api V1 Capabilities Get",
                   "type": "array"
@@ -4142,8 +6277,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/DeadLetterOut"
                   },
                   "title": "Response List Dead Letters Api V1 Dead Letters Get",
                   "type": "array"
@@ -4196,8 +6330,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/AccessProfileOut"
                   },
                   "title": "Response List Profiles Api V1 Device Access Profiles Get",
                   "type": "array"
@@ -4257,9 +6390,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Create Profile Api V1 Device Access Profiles Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/AccessProfileOut"
                 }
               }
             },
@@ -4317,11 +6448,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "title": "Response Delete Profile Api V1 Device Access Profiles  Profile Id  Delete",
-                  "type": "object"
+                  "$ref": "#/components/schemas/StatusOut"
                 }
               }
             },
@@ -4377,9 +6504,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Profile Api V1 Device Access Profiles  Profile Id  Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/AccessProfileOut"
                 }
               }
             },
@@ -4445,9 +6570,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Update Profile Api V1 Device Access Profiles  Profile Id  Patch",
-                  "type": "object"
+                  "$ref": "#/components/schemas/AccessProfileOut"
                 }
               }
             },
@@ -4787,8 +6910,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/DeviceModelOut"
                   },
                   "title": "Response List Models Api V1 Device Models Get",
                   "type": "array"
@@ -4908,9 +7030,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Model Api V1 Device Models  Model Id  Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/DeviceModelOut"
                 }
               }
             },
@@ -5482,7 +7602,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Page"
+                  "$ref": "#/components/schemas/InterfacePage"
                 }
               }
             },
@@ -5551,9 +7671,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Request Poll Api V1 Devices  Device Id  Poll Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/PollQueued"
                 }
               }
             },
@@ -5623,9 +7741,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Poll History Api V1 Devices  Device Id  Poll History Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/PollHistory"
                 }
               }
             },
@@ -5887,11 +8003,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "title": "Response Api Health Api V1 Health Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/HealthOut"
                 }
               }
             },
@@ -6081,7 +8193,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Page"
+                  "$ref": "#/components/schemas/InterfacePage"
                 }
               }
             },
@@ -6209,9 +8321,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Interface Api V1 Interfaces  Interface Id  Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/InterfaceOut"
                 }
               }
             },
@@ -6279,11 +8389,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "boolean"
-                  },
-                  "title": "Response Set Interface Favorite Api V1 Interfaces  Interface Id  Favorite Put",
-                  "type": "object"
+                  "$ref": "#/components/schemas/FavoriteOut"
                 }
               }
             },
@@ -6364,7 +8470,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Page"
+                  "$ref": "#/components/schemas/InterfaceHistoryPage"
                 }
               }
             },
@@ -6422,9 +8528,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Interface Marks Api V1 Interfaces  Interface Id  Marks Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/InterfaceMarks"
                 }
               }
             },
@@ -6492,14 +8596,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "items": {
-                      "type": "string"
-                    },
-                    "type": "array"
-                  },
-                  "title": "Response Set Interface Tags Api V1 Interfaces  Interface Id  Tags Put",
-                  "type": "object"
+                  "$ref": "#/components/schemas/TagsOut"
                 }
               }
             },
@@ -6772,9 +8869,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Check Definition Api V1 Mib Check Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/MibCheckOut"
                 }
               }
             },
@@ -6824,8 +8919,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/MibFileOut"
                   },
                   "title": "Response List Files Api V1 Mib Files Get",
                   "type": "array"
@@ -6923,8 +9017,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/MibObjectOut"
                   },
                   "title": "Response Search Objects Api V1 Mib Objects Get",
                   "type": "array"
@@ -6977,8 +9070,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/OidProfileSummary"
                   },
                   "title": "Response List Oid Profiles Api V1 Oid Profiles Get",
                   "type": "array"
@@ -7039,9 +9131,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Oid Profile Api V1 Oid Profiles  Profile Id  Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/OidProfileDetail"
                 }
               }
             },
@@ -7091,9 +9181,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Mint Ticket Api V1 Realtime Ticket Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/RealtimeTicket"
                 }
               }
             },
@@ -7140,8 +9228,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/ResellerOut"
                   },
                   "title": "Response List Resellers Api V1 Resellers Get",
                   "type": "array"
@@ -7201,11 +9288,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "title": "Response Create Reseller Api V1 Resellers Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/ResellerCreated"
                 }
               }
             },
@@ -7273,11 +9356,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "integer"
-                  },
-                  "title": "Response Assign Reseller Users Api V1 Resellers  Reseller Id  Users Put",
-                  "type": "object"
+                  "$ref": "#/components/schemas/ResellerUsers"
                 }
               }
             },
@@ -7327,8 +9406,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/ScheduleJobOut"
                   },
                   "title": "Response List Jobs Api V1 System Schedule Get",
                   "type": "array"
@@ -7399,9 +9477,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Update Job Api V1 System Schedule  Key  Patch",
-                  "type": "object"
+                  "$ref": "#/components/schemas/ScheduleJobOut"
                 }
               }
             },
@@ -7459,11 +9535,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "title": "Response Run Now Api V1 System Schedule  Key  Run Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/StatusOut"
                 }
               }
             },
@@ -7534,8 +9606,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/ScheduleRunOut"
                   },
                   "title": "Response Job Runs Api V1 System Schedule  Key  Runs Get",
                   "type": "array"
@@ -7642,7 +9713,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Page"
+                  "$ref": "#/components/schemas/TrapHistoryPage"
                 }
               }
             },
@@ -7692,8 +9763,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/TrapProfileOut"
                   },
                   "title": "Response List Trap Profiles Api V1 Trap Profiles Get",
                   "type": "array"
@@ -8106,8 +10176,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/VendorOut"
                   },
                   "title": "Response List Vendors Api V1 Vendors Get",
                   "type": "array"
@@ -8168,9 +10237,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Vendor Api V1 Vendors  Slug  Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/VendorDetail"
                 }
               }
             },
@@ -8236,9 +10303,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Update Vendor Api V1 Vendors  Slug  Patch",
-                  "type": "object"
+                  "$ref": "#/components/schemas/VendorDetail"
                 }
               }
             },
@@ -8306,9 +10371,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Toggle Vendor Polling Api V1 Vendors  Slug  Polling Put",
-                  "type": "object"
+                  "$ref": "#/components/schemas/VendorDetail"
                 }
               }
             },
@@ -8376,8 +10439,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/FamilyCapabilityOut"
                   },
                   "title": "Response Family Capabilities Api V1 Vendors  Vendor Slug  Families  Family Slug  Capabilities Get",
                   "type": "array"
@@ -8457,9 +10519,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Toggle Family Polling Api V1 Vendors  Vendor Slug  Families  Family Slug  Polling Put",
-                  "type": "object"
+                  "$ref": "#/components/schemas/ModelFamilyOut"
                 }
               }
             },
@@ -8509,8 +10569,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/WorkerOut"
                   },
                   "title": "Response List Workers Api V1 Workers Get",
                   "type": "array"
@@ -8544,11 +10603,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "title": "Response Health Health Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/HealthOut"
                 }
               }
             },
@@ -8582,9 +10637,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Ready Ready Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/ReadyOut"
                 }
               }
             },

@@ -6,6 +6,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
+from app.api import schemas
 from app.core.audit import write_audit
 from app.core.config import settings
 from app.core.database import get_conn
@@ -37,7 +38,7 @@ def _need_reason(payload: PollingToggle) -> str | None:
     return reason
 
 
-@router.get("/vendors")
+@router.get("/vendors", response_model=list[schemas.VendorOut])
 async def list_vendors(
     _: Annotated[CurrentUser, Depends(require("vendors.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -45,7 +46,7 @@ async def list_vendors(
     return await vendor_repo.list_vendors(conn)
 
 
-@router.get("/vendors/{slug}")
+@router.get("/vendors/{slug}", response_model=schemas.VendorDetail)
 async def get_vendor(
     slug: str,
     _: Annotated[CurrentUser, Depends(require("vendors.view"))],
@@ -57,7 +58,7 @@ async def get_vendor(
     return vendor
 
 
-@router.patch("/vendors/{slug}")
+@router.patch("/vendors/{slug}", response_model=schemas.VendorDetail)
 async def update_vendor(
     slug: str,
     payload: VendorUpdate,
@@ -78,7 +79,7 @@ async def update_vendor(
     return after
 
 
-@router.put("/vendors/{slug}/polling")
+@router.put("/vendors/{slug}/polling", response_model=schemas.VendorDetail)
 async def toggle_vendor_polling(
     slug: str,
     payload: PollingToggle,
@@ -99,7 +100,7 @@ async def toggle_vendor_polling(
     return await vendor_repo.get_vendor(conn, slug)
 
 
-@router.put("/vendors/{vendor_slug}/families/{family_slug}/polling")
+@router.put("/vendors/{vendor_slug}/families/{family_slug}/polling", response_model=schemas.ModelFamilyOut)
 async def toggle_family_polling(
     vendor_slug: str,
     family_slug: str,
@@ -121,7 +122,7 @@ async def toggle_family_polling(
     return await vendor_repo.get_family(conn, vendor_slug, family_slug)
 
 
-@router.get("/capabilities")
+@router.get("/capabilities", response_model=list[schemas.CapabilityOut])
 async def list_capabilities(
     _: Annotated[CurrentUser, Depends(require("vendors.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -129,7 +130,7 @@ async def list_capabilities(
     return await vendor_repo.list_capabilities(conn)
 
 
-@router.get("/vendors/{vendor_slug}/families/{family_slug}/capabilities")
+@router.get("/vendors/{vendor_slug}/families/{family_slug}/capabilities", response_model=list[schemas.FamilyCapabilityOut])
 async def family_capabilities(
     vendor_slug: str,
     family_slug: str,
@@ -141,7 +142,7 @@ async def family_capabilities(
     return await vendor_repo.family_capabilities(conn, vendor_slug, family_slug)
 
 
-@router.get("/oid-profiles")
+@router.get("/oid-profiles", response_model=list[schemas.OidProfileSummary])
 async def list_oid_profiles(
     _: Annotated[CurrentUser, Depends(require("oid_profiles.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -149,7 +150,7 @@ async def list_oid_profiles(
     return await oid_repo.list_profiles(conn)
 
 
-@router.get("/oid-profiles/{profile_id}")
+@router.get("/oid-profiles/{profile_id}", response_model=schemas.OidProfileDetail)
 async def get_oid_profile(
     profile_id: str,
     _: Annotated[CurrentUser, Depends(require("oid_profiles.view"))],

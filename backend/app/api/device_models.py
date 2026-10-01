@@ -7,6 +7,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
+from app.api import schemas
 from app.core.config import settings
 from app.core.database import get_conn
 from app.core.security import CurrentUser, require
@@ -27,7 +28,7 @@ class DetectResponse(BaseModel):
     candidates: list[dict[str, Any]] = Field(default_factory=list)
 
 
-@router.get("/device-models")
+@router.get("/device-models", response_model=list[schemas.DeviceModelOut])
 async def list_models(
     _: Annotated[CurrentUser, Depends(require("device_models.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -35,7 +36,7 @@ async def list_models(
     return await repo.list_models(conn)
 
 
-@router.get("/device-models/{model_id}")
+@router.get("/device-models/{model_id}", response_model=schemas.DeviceModelOut)
 async def get_model(
     model_id: str,
     _: Annotated[CurrentUser, Depends(require("device_models.view"))],

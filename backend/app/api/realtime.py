@@ -16,6 +16,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, WebSocket, WebSocketDisconnect
 
+from app.api import schemas
 from app.core.config import settings
 from app.core.security import CurrentUser, authenticate_credential, get_current_user
 from app.realtime import tickets
@@ -30,7 +31,7 @@ def _identity(user: CurrentUser) -> dict:
     return {"id": user.id, "username": user.username, "role": user.role, "scope_all": user.scope_all}
 
 
-@router.post(f"{settings.api_prefix}/realtime/ticket")
+@router.post(f"{settings.api_prefix}/realtime/ticket", response_model=schemas.RealtimeTicket)
 async def mint_ticket(request: Request, user: Annotated[CurrentUser, Depends(get_current_user)]) -> dict:
     """A ticket for one `/ws?ticket=...` handshake within the next few seconds. Needs a Bearer credential: the
     session cookie is read-only, so a cross-site page cannot mint one with it."""

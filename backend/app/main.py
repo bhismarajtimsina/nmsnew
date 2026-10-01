@@ -11,6 +11,7 @@ from fastapi import Depends, FastAPI, Response, status
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
+from app.api import schemas
 from app.api.access import router as access_router
 from app.api.auth import router as auth_router
 from app.api.device_access import router as device_access_router
@@ -91,12 +92,12 @@ async def metrics_middleware(request, call_next):
     return response
 
 
-@app.get("/health")
+@app.get("/health", response_model=schemas.HealthOut)
 async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.get("/ready")
+@app.get("/ready", response_model=schemas.ReadyOut)
 async def ready(response: Response) -> dict[str, object]:
     checks: dict[str, str] = {}
     for name, probe in (("postgres", lambda: check_postgres(app.state.pool)), ("redis", lambda: check_redis(app.state.redis))):
@@ -118,6 +119,6 @@ async def metrics() -> Response:
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
-@app.get(f"{settings.api_prefix}/health")
+@app.get(f"{settings.api_prefix}/health", response_model=schemas.HealthOut)
 async def api_health(_: Annotated[None, Depends(public)]) -> dict[str, str]:
     return {"status": "ok"}

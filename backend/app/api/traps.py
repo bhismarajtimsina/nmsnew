@@ -7,6 +7,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
+from app.api import schemas
 from app.core.config import settings
 from app.core.database import get_conn
 from app.core.security import CurrentUser, require
@@ -29,7 +30,7 @@ def _uuid_or_404(value: str) -> str:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from exc
 
 
-@router.get("/trap-history", response_model=Page)
+@router.get("/trap-history", response_model=schemas.TrapHistoryPage)
 async def list_trap_history(
     user: Annotated[CurrentUser, Depends(require("traps.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -43,7 +44,7 @@ async def list_trap_history(
     return Page(items=[trap_repo.as_dict(r) for r in rows], total=total, limit=limit, offset=offset)
 
 
-@router.get("/trap-profiles")
+@router.get("/trap-profiles", response_model=list[schemas.TrapProfileOut])
 async def list_trap_profiles(
     _: Annotated[CurrentUser, Depends(require("traps.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],

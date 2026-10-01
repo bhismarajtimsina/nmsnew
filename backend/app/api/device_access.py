@@ -7,6 +7,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field, SecretStr, model_validator
 
+from app.api import schemas
 from app.core.audit import write_audit
 from app.core.config import settings
 from app.core.crypto import EncryptionNotConfigured, EncryptionService
@@ -86,7 +87,7 @@ def _safe_view(profile: dict[str, Any]) -> dict[str, Any]:
     return {k: profile.get(k) for k in keys}
 
 
-@router.get("")
+@router.get("", response_model=list[schemas.AccessProfileOut])
 async def list_profiles(
     _: Annotated[CurrentUser, Depends(require("device_access.manage"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -94,7 +95,7 @@ async def list_profiles(
     return await repo.list_profiles(conn)
 
 
-@router.get("/{profile_id}")
+@router.get("/{profile_id}", response_model=schemas.AccessProfileOut)
 async def get_profile(
     profile_id: str,
     _: Annotated[CurrentUser, Depends(require("device_access.manage"))],
@@ -106,7 +107,7 @@ async def get_profile(
     return profile
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.AccessProfileOut)
 async def create_profile(
     payload: ProfileCreate,
     request: Request,
@@ -124,7 +125,7 @@ async def create_profile(
     return profile
 
 
-@router.patch("/{profile_id}")
+@router.patch("/{profile_id}", response_model=schemas.AccessProfileOut)
 async def update_profile(
     profile_id: str,
     payload: ProfileUpdate,
@@ -155,7 +156,7 @@ async def update_profile(
     return after
 
 
-@router.delete("/{profile_id}")
+@router.delete("/{profile_id}", response_model=schemas.StatusOut)
 async def delete_profile(
     profile_id: str,
     request: Request,

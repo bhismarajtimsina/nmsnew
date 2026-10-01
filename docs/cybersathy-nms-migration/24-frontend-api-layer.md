@@ -94,3 +94,21 @@ every time.
 
 Still untyped (41): registries, device access profiles, interfaces, polling, schedule, MIB, device models, trap
 profiles, users/resellers listings, and the health and metrics endpoints. Same pattern, next round.
+
+## Implementation notes (2026-10-01): every JSON route typed
+
+The remaining 41 operations now have response models too: interfaces (list, detail, history, marks, favorite,
+tags), device access profiles (which only ever report *whether* a secret is set), vendors, families, capabilities,
+OID profiles, device models, MIB files, objects and checks, trap profiles and history, polling (poll, history,
+workers, dead letters), schedule (jobs, runs, run-now), resellers, the realtime ticket, and `/health` and `/ready`.
+**Every JSON operation in the API is now typed.** Only `/metrics` stays untyped, since it returns Prometheus text,
+not JSON.
+
+How the shapes were derived: a throwaway pytest plugin (not committed) recorded the JSON every route returned during
+a full test run, which covered 39 of the 41. Each field's type and nullability were then taken from the database
+column, not only from the values seen, because a column can be nullable even if the tests only ever saw it filled.
+The one route no test exercises, `GET /capabilities`, was typed from its SQL. With the strict models in place the
+full suite passed on the first run, so no route returned anything its model did not declare. 10 of the new models
+were spot-checked by removing a field: the route's tests failed each time.
+
+Plan 24 now needs pages to start using the client (Plan 25).

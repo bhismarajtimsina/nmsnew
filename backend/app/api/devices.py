@@ -66,7 +66,7 @@ async def get_device(
     return device_repo.as_dict(row)
 
 
-@router.get("/devices/{device_id}/interfaces", response_model=Page)
+@router.get("/devices/{device_id}/interfaces", response_model=schemas.InterfacePage)
 async def list_device_interfaces(
     device_id: str,
     user: Annotated[CurrentUser, Depends(require("interfaces.view"))],
@@ -78,7 +78,7 @@ async def list_device_interfaces(
     return Page(items=[interface_repo.as_dict(r) for r in rows], total=total, limit=limit, offset=offset)
 
 
-@router.get("/interfaces", response_model=Page)
+@router.get("/interfaces", response_model=schemas.InterfacePage)
 async def list_interfaces(
     user: Annotated[CurrentUser, Depends(require("interfaces.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -105,7 +105,7 @@ async def list_known_tags(
     return await interface_repo.list_known_tags(conn, user, query=q)
 
 
-@router.get("/interfaces/{interface_id}")
+@router.get("/interfaces/{interface_id}", response_model=schemas.InterfaceOut)
 async def get_interface(
     interface_id: str,
     user: Annotated[CurrentUser, Depends(require("interfaces.view"))],
@@ -117,7 +117,7 @@ async def get_interface(
     return interface_repo.as_dict(row)
 
 
-@router.get("/interfaces/{interface_id}/history", response_model=Page)
+@router.get("/interfaces/{interface_id}/history", response_model=schemas.InterfaceHistoryPage)
 async def get_interface_status_history(
     interface_id: str,
     user: Annotated[CurrentUser, Depends(require("interfaces.view"))],
@@ -133,7 +133,7 @@ async def get_interface_status_history(
     return Page(items=items, total=total, limit=limit, offset=offset)
 
 
-@router.get("/interfaces/{interface_id}/marks")
+@router.get("/interfaces/{interface_id}/marks", response_model=schemas.InterfaceMarks)
 async def get_interface_marks(
     interface_id: str,
     user: Annotated[CurrentUser, Depends(require("interfaces.view"))],
@@ -149,7 +149,7 @@ class FavoriteSet(BaseModel):
     favorite: bool
 
 
-@router.put("/interfaces/{interface_id}/favorite")
+@router.put("/interfaces/{interface_id}/favorite", response_model=schemas.FavoriteOut)
 async def set_interface_favorite(
     interface_id: str,
     payload: FavoriteSet,
@@ -171,7 +171,7 @@ class TagsSet(BaseModel):
     tags: list[str] = Field(default_factory=list, max_length=50)
 
 
-@router.put("/interfaces/{interface_id}/tags")
+@router.put("/interfaces/{interface_id}/tags", response_model=schemas.TagsOut)
 async def set_interface_tags(
     interface_id: str,
     payload: TagsSet,

@@ -325,7 +325,7 @@ async def set_scopes(
     return payload
 
 
-@router.post("/resellers", status_code=status.HTTP_201_CREATED)
+@router.post("/resellers", status_code=status.HTTP_201_CREATED, response_model=schemas.ResellerCreated)
 async def create_reseller(
     payload: ResellerCreate,
     request: Request,
@@ -341,7 +341,7 @@ async def create_reseller(
     return {"id": str(rid), "name": payload.name}
 
 
-@router.get("/resellers")
+@router.get("/resellers", response_model=list[schemas.ResellerOut])
 async def list_resellers(
     _: Annotated[CurrentUser, Depends(require("resellers.manage"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -355,7 +355,7 @@ async def list_resellers(
     return [{**dict(r), "id": str(r["id"])} for r in rows]
 
 
-@router.put("/resellers/{reseller_id}/users")
+@router.put("/resellers/{reseller_id}/users", response_model=schemas.ResellerUsers)
 async def assign_reseller_users(
     reseller_id: str,
     payload: ResellerAssign,

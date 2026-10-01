@@ -8,6 +8,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
+from app.api import schemas
 from app.core.audit import write_audit
 from app.core.config import settings
 from app.core.database import get_conn
@@ -50,7 +51,7 @@ async def _get(conn: asyncpg.Connection, key: str) -> asyncpg.Record:
     return row
 
 
-@router.get("")
+@router.get("", response_model=list[schemas.ScheduleJobOut])
 async def list_jobs(
     _: Annotated[CurrentUser, Depends(require("system.schedule.reports.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -58,7 +59,7 @@ async def list_jobs(
     return [_view(r) for r in await conn.fetch(f"select {COLUMNS} from schedule_jobs order by key")]
 
 
-@router.get("/{key}/runs")
+@router.get("/{key}/runs", response_model=list[schemas.ScheduleRunOut])
 async def job_runs(
     key: str,
     _: Annotated[CurrentUser, Depends(require("system.schedule.reports.view"))],
@@ -72,7 +73,7 @@ async def job_runs(
     return [{**dict(r), "id": str(r["id"])} for r in rows]
 
 
-@router.patch("/{key}")
+@router.patch("/{key}", response_model=schemas.ScheduleJobOut)
 async def update_job(
     key: str,
     payload: JobUpdate,
@@ -112,7 +113,7 @@ async def update_job(
     return _view(after)
 
 
-@router.post("/{key}/run", status_code=status.HTTP_202_ACCEPTED)
+@router.post("/{key}/run", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.StatusOut)
 async def run_now(
     key: str,
     request: Request,

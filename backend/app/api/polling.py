@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
 
+from app.api import schemas
 from app.core.audit import write_audit
 from app.core.config import settings
 from app.core.database import get_conn
@@ -35,7 +36,7 @@ def _device_id(value: str) -> str:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from exc
 
 
-@router.get("/devices/{device_id}/poll-history")
+@router.get("/devices/{device_id}/poll-history", response_model=schemas.PollHistory)
 async def poll_history(
     device_id: str,
     user: Annotated[CurrentUser, Depends(require("pollers.view"))],
@@ -48,7 +49,7 @@ async def poll_history(
     return history
 
 
-@router.post("/devices/{device_id}/poll", status_code=status.HTTP_202_ACCEPTED)
+@router.post("/devices/{device_id}/poll", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.PollQueued)
 async def request_poll(
     device_id: str,
     payload: PollRequest,
@@ -89,7 +90,7 @@ async def request_poll(
     return {"job_id": job_id, "status": "queued", "profile": payload.profile}
 
 
-@router.get("/workers")
+@router.get("/workers", response_model=list[schemas.WorkerOut])
 async def list_workers(
     _: Annotated[CurrentUser, Depends(require("system.status.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -97,7 +98,7 @@ async def list_workers(
     return await heartbeat.list_workers(conn)
 
 
-@router.get("/dead-letters")
+@router.get("/dead-letters", response_model=list[schemas.DeadLetterOut])
 async def list_dead_letters(
     _: Annotated[CurrentUser, Depends(require("system.status.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],

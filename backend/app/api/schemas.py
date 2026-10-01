@@ -179,3 +179,368 @@ class MaintenanceWindowPage(Strict):
 class MaintenanceCanceled(Strict):
     status: Literal["canceled"]
     released_events: int
+
+
+# --- interfaces ---
+
+class InterfaceOut(Strict):
+    id: str
+    device_id: str
+    device_name: str
+    parent_interface_id: str | None
+    if_index: int
+    name: str
+    alias: str | None
+    if_type: str | None
+    admin_status: str
+    oper_status: str
+    speed_bps: int | None
+    mac_address: str | None
+    legacy_id: int | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class InterfacePage(Strict):
+    items: list[InterfaceOut]
+    total: int
+    limit: int
+    offset: int
+
+
+class InterfaceStatusChange(Strict):
+    id: str
+    changed_at: datetime
+    admin_status: str
+    oper_status: str
+
+
+class InterfaceHistoryPage(Strict):
+    items: list[InterfaceStatusChange]
+    total: int
+    limit: int
+    offset: int
+
+
+class InterfaceMarks(Strict):
+    favorite: bool
+    tags: list[str]
+
+
+class FavoriteOut(Strict):
+    favorite: bool
+
+
+class TagsOut(Strict):
+    tags: list[str]
+
+
+# --- device access profiles (secrets are never returned, only whether each is set) ---
+
+class AccessProfileOut(Strict):
+    id: str
+    name: str
+    snmp_version: str
+    timeout_ms: int
+    retries: int
+    snmp_v3_username: str | None
+    snmp_v3_auth_protocol: str | None
+    snmp_v3_priv_protocol: str | None
+    has_community: bool
+    has_auth_secret: bool
+    has_priv_secret: bool
+    legacy_id: int | None
+    created_at: datetime
+    updated_at: datetime
+    devices_using: int
+
+
+# --- registries ---
+
+class ModelFamilyOut(Strict):
+    id: str
+    vendor_slug: str
+    slug: str
+    name: str
+    device_type: str
+    notes: str | None
+    polling_enabled: bool
+    polling_disabled_reason: str | None
+    polling_toggled_at: datetime | None
+
+
+class VendorOut(Strict):
+    id: str
+    slug: str
+    name: str
+    notes: str | None
+    discovery_oids: list[str]
+    discovery_timeout_ms: int
+    discovery_retries: int
+    polling_enabled: bool
+    polling_disabled_reason: str | None
+    polling_toggled_at: datetime | None
+    families: int
+
+
+class VendorDetail(VendorOut):
+    model_families: list[ModelFamilyOut]
+
+
+class CapabilityOut(Strict):
+    code: str
+    description: str
+    risk: str
+    enabled_by_default: bool
+
+
+class FamilyCapabilityOut(CapabilityOut):
+    status: str
+    verified_by_fixture: bool
+    fixture_ref: str | None
+    note: str | None
+
+
+class OidProfileSummary(Strict):
+    id: str
+    name: str
+    version: int
+    status: str
+    description: str | None
+    created_at: datetime
+    activated_at: datetime | None
+    vendor_slug: str | None
+    family_slug: str | None
+    entries: int
+
+
+class OidProfileEntryOut(Strict):
+    logical_name: str
+    numeric_oid: str
+    module: str
+    access: str
+    safety_level: str
+    unit: str | None
+    mib_object: str | None
+    source_note: str
+    walk_strategy: str
+    max_rows: int | None
+    timeout_ms: int | None
+    position: int
+    transform: str | None
+    transform_kind: str | None
+    factor: float | None
+    valid_min: float | None
+    valid_max: float | None
+
+
+class OidProfileDetail(Strict):
+    id: str
+    name: str
+    version: int
+    status: str
+    description: str | None
+    created_at: datetime
+    activated_at: datetime | None
+    vendor_slug: str | None
+    family_slug: str | None
+    entries: list[OidProfileEntryOut]
+
+
+class DeviceModelOut(Strict):
+    id: str
+    vendor: str
+    family_slug: str | None
+    legacy_key: str | None
+    model_name: str
+    device_type: str
+    sysobjectid_matcher: str | None
+    sysdescr_pattern: str | None
+    priority: int
+    source_note: str | None
+    legacy_id: int | None
+    created_at: datetime
+
+
+class MibFileOut(Strict):
+    id: str
+    filename: str
+    vendor_slug: str | None
+    object_count: int
+    resolved_count: int
+    imported_at: datetime
+
+
+class MibObjectOut(Strict):
+    id: str
+    name: str
+    kind: str
+    numeric_oid: str | None
+    parent_name: str | None
+    sub_id: int | None
+    filename: str
+
+
+class MibMatch(Strict):
+    filename: str
+    numeric_oid: str
+
+
+class MibCheckOut(Strict):
+    name: str
+    declared_oid: str
+    status: str
+    mib_matches: list[MibMatch]
+
+
+class TrapProfileOut(Strict):
+    id: str
+    vendor: str
+    name: str
+    oid: str
+    description: str
+    is_interface: bool
+    modules: list[str]
+
+
+class TrapHistoryOut(Strict):
+    id: str
+    received_at: datetime
+    source_ip: str
+    device_id: str | None
+    device_name: str | None
+    version: str
+    trap_oid: str
+    trap_name: str | None
+    vendor: str | None
+    varbinds: dict[str, Any]
+
+
+class TrapHistoryPage(Strict):
+    items: list[TrapHistoryOut]
+    total: int
+    limit: int
+    offset: int
+
+
+# --- polling and workers ---
+
+class PollQueued(Strict):
+    job_id: str
+    status: Literal["queued"]
+    profile: str
+
+
+class PollResultOut(Strict):
+    id: str
+    profile_name: str
+    profile_version: int | None
+    outcome: str
+    rows: int
+    truncated: bool
+    duration_ms: int
+    error: str | None
+    started_at: datetime
+
+
+class PollStateOut(Strict):
+    consecutive_failures: int
+    breaker_open: bool
+    breaker_open_until: datetime | None
+    last_error: str | None
+    last_polled_at: datetime | None
+    last_success_at: datetime | None
+    last_failure_at: datetime | None
+
+
+class PollHistory(Strict):
+    state: PollStateOut | None
+    results: list[PollResultOut]
+
+
+class WorkerOut(Strict):
+    worker_id: str
+    kind: str
+    status: str
+    started_at: datetime
+    last_seen: datetime
+    healthy: bool
+    info: dict[str, Any]
+
+
+class DeadLetterOut(Strict):
+    id: str
+    stream: str
+    message_id: str | None
+    job_id: str | None
+    reason: str
+    deliveries: int
+    fields: dict[str, Any]
+    created_at: datetime
+    resolved_at: datetime | None
+
+
+# --- schedule ---
+
+class ScheduleJobOut(Strict):
+    key: str
+    job_type: str
+    params: dict[str, Any]
+    crontab: str
+    timezone: str
+    enabled: bool
+    editable: bool
+    description: str | None
+    misfire_policy: str
+    misfire_grace_seconds: int
+    catch_up_max: int
+    overlap_policy: str
+    max_runtime_seconds: int
+    next_run_at: datetime | None
+    last_run_at: datetime | None
+    upcoming: list[datetime]
+
+
+class ScheduleRunOut(Strict):
+    id: str
+    scheduled_for: datetime
+    started_at: datetime
+    finished_at: datetime | None
+    status: str
+    output: str | None
+    error: str | None
+
+
+# --- users and resellers ---
+
+class ResellerOut(Strict):
+    id: str
+    name: str
+    description: str | None
+    is_active: bool
+    users: int
+
+
+class ResellerCreated(Strict):
+    id: str
+    name: str
+
+
+class ResellerUsers(Strict):
+    users: int
+
+
+# --- realtime and health ---
+
+class RealtimeTicket(Strict):
+    ticket: str
+    expires_in: int
+
+
+class HealthOut(Strict):
+    status: str
+
+
+class ReadyOut(Strict):
+    ready: bool
+    checks: dict[str, str]

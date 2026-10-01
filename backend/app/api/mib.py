@@ -7,6 +7,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
+from app.api import schemas
 from app.core.config import settings
 from app.core.database import get_conn
 from app.core.security import CurrentUser, require
@@ -20,7 +21,7 @@ class CheckRequest(BaseModel):
     numeric_oid: str = Field(min_length=1, max_length=255, pattern=r"^[0-9]+(\.[0-9]+)+$")
 
 
-@router.get("/files")
+@router.get("/files", response_model=list[schemas.MibFileOut])
 async def list_files(
     _: Annotated[CurrentUser, Depends(require("mib.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -28,7 +29,7 @@ async def list_files(
     return await repo.list_files(conn)
 
 
-@router.get("/objects")
+@router.get("/objects", response_model=list[schemas.MibObjectOut])
 async def search_objects(
     _: Annotated[CurrentUser, Depends(require("mib.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -45,7 +46,7 @@ async def search_objects(
     return await repo.search_objects(conn, query=query, file_id=fid, limit=limit)
 
 
-@router.post("/check")
+@router.post("/check", response_model=schemas.MibCheckOut)
 async def check_definition(
     payload: CheckRequest,
     _: Annotated[CurrentUser, Depends(require("mib.view"))],
