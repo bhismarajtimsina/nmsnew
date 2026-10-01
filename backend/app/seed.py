@@ -120,6 +120,7 @@ async def seed(
         await _seed_schedule(conn)
         await _seed_device_models(conn)
         await _seed_standard_oid_profiles(conn)
+        await _seed_bdcom_switch_profile(conn)
         await _seed_alarm_rules(conn)
         await _seed_trap_profiles(conn)
         await _seed_notification_event_config(conn)
@@ -282,6 +283,41 @@ async def _seed_standard_oid_profiles(conn: asyncpg.Connection) -> None:
         )
     await conn.execute("update oid_profiles set status = 'active', description = $2 where id = $1",
                        interface_profile, "The interface table (RFC 1213): one row per interface. Vendor-neutral.")
+
+
+async def _seed_bdcom_switch_profile(conn: asyncpg.Connection) -> None:
+    """The BDCOM switch profile (Plan 13), as a DRAFT: vendor-private OIDs need a device fixture and an operator's
+    hardware sign-off before anything polls them, and the engine only runs active profiles (see
+    app/registry/bdcom_switch_oids.py). Inserted once; an operator activates it, or builds a corrected version, by hand."""
+    from app.registry.bdcom_switch_oids import DEFINITIONS, FAMILY_SLUG, GET_TIMEOUT_MS, MIB_DIRECTORY, PROFILE_NAME, VENDOR_SLUG
+
+    if await conn.fetchval("select exists(select 1 from oid_profiles where name = $1)", PROFILE_NAME):
+        return
+    vendor_id = await conn.fetchval("select id from vendors where slug = $1", VENDOR_SLUG)
+    family_id = await conn.fetchval("select id from vendor_model_families where vendor_id = $1 and slug = $2", vendor_id, FAMILY_SLUG)
+    if vendor_id is None or family_id is None:
+        return  # the registry seed runs first; without the vendor and family there is nothing to attach the profile to
+    profile_id = await conn.fetchval(
+        "insert into oid_profiles (name, version, status, vendor_id, family_id, description) values ($1, 1, 'draft', $2, $3, $4) returning id",
+        PROFILE_NAME, vendor_id, family_id,
+        "BDCOM switch: identity, CPU and memory, LLDP neighbours, SFP diagnostics. Draft until a fixture and a hardware "
+        "sign-off exist (Plan 13).",
+    )
+    for position, d in enumerate(DEFINITIONS):
+        definition_id = await conn.fetchval(
+            """
+            insert into oid_definitions (vendor_id, logical_name, numeric_oid, module, access, safety_level, unit, mib_object, source_note)
+            values ($1, $2, $3, $4, 'read-only', $5, $6, $7, $8)
+            on conflict (coalesce(vendor_id, '00000000-0000-0000-0000-000000000000'::uuid), logical_name) do update set numeric_oid = excluded.numeric_oid
+            returning id
+            """,
+            vendor_id, d.logical_name, d.numeric_oid, d.logical_name.split(".")[1], "safe" if d.strategy == "get" else "bounded",
+            d.unit, d.mib_object, f"{MIB_DIRECTORY}/{d.mib_file}, object {d.mib_object}; legacy switch-common.yml. Not verified against a device.",
+        )
+        await conn.execute(
+            "insert into oid_profile_entries (profile_id, definition_id, walk_strategy, max_rows, timeout_ms, position) values ($1, $2, $3, $4, $5, $6)",
+            profile_id, definition_id, d.strategy, d.max_rows, d.timeout_ms if d.strategy != "get" else GET_TIMEOUT_MS, position,
+        )
 
 
 async def _seed_alarm_rules(conn: asyncpg.Connection) -> None:
