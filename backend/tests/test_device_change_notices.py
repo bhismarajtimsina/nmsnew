@@ -88,3 +88,24 @@ def test_the_frontend_listens_on_the_exact_channel_the_backend_publishes():
         pytest.skip("frontend/ is not mounted in this test environment")
     match = re.search(r"export const DEVICES_CHANGED = '([^']+)';", source.read_text())
     assert match and match.group(1) == DEVICES_CHANGED == "devices.changed"
+
+
+async def test_group_changes_announce_the_same_data_free_notice_and_refusals_announce_nothing(app_client, db, monkeypatch):
+    """Group names show on the device list, so a group change reloads it too."""
+    headers = await admin(app_client, db)
+    sent = record_publishes(app_client, monkeypatch)
+
+    made = await app_client.post("/api/v1/device-groups", headers=headers, json={"name": "Core", "description": "core ring"})
+    gid = made.json()["id"]
+    assert (await app_client.post("/api/v1/device-groups", headers=headers, json={"name": "Core"})).status_code == 409
+    assert (await app_client.patch(f"/api/v1/device-groups/{gid}", headers=headers, json={"name": "Core ring"})).status_code == 200
+    assert (await app_client.patch(f"/api/v1/device-groups/{gid}", headers=headers, json={"parent_id": gid})).status_code == 409
+    assert (await app_client.delete("/api/v1/device-groups/00000000-0000-0000-0000-000000000000", headers=headers)).status_code == 404
+    assert (await app_client.delete(f"/api/v1/device-groups/{gid}", headers=headers)).status_code == 200
+
+    assert [message for _, message in sent] == [
+        {"name": "devices.changed", "data": {"action": "group_created"}},
+        {"name": "devices.changed", "data": {"action": "group_updated"}},
+        {"name": "devices.changed", "data": {"action": "group_deleted"}},
+    ]
+    assert gid not in json.dumps(sent) and "Core" not in json.dumps(sent)

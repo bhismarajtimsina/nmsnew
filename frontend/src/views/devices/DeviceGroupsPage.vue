@@ -3,37 +3,52 @@ import { ref, reactive, onMounted, onBeforeUnmount } from 'vue';
 import { DataService } from '@/config/dataService/dataService';
 import { notification, Modal } from 'ant-design-vue';
 import { wsClient } from '@/services/wsClient';
+import { api } from '@/api/client';
+import { authBackend } from '@/auth/session';
+import { useRealtimeStore } from '@/stores/realtime';
 import { mergeById, removeById } from '@/utility/listMerge';
+import { fromLegacyGroup, legacySource, newApiSource, type GroupRow } from './deviceGroups';
+import { watchDeviceChanges, type Id } from './deviceList';
 import { Main } from '../styled';
 
-interface GroupRow {
-  id: number;
-  name: string;
-  description: string | null;
-  created_at: string;
-}
+// With the new login the page reads and writes the new API (src/views/devices/deviceGroups.ts); legacy is unchanged.
+const newApi = authBackend() === 'cybersathy';
+const source = newApi ? newApiSource(api) : legacySource(DataService as any);
 
 const loading = ref(true);
 const rows = ref<GroupRow[]>([]);
 const nameFilter = ref('');
-const isBuiltIn = (r: GroupRow) => r.id < 0;
+const isBuiltIn = (r: GroupRow) => r.builtIn;
 
 async function load() {
   loading.value = true;
   try {
-    const { data } = await DataService.get('/device-group');
-    rows.value = data.data || [];
+    rows.value = await source.list();
+  } catch (err) {
+    notification.error({ message: 'Could not load groups', description: source.errorMessage(err) });
   } finally {
     loading.value = false;
   }
 }
 onMounted(load);
 
-// Real-time: device_groups table changed anywhere — refresh without a manual reload.
-const unsubAdded = wsClient.subscribe('event:storage:device_groups:added', (msg) => mergeById(rows, msg.data));
-const unsubUpdated = wsClient.subscribe('event:storage:device_groups:updated', (msg) => mergeById(rows, msg.data));
-const unsubDeleted = wsClient.subscribe('event:storage:device_groups:deleted', (msg) => removeById(rows, msg.data.id));
+// Real-time. Legacy: device_groups table changed anywhere, so the pushed record is merged in as before. New login: group
+// changes publish the same data-free `devices.changed` notice as device changes, and the page reloads through the
+// scoped API.
+const noop = () => {};
+const reloadQuietly = async () => {
+  try {
+    rows.value = await source.list();
+  } catch {
+    /* the next manual action shows any error */
+  }
+};
+const unsubChanges = newApi ? watchDeviceChanges((channel, handler) => useRealtimeStore().subscribe(channel, handler), reloadQuietly) : noop;
+const unsubAdded = newApi ? noop : wsClient.subscribe('event:storage:device_groups:added', (msg) => mergeById(rows, fromLegacyGroup(msg.data)));
+const unsubUpdated = newApi ? noop : wsClient.subscribe('event:storage:device_groups:updated', (msg) => mergeById(rows, fromLegacyGroup(msg.data)));
+const unsubDeleted = newApi ? noop : wsClient.subscribe('event:storage:device_groups:deleted', (msg) => removeById(rows, msg.data.id));
 onBeforeUnmount(() => {
+  unsubChanges();
   unsubAdded();
   unsubUpdated();
   unsubDeleted();
@@ -41,7 +56,7 @@ onBeforeUnmount(() => {
 
 const modalOpen = ref(false);
 const saving = ref(false);
-const editingId = ref<number | null>(null);
+const editingId = ref<Id | null>(null);
 const form = reactive({ name: '', description: '' });
 
 function openCreate() {
@@ -63,19 +78,16 @@ async function submit() {
   }
   saving.value = true;
   try {
-    if (editingId.value) {
-      await DataService.put(`/device-group/${editingId.value}`, { name: form.name, description: form.description || undefined });
+    if (editingId.value !== null) {
+      await source.update(editingId.value, form);
     } else {
-      await DataService.post('/device-group', { name: form.name, description: form.description || undefined });
+      await source.create(form);
     }
-    notification.success({ message: `Group ${editingId.value ? 'updated' : 'created'}` });
+    notification.success({ message: `Group ${editingId.value !== null ? 'updated' : 'created'}` });
     modalOpen.value = false;
     await load();
-  } catch (err: any) {
-    notification.error({
-      message: 'Could not save group',
-      description: err?.response?.data?.error?.description || 'Please try again.',
-    });
+  } catch (err) {
+    notification.error({ message: 'Could not save group', description: source.errorMessage(err) });
   } finally {
     saving.value = false;
   }
@@ -89,14 +101,11 @@ function confirmDelete(row: GroupRow) {
     okType: 'danger',
     onOk: async () => {
       try {
-        await DataService.delete(`/device-group/${row.id}`);
+        await source.remove(row.id);
         rows.value = rows.value.filter((r) => r.id !== row.id);
         notification.success({ message: 'Group deleted' });
-      } catch (err: any) {
-        notification.error({
-          message: 'Could not delete group',
-          description: err?.response?.data?.error?.description || 'Please try again.',
-        });
+      } catch (err) {
+        notification.error({ message: 'Could not delete group', description: source.errorMessage(err) });
       }
     },
   });
@@ -126,13 +135,14 @@ function confirmDelete(row: GroupRow) {
             size="small"
             :pagination="{ pageSize: 20 }"
           >
-            <a-table-column title="Id" data-index="id" :width="70" />
+            <a-table-column v-if="!newApi" title="Id" data-index="id" :width="70" />
             <a-table-column title="Name" data-index="name">
               <template #default="{ record }"><strong>{{ record.name }}</strong></template>
             </a-table-column>
             <a-table-column title="Description" data-index="description">
               <template #default="{ record }">{{ record.description || '' }}</template>
             </a-table-column>
+            <a-table-column v-if="newApi" title="Devices" data-index="devices" :width="90" />
             <a-table-column title="Created at" data-index="created_at" :width="170" />
             <a-table-column title="" :width="100">
               <template #default="{ record }">

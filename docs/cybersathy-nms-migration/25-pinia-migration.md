@@ -248,4 +248,30 @@ Tests:
 - 67 frontend tests in total.
 - Not checked in a browser (R-09).
 
+### Device groups page on the typed client (2026-10-01)
+
+`src/views/devices/deviceGroups.ts` gives the groups page one row shape and four operations (list, create, update,
+delete) over either API.
+
+**Legacy build: unchanged.** It sends exactly the same requests and bodies as before (untrimmed name, empty
+description left out). Its built-in groups (negative ids) still cannot be edited or deleted, and pushed WebSocket
+records are still merged in place.
+
+**New login** (`/api/v1/device-groups`):
+
+- Names are trimmed, and an empty description is sent as `null`.
+- The table shows each group's device count instead of the internal id.
+- A refused change shows the API's own reason, for example a group that still has devices or subgroups.
+- Group create, update and delete now publish the same data-free `devices.changed` notice as device changes. Both
+  the groups page and the device list (which shows group names) reload through the scoped API.
+
+Tests:
+
+- 1 backend test: three changes give three notices, and refusals (409 and 404) give none. 3 mutations checked, all
+  caught.
+- 9 vitest tests: both sources' requests, row mapping, built-in handling, error messages, and the page wiring. 7
+  mutations checked, all caught.
+- 76 frontend tests in total.
+- Not checked in a browser (R-09).
+
 Still not done in this plan: the remaining pages on the typed client.

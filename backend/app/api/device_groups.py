@@ -6,12 +6,15 @@ from typing import Annotated, Any
 import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
+from redis.asyncio import Redis
 
 from app.api import schemas
 from app.core.audit import write_audit
 from app.core.config import settings
 from app.core.database import get_conn
+from app.core.redis import get_redis
 from app.core.security import CurrentUser, require
+from app.realtime.bus import notify_devices_changed
 from app.repositories import device_groups as repo
 
 router = APIRouter(prefix=f"{settings.api_prefix}/device-groups", tags=["device-groups"])
@@ -68,6 +71,7 @@ async def create_group(
     request: Request,
     user: Annotated[CurrentUser, Depends(require("device_groups.manage"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
+    redis: Annotated[Redis, Depends(get_redis)],
 ) -> dict[str, Any]:
     try:
         async with conn.transaction():
@@ -79,6 +83,7 @@ async def create_group(
         raise _not_found() from exc
     except repo.Conflict as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+    await notify_devices_changed(redis, "group_created")
     return row
 
 
@@ -89,6 +94,7 @@ async def update_group(
     request: Request,
     user: Annotated[CurrentUser, Depends(require("device_groups.manage"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
+    redis: Annotated[Redis, Depends(get_redis)],
 ) -> dict[str, Any]:
     gid = _uuid(group_id)
     changes = payload.model_dump(exclude_unset=True)
@@ -108,6 +114,7 @@ async def update_group(
         raise _not_found() from exc
     except repo.Conflict as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+    await notify_devices_changed(redis, "group_updated")
     return row
 
 
@@ -117,6 +124,7 @@ async def delete_group(
     request: Request,
     user: Annotated[CurrentUser, Depends(require("device_groups.manage"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
+    redis: Annotated[Redis, Depends(get_redis)],
 ) -> dict[str, str]:
     gid = _uuid(group_id)
     try:
@@ -131,4 +139,5 @@ async def delete_group(
         raise _not_found() from exc
     except repo.Conflict as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+    await notify_devices_changed(redis, "group_deleted")
     return {"status": "deleted"}
