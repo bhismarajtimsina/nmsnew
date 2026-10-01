@@ -3,6 +3,9 @@ import { computed, reactive, ref, toRefs, watchEffect } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
 import { NavTitle } from './style';
+import { authBackend } from '@/auth/session';
+import { menuVisibility } from '@/auth/menu';
+import { useAuthStore } from '@/stores/auth';
 
 const props = defineProps({
   toggleCollapsed: {
@@ -98,6 +101,12 @@ const externalApps = [
   { key: 'alertmanager', label: 'Alertmanager', href: '/alertmanager/', icon: 'bell' },
   { key: 'phpmyadmin', label: 'phpMyAdmin', href: '/phpmyadmin/', icon: 'database' },
 ];
+// With the new login, entries the user has no permission for are hidden; the legacy build shows everything as before.
+const backend = authBackend();
+const auth = backend === 'cybersathy' ? useAuthStore() : null;
+// Reads the store on every call, so the menu re-renders when the session's permissions change.
+const show = menuVisibility(auth !== null, (p) => auth?.can(p) ?? false);
+const visibleExternalApps = computed(() => externalApps.filter((a) => show(a.key)));
 const externalAppHrefs: Record<string, string> = Object.fromEntries(externalApps.map((a) => [a.key, a.href]));
 
 const router = useRouter();
@@ -130,204 +139,206 @@ const onClick = ({ key }: { key: string }) => {
     @openChange="onOpenChange"
     @click="onClick"
   >
-    <a-menu-item key="dashboard">
+    <a-menu-item v-if="show('dashboard')" key="dashboard">
       <template #icon><unicon name="create-dashboard"></unicon></template>
       Dashboard
     </a-menu-item>
 
-    <a-menu-item key="devices-list">
+    <a-menu-item v-if="show('devices-list')" key="devices-list">
       <template #icon><unicon name="server-network"></unicon></template>
       Devices
     </a-menu-item>
 
-    <a-menu-item key="topology-graph">
+    <a-menu-item v-if="show('topology-graph')" key="topology-graph">
       <template #icon><unicon name="graph-bar"></unicon></template>
       Topology graph
     </a-menu-item>
 
-    <a-sub-menu key="interfaces">
+    <a-sub-menu v-if="show('interfaces')" key="interfaces">
       <template #icon><unicon name="wifi"></unicon></template>
       <template #title>Interfaces</template>
-      <a-menu-item key="ont-list">
+      <a-menu-item v-if="show('ont-list')" key="ont-list">
         <template #icon><unicon name="signal-alt-3"></unicon></template>
         ONT list
       </a-menu-item>
-      <a-menu-item key="favorite-interfaces">
+      <a-menu-item v-if="show('favorite-interfaces')" key="favorite-interfaces">
         <template #icon><unicon name="star"></unicon></template>
         Favorite list
       </a-menu-item>
-      <a-menu-item key="tagged-interfaces">
+      <a-menu-item v-if="show('tagged-interfaces')" key="tagged-interfaces">
         <template #icon><unicon name="tag-alt"></unicon></template>
         Tags
       </a-menu-item>
     </a-sub-menu>
 
-    <a-sub-menu key="links">
+    <a-sub-menu v-if="show('links')" key="links">
       <template #icon><unicon name="share-alt"></unicon></template>
       <template #title>Links</template>
-      <a-menu-item key="links-list">
+      <a-menu-item v-if="show('links-list')" key="links-list">
         <template #icon><unicon name="link-alt"></unicon></template>
         Links list
       </a-menu-item>
-      <a-menu-item key="topology-tree">
+      <a-menu-item v-if="show('topology-tree')" key="topology-tree">
         <template #icon><unicon name="sitemap"></unicon></template>
         Topology (tree view)
       </a-menu-item>
     </a-sub-menu>
 
-    <a-menu-item key="map">
+    <a-menu-item v-if="show('map')" key="map">
       <template #icon><unicon name="map"></unicon></template>
       Map
     </a-menu-item>
 
-    <a-menu-item key="nearby">
+    <a-menu-item v-if="show('nearby')" key="nearby">
       <template #icon><unicon name="location-point"></unicon></template>
       Nearby objects
     </a-menu-item>
 
-    <a-menu-item key="events">
+    <a-menu-item v-if="show('events')" key="events">
       <template #icon><unicon name="bell"></unicon></template>
       Events
     </a-menu-item>
 
-    <a-sub-menu key="analytics">
+    <a-sub-menu v-if="show('analytics')" key="analytics">
       <template #icon><unicon name="chart-line"></unicon></template>
       <template #title>Analytics</template>
-      <a-menu-item key="analytics-increasing-errors">
+      <a-menu-item v-if="show('analytics-increasing-errors')" key="analytics-increasing-errors">
         <template #icon><unicon name="arrow-growth"></unicon></template>
         Increasing errors
       </a-menu-item>
-      <a-menu-item key="analytics-ont-statuses">
+      <a-menu-item v-if="show('analytics-ont-statuses')" key="analytics-ont-statuses">
         <template #icon><unicon name="signal-alt-3"></unicon></template>
         ONT statuses
       </a-menu-item>
-      <a-menu-item key="analytics-duplicated-mac">
+      <a-menu-item v-if="show('analytics-duplicated-mac')" key="analytics-duplicated-mac">
         <template #icon><unicon name="copy"></unicon></template>
         Duplicated MACs
       </a-menu-item>
-      <a-menu-item key="analytics-ont-level-strength">
+      <a-menu-item v-if="show('analytics-ont-level-strength')" key="analytics-ont-level-strength">
         <template #icon><unicon name="signal-alt"></unicon></template>
         Strength level ONTs
       </a-menu-item>
-      <a-menu-item key="analytics-duplicated-onts">
+      <a-menu-item v-if="show('analytics-duplicated-onts')" key="analytics-duplicated-onts">
         <template #icon><unicon name="copy-alt"></unicon></template>
         Duplicated ONTs
       </a-menu-item>
-      <a-menu-item key="analytics-device-statuses">
+      <a-menu-item v-if="show('analytics-device-statuses')" key="analytics-device-statuses">
         <template #icon><unicon name="server"></unicon></template>
         Device statuses
       </a-menu-item>
     </a-sub-menu>
 
-    <a-sub-menu key="logs">
+    <a-sub-menu v-if="show('logs')" key="logs">
       <template #icon><unicon name="document-layout-left"></unicon></template>
       <template #title>Logs</template>
-      <a-menu-item key="logs-console">
+      <a-menu-item v-if="show('logs-console')" key="logs-console">
         <template #icon><unicon name="window-section"></unicon></template>
         Console logs
       </a-menu-item>
-      <a-menu-item key="logs-actions">
+      <a-menu-item v-if="show('logs-actions')" key="logs-actions">
         <template #icon><unicon name="history"></unicon></template>
         Actions
       </a-menu-item>
-      <a-menu-item key="logs-device-calling">
+      <a-menu-item v-if="show('logs-device-calling')" key="logs-device-calling">
         <template #icon><unicon name="exchange"></unicon></template>
         Device calling logs
       </a-menu-item>
-      <a-menu-item key="logs-traps">
+      <a-menu-item v-if="show('logs-traps')" key="logs-traps">
         <template #icon><unicon name="bell"></unicon></template>
         SNMP traps
       </a-menu-item>
-      <a-menu-item key="logs-poller">
+      <a-menu-item v-if="show('logs-poller')" key="logs-poller">
         <template #icon><unicon name="sync"></unicon></template>
         Poller logs
       </a-menu-item>
-      <a-menu-item key="logs-schedule-reports">
+      <a-menu-item v-if="show('logs-schedule-reports')" key="logs-schedule-reports">
         <template #icon><unicon name="calendar-alt"></unicon></template>
         Schedule reports
       </a-menu-item>
     </a-sub-menu>
 
-    <NavTitle class="ninjadash-sidebar-nav-title">Management</NavTitle>
+    <NavTitle v-if="['device-mgmt', 'user-mgmt', 'config'].some(show)" class="ninjadash-sidebar-nav-title"
+      >Management</NavTitle
+    >
 
-    <a-sub-menu key="device-mgmt">
+    <a-sub-menu v-if="show('device-mgmt')" key="device-mgmt">
       <template #icon><unicon name="server"></unicon></template>
       <template #title>Device management</template>
-      <a-menu-item key="device-management">
+      <a-menu-item v-if="show('device-management')" key="device-management">
         <template #icon><unicon name="edit"></unicon></template>
         Device management
       </a-menu-item>
-      <a-menu-item key="device-access">
+      <a-menu-item v-if="show('device-access')" key="device-access">
         <template #icon><unicon name="lock"></unicon></template>
         Accesses
       </a-menu-item>
-      <a-menu-item key="device-group">
+      <a-menu-item v-if="show('device-group')" key="device-group">
         <template #icon><unicon name="layer-group"></unicon></template>
         Groups
       </a-menu-item>
-      <a-menu-item key="device-model">
+      <a-menu-item v-if="show('device-model')" key="device-model">
         <template #icon><unicon name="box"></unicon></template>
         Models
       </a-menu-item>
-      <a-menu-item key="autodiscovery">
+      <a-menu-item v-if="show('autodiscovery')" key="autodiscovery">
         <template #icon><unicon name="search"></unicon></template>
         Autodiscovery
       </a-menu-item>
     </a-sub-menu>
 
-    <a-sub-menu key="user-mgmt">
+    <a-sub-menu v-if="show('user-mgmt')" key="user-mgmt">
       <template #icon><unicon name="users-alt"></unicon></template>
       <template #title>Users</template>
-      <a-menu-item key="users">
+      <a-menu-item v-if="show('users')" key="users">
         <template #icon><unicon name="user"></unicon></template>
         Users
       </a-menu-item>
-      <a-menu-item key="user-roles">
+      <a-menu-item v-if="show('user-roles')" key="user-roles">
         <template #icon><unicon name="shield-check"></unicon></template>
         Roles
       </a-menu-item>
     </a-sub-menu>
 
-    <a-sub-menu key="config">
+    <a-sub-menu v-if="show('config')" key="config">
       <template #icon><unicon name="setting"></unicon></template>
       <template #title>Configuration</template>
-      <a-menu-item key="macros">
+      <a-menu-item v-if="show('macros')" key="macros">
         <template #icon><unicon name="brackets-curly"></unicon></template>
         Macros
       </a-menu-item>
-      <a-menu-item key="onts-registration">
+      <a-menu-item v-if="show('onts-registration')" key="onts-registration">
         <template #icon><unicon name="clipboard-notes"></unicon></template>
         ONTs registration
       </a-menu-item>
-      <a-menu-item key="notifications-config">
+      <a-menu-item v-if="show('notifications-config')" key="notifications-config">
         <template #icon><unicon name="bell"></unicon></template>
         Notifications
       </a-menu-item>
-      <a-menu-item key="events-config">
+      <a-menu-item v-if="show('events-config')" key="events-config">
         <template #icon><unicon name="exclamation-triangle"></unicon></template>
         Event configuration
       </a-menu-item>
-      <a-menu-item key="system-config">
+      <a-menu-item v-if="show('system-config')" key="system-config">
         <template #icon><unicon name="setting"></unicon></template>
         System configuration
       </a-menu-item>
     </a-sub-menu>
 
-    <NavTitle class="ninjadash-sidebar-nav-title">External apps</NavTitle>
-    <a-menu-item v-for="app in externalApps" :key="app.key">
+    <NavTitle v-if="visibleExternalApps.length" class="ninjadash-sidebar-nav-title">External apps</NavTitle>
+    <a-menu-item v-for="app in visibleExternalApps" :key="app.key">
       <template #icon><unicon :name="app.icon"></unicon></template>
       {{ app.label }}
     </a-menu-item>
 
-    <NavTitle class="ninjadash-sidebar-nav-title">QR printing</NavTitle>
-    <a-sub-menu key="qr">
+    <NavTitle v-if="show('qr')" class="ninjadash-sidebar-nav-title">QR printing</NavTitle>
+    <a-sub-menu v-if="show('qr')" key="qr">
       <template #icon><unicon name="qrcode-scan"></unicon></template>
       <template #title>QR printing</template>
-      <a-menu-item key="qr-devices">
+      <a-menu-item v-if="show('qr-devices')" key="qr-devices">
         <template #icon><unicon name="server"></unicon></template>
         Devices
       </a-menu-item>
-      <a-menu-item key="qr-interfaces">
+      <a-menu-item v-if="show('qr-interfaces')" key="qr-interfaces">
         <template #icon><unicon name="wifi"></unicon></template>
         Interfaces
       </a-menu-item>
@@ -383,4 +394,3 @@ const onClick = ({ key }: { key: string }) => {
   border-top: 1px dashed rgba(90, 95, 125, 0.35);
 }
 </style>
-

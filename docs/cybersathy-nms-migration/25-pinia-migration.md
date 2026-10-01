@@ -92,5 +92,32 @@ page refresh (Plan 25's acceptance check), and stops it on sign-out. The socket,
 injected, so the tests drive reconnects without a browser or a server. 8 new tests (7 client, 1 store); 31 frontend
 tests in total. 9 mutations checked, all caught.
 
-Still not done in this plan: the permissions-driven menu, the `themeLayout` Vuex module, and moving pages to the
-typed client.
+### Permission-driven menu (2026-10-01)
+
+`src/auth/menu.ts` maps every sidebar entry to the permissions that open its page; holding any one of them shows it.
+A submenu, and each section title, shows only when something under it does. `src/layout/Aside.vue` guards every
+entry with `v-if="show(key)"`.
+
+- With `VITE_AUTH_BACKEND=cybersathy` the menu follows the Pinia store's permissions, re-rendering when the session
+  check replaces them. In the legacy build (the default) nothing is filtered and the menu is exactly as before.
+- Fails closed: a key without a rule is hidden. phpMyAdmin is hidden from everyone with the new login, because it
+  leaves with MySQL (permission-mapping.md, D-12).
+- Hiding is convenience only. The API enforces every permission itself.
+
+The rules use the permissions the API actually checks for the matching data (for example `traps.view` for SNMP
+traps, `device_models.view` for models, `roles.view` for roles). Where the new API has no page yet (map, nearby, the
+topology views), the rule uses the closest legacy-mapped code (`devices.view`, `links.view`). Revisit these when Plans
+27 and 28 add `maps.view` and `topology.view`.
+
+Tests:
+
+- 9 vitest tests. One reads `Aside.vue` and fails if an entry has no rule, a rule has no entry, a submenu's children
+  differ, or any entry is left unguarded.
+- 1 backend test (`tests/test_menu_permissions.py`) fails if the menu names a permission the catalogue does not
+  define, which would hide that page from everyone.
+- 40 frontend tests in total. 8 mutations checked, all caught.
+
+Not checked in a browser: the frontend still cannot be built from git (R-09, 8 missing log views), so the rendered
+menu was verified by tests and type-checks only.
+
+Still not done in this plan: the `themeLayout` Vuex module and moving pages to the typed client.
