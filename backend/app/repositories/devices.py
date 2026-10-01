@@ -42,6 +42,7 @@ OVERVIEW_SORT = {"name": "d.name, d.id", "ip": "d.management_ip, d.id"}
 
 async def device_overview(
     conn: asyncpg.Connection, user: CurrentUser, *, limit: int, offset: int, sort: str = "name", search: str | None = None,
+    device_id: str | None = None,
 ) -> tuple[list[dict[str, Any]], int]:
     """The device list page (Plan 25, legacy `/dev-dashboard/devices`): each visible device with its group, model,
     last ping result and interface counts, devices the pinger last saw down first.
@@ -50,7 +51,8 @@ async def device_overview(
     legacy count does (anything not Up/Online). A device never pinged has `ping` null and sorts with the up ones,
     again as legacy does: only a device whose last ping failed goes to the top."""
     order = OVERVIEW_SORT[sort]
-    where = f"where {DEVICE_VISIBLE} and ($3::text is null or d.name ilike '%' || $3 || '%' or host(d.management_ip) like $3 || '%')"
+    where = f"where {DEVICE_VISIBLE} and ($3::text is null or d.name ilike '%' || $3 || '%' or host(d.management_ip) like $3 || '%') " \
+            f"and ($4::uuid is null or d.id = $4::uuid)"
     rows = await conn.fetch(
         f"""{GRANTED_GROUPS_CTE}
         select d.id, d.name, host(d.management_ip) as management_ip, d.polling_enabled,
@@ -68,11 +70,17 @@ async def device_overview(
         ) i on true
         {where}
         order by (p.status = 'down') is true desc, {order}
-        limit $4 offset $5""",
-        user.id, user.scope_all, search, limit, offset,
+        limit $5 offset $6""",
+        user.id, user.scope_all, search, device_id, limit, offset,
     )
-    total = await conn.fetchval(f"{GRANTED_GROUPS_CTE} select count(*) from devices d {where}", user.id, user.scope_all, search)
+    total = await conn.fetchval(f"{GRANTED_GROUPS_CTE} select count(*) from devices d {where}", user.id, user.scope_all, search, device_id)
     return [_overview_item(r) for r in rows], total
+
+
+async def device_overview_one(conn: asyncpg.Connection, user: CurrentUser, device_id: str) -> dict[str, Any] | None:
+    """One device in the overview shape, for its detail page; None when it does not exist or is out of scope."""
+    items, _ = await device_overview(conn, user, limit=1, offset=0, device_id=device_id)
+    return items[0] if items else None
 
 
 def _overview_item(r: asyncpg.Record) -> dict[str, Any]:

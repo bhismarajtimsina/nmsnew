@@ -166,7 +166,7 @@ and groups those cards. The legacy build makes the same calls as before. With `V
 Known gaps with the new login, all deliberate for now:
 
 - No live updates. The new API publishes no device-change events yet (Plan 22), so the list refreshes on Reload.
-- Clicking a card opens the device detail page, which is still legacy and expects a legacy numeric id. It moves next.
+- ~~Clicking a card opens the legacy device detail page.~~ Fixed the same day: see the next section.
 - Disabled devices are shown with "(disabled)", read from `polling_enabled`, where legacy hid them. Which new flag
   stands for legacy's `enabled` is still the open Plan 9/20 question. Showing them hides nothing until that is
   decided.
@@ -178,6 +178,36 @@ Tests:
   errors, options. 9 mutations checked, all caught. One survivor showed a redundant check in the model-options code;
   the code was simplified instead.
 - 55 frontend tests in total.
+- Not checked in a browser (R-09).
+
+### Device detail page for the new login (2026-10-01)
+
+The legacy `DeviceDetailPage.vue` is built around live device reads: switcher-core system info and resources,
+compare-model, console, macros, and OLT and switch tabs. None of those exist in the new API yet. So the new login gets
+a separate page, `DeviceDetailNewPage.vue`, and the route picks it only when `VITE_AUTH_BACKEND=cybersathy`. The
+legacy build loads the legacy page as before.
+
+The new page is read-only and reads the database only:
+
+- **Header:** from `GET /api/v1/devices/{id}/overview` (added: the list item for one device; 404 when missing or out
+  of scope) and `GET /api/v1/devices/{id}`.
+- **Interfaces tab** (`interfaces.view`): up to 200 rows. When there are more, the page says so.
+- **Events tab** (`events.view`): the latest 50, open and resolved.
+- **Polling tab** (`pollers.view`): the latest 20 polls, plus a note when the circuit breaker has paused polling.
+
+A tab whose permission the user lacks is not requested and says why. A refused or failed tab shows its own message
+and does not break the page.
+
+Live reads, actions and the type-specific tabs come back as their plans land: Plans 13 to 19 for device reads,
+Plan 38 for the console, Plan 27 for topology, and Plan 39 for config backup.
+
+Tests:
+
+- 1 backend test: the single-device overview matches the list item, and returns 404 for an out-of-scope, missing or
+  malformed id. 1 mutation checked, caught.
+- 10 vitest tests: permissions per tab, request shapes, error handling, ping wording, the route switch, and a check
+  that the new page makes no legacy or device-reaching call. 8 mutations checked, all caught.
+- 64 frontend tests in total.
 - Not checked in a browser (R-09).
 
 Still not done in this plan: the remaining pages on the typed client.

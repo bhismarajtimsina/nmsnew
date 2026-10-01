@@ -117,3 +117,23 @@ async def test_it_needs_devices_view(app_client, db):
     app_client.cookies.clear()
     assert (await app_client.get("/api/v1/devices/overview", headers=headers)).status_code == 403
     assert (await app_client.get("/api/v1/devices/overview")).status_code == 401
+
+
+async def test_one_device_overview_is_the_list_item_and_respects_scope(app_client, db):
+    north = await make_group(db, "North")
+    south = await make_group(db, "South")
+    mine = await make_device(db, "sw-north", north)
+    other = await make_device(db, "sw-south", south)
+    await ping(db, mine, "down")
+    await make_interface(db, mine, "Gi0/1")
+    res = await make_user(db, "res", "Reseller Admin")
+    await db.execute("insert into user_device_group_scopes (user_id, device_group_id) values ($1::uuid, $2::uuid)", res, north)
+    headers = await bearer(app_client, "res")
+    app_client.cookies.clear()
+
+    one = await app_client.get(f"/api/v1/devices/{mine}/overview", headers=headers)
+    assert one.status_code == 200, one.text
+    listed = (await overview(app_client, headers))["items"]
+    assert one.json() == listed[0] and one.json()["ping"]["status"] == "down" and one.json()["interfaces"] == {"up": 0, "down": 1}
+    for hidden in (other, "00000000-0000-0000-0000-000000000000", "not-a-uuid"):
+        assert (await app_client.get(f"/api/v1/devices/{hidden}/overview", headers=headers)).status_code == 404

@@ -6,6 +6,8 @@
  * built. `meta.apiPaths` is a development aid only (shown on the
  * placeholder), not used by the app itself.
  */
+import { authBackend } from '@/auth/session';
+
 const PlaceholderPage = () => import('@/views/PlaceholderPage.vue');
 
 export interface WcaRoute {
@@ -60,7 +62,9 @@ const wcaRouteDefs: WcaRoute[] = [
       'GET /component/oxidized/data/status/{id}',
       'GET /component/oxidized/data/config/{id}',
     ],
-    component: () => import('@/views/devices/DeviceDetailPage.vue'),
+    // The new login gets the read-only page on the new API (Plan 25); the legacy build keeps the full legacy page.
+    component: () =>
+      authBackend() === 'cybersathy' ? import('@/views/devices/DeviceDetailNewPage.vue') : import('@/views/devices/DeviceDetailPage.vue'),
   },
   {
     path: 'devices/:id/interfaces/:interface',

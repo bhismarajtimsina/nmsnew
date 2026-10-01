@@ -80,6 +80,19 @@ async def get_device(
     return device_repo.as_dict(row)
 
 
+@router.get("/devices/{device_id}/overview", response_model=schemas.DeviceOverviewOut)
+async def device_overview_one(
+    device_id: str,
+    user: Annotated[CurrentUser, Depends(require("devices.view"))],
+    conn: Annotated[asyncpg.Connection, Depends(get_conn)],
+) -> dict[str, Any]:
+    """One device with its group, model, last ping and interface counts: the header of its detail page."""
+    item = await device_repo.device_overview_one(conn, user, str(_uuid_or_404(device_id)))
+    if item is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    return item
+
+
 @router.get("/devices/{device_id}/interfaces", response_model=schemas.InterfacePage)
 async def list_device_interfaces(
     device_id: str,
