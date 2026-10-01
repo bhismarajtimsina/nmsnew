@@ -38,6 +38,11 @@ Reseller can execute only inside assigned scope.
 - Audit records before and after context with secrets redacted.
 
 ## Risks
+- **Legacy BDCOM action names do not say what they do (found 2026-10-01, Plan 14).** Checked against BDCOM's own
+  NMS-GPON-MIB: legacy `ont.action.delete` (1.3.6.1.4.1.3320.10.3.2.1.2) is `gponOnuConfigActicate`, an activate
+  control, and `ont.action.disable` (…10.3.2.1.3) is `gponOnuConfigEnable`. An action ported by its legacy name would do
+  something other than its label says. Every action OID must be re-derived from the MIB object it targets, with the
+  object's own name and description, before it is wired to a button; tests/test_bdcom_olt_profiles.py pins these two.
 - Accidental action execution without confirmation can cause outages.
 
 ## Definition of Done

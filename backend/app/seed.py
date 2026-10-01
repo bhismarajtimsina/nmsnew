@@ -121,6 +121,7 @@ async def seed(
         await _seed_device_models(conn)
         await _seed_standard_oid_profiles(conn)
         await _seed_bdcom_switch_profile(conn)
+        await _seed_bdcom_olt_profiles(conn)
         await _seed_alarm_rules(conn)
         await _seed_trap_profiles(conn)
         await _seed_notification_event_config(conn)
@@ -318,6 +319,42 @@ async def _seed_bdcom_switch_profile(conn: asyncpg.Connection) -> None:
             "insert into oid_profile_entries (profile_id, definition_id, walk_strategy, max_rows, timeout_ms, position) values ($1, $2, $3, $4, $5, $6)",
             profile_id, definition_id, d.strategy, d.max_rows, d.timeout_ms if d.strategy != "get" else GET_TIMEOUT_MS, position,
         )
+
+
+async def _seed_bdcom_olt_profiles(conn: asyncpg.Connection) -> None:
+    """The BDCOM GPON and EPON OLT profiles (Plan 14), as DRAFTS for the same reason as the switch profile: nothing polls
+    them until a fixture per family and an operator's hardware sign-off exist (app/registry/bdcom_olt_oids.py)."""
+    from app.registry.bdcom_olt_oids import FAMILY_SLUG, GET_TIMEOUT_MS, GPON_PROFILE, PROFILES, VENDOR_SLUG
+
+    vendor_id = await conn.fetchval("select id from vendors where slug = $1", VENDOR_SLUG)
+    family_id = await conn.fetchval("select id from vendor_model_families where vendor_id = $1 and slug = $2", vendor_id, FAMILY_SLUG)
+    if vendor_id is None or family_id is None:
+        return
+    for name, definitions in PROFILES.items():
+        if await conn.fetchval("select exists(select 1 from oid_profiles where name = $1)", name):
+            continue
+        technology = "GPON (GP3600)" if name == GPON_PROFILE else "EPON (P36xx, 3310)"
+        profile_id = await conn.fetchval(
+            "insert into oid_profiles (name, version, status, vendor_id, family_id, description) values ($1, 1, 'draft', $2, $3, $4) returning id",
+            name, vendor_id, family_id,
+            f"BDCOM {technology} OLT: identity, resources, PON optics, ONU identity, status, distance and optics. Draft until "
+            "a fixture and a hardware sign-off exist (Plan 14).",
+        )
+        for position, d in enumerate(definitions):
+            definition_id = await conn.fetchval(
+                """
+                insert into oid_definitions (vendor_id, logical_name, numeric_oid, module, access, safety_level, unit, mib_object, source_note)
+                values ($1, $2, $3, $4, 'read-only', $5, $6, $7, $8)
+                on conflict (coalesce(vendor_id, '00000000-0000-0000-0000-000000000000'::uuid), logical_name) do update set numeric_oid = excluded.numeric_oid
+                returning id
+                """,
+                vendor_id, d.logical_name, d.numeric_oid, d.logical_name.split(".")[1], "safe" if d.strategy == "get" else "bounded",
+                d.unit, d.mib_object, f"{d.mib_dir}/{d.mib_file}, object {d.mib_object}; legacy gp3600.yml / 3310c.yml. Not verified against a device.",
+            )
+            await conn.execute(
+                "insert into oid_profile_entries (profile_id, definition_id, walk_strategy, max_rows, timeout_ms, position) values ($1, $2, $3, $4, $5, $6)",
+                profile_id, definition_id, d.strategy, d.max_rows, d.timeout_ms if d.strategy != "get" else GET_TIMEOUT_MS, position,
+            )
 
 
 async def _seed_alarm_rules(conn: asyncpg.Connection) -> None:
