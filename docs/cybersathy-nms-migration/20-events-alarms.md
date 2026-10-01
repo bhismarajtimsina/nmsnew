@@ -136,9 +136,8 @@ the `window <= 0` short-circuit, is equivalent: with a zero window the query can
 guard only saves a query.
 
 Still missing:
-- **Maintenance windows.** Proposed approach: as in legacy, create them as Alertmanager silences through its API
-  (silenced alerts send no webhook, so no event and no notification are created), with the window list, scope
-  checks and audit in this system. Not started.
+- ~~**Maintenance windows.**~~ Done the same day, natively rather than as Alertmanager silences; see the last
+  section.
 - ~~**`sync-active-alerts` is not ported.**~~ Done the same day; see the next section.
 - **Events for disabled devices.** Legacy's `createEvent` skips an event whose device is disabled. The new `devices`
   table has only `polling_enabled`, not legacy's `enabled`, so this is not ported until it is decided which flag
@@ -169,3 +168,33 @@ The HTTP client uses the standard library in a thread, so no new dependency.
 Tests: 12 in `test_alert_sync.py`. The reconciliation runs against a fake Alertmanager, and the real HTTP client
 against a stand-in server on 127.0.0.1. 9 mutations checked, all caught. One first survived: the URL test compared
 against the code's own constant, so it was changed to assert the literal query string.
+
+## Implementation notes (2026-10-01): maintenance windows
+
+Legacy has no maintenance windows. Operators silenced alerts in Alertmanager's UI, which drops the alerts before a
+webhook is sent, so legacy keeps no record of anything that happened during the work. They are built natively here
+rather than as Alertmanager silences (the approach first proposed above). Alertmanager is not part of this stack
+yet, so silences could not be tested, and the native version records events during the work.
+
+Built (migration `20261001_0020`):
+- `maintenance_windows`: one device **or** one device group (and every group below it), `starts_at` and `ends_at`
+  (at most 7 days, enforced by the API and the database, so a forgotten window cannot silence a device for good), a
+  required reason, who created it, and who canceled it.
+- An event created while its device is covered is stored with `events.suppressed_by_maintenance` and notifies
+  nobody: no alert, and no resolved notification either, since nobody was alerted.
+- **Release** (`app/alerting/maintenance.py`, `release_suppressed`): every suppressed event that is still open once no
+  window covers its device is announced as a normal alert. Whatever the work broke cannot stay silent because it
+  started inside a window. An event that opened and closed inside the window stays quiet and keeps the flag as
+  history. Release runs from the `maintenance_release` job (seeded **on**, every minute) and immediately when a
+  window is canceled.
+- An event that began **before** the window keeps notifying normally: its contacts already knew about it, and going
+  quiet mid-incident could leave someone thinking it was still open. A suppressed event that flaps inside the window
+  stays quiet; one that reopens after the window is announced.
+- API: `GET /maintenance-windows` (`events.view`, scoped), `POST /maintenance-windows` and
+  `POST /maintenance-windows/{id}/cancel` (new permission `maintenance.manage`, scoped, audited). `maintenance.manage`
+  is granted through `EXPAND` to every role holding `events.resolve`, so the people who act on alarms can plan
+  work, and resellers only on their own devices and groups. A window on a device or group outside the caller's scope
+  is a 404, as everywhere else.
+
+Tests: 18 in `test_maintenance.py`. 19 mutations checked, all caught after adding one test: creating a window on an
+out-of-scope *group* had no test, so skipping that scope check first went unnoticed.

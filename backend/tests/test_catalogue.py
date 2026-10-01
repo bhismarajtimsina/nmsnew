@@ -71,4 +71,4 @@ def test_dangerous_flags_match_the_mapping_document():
 def test_every_permission_code_appears_once():
     codes = [code for code, *_ in all_permissions()]
     assert len(codes) == len(set(codes)), sorted({c for c in codes if codes.count(c) > 1})
-    assert len(codes) == 111
+    assert len(codes) == 112  # 111 + maintenance.manage (Plan 20, 2026-10-01)

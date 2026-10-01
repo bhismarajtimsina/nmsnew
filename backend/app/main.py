@@ -17,6 +17,7 @@ from app.api.device_access import router as device_access_router
 from app.api.device_groups import router as device_groups_router
 from app.api.device_models import router as device_models_router
 from app.api.events import router as events_router
+from app.api.maintenance import router as maintenance_router
 from app.api.devices import router as devices_router
 from app.api.mib import router as mib_router
 from app.api.polling import router as polling_router
@@ -72,7 +73,7 @@ app = FastAPI(
 # The client address is whatever a trusted proxy says it is, and never anything a client sends directly.
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=list(settings.trusted_proxies))
 
-for router in (auth_router, access_router, users_router, tokens_router, devices_router, vendors_router, device_access_router, device_groups_router, polling_router, schedule_router, device_models_router, mib_router, events_router, traps_router, realtime_router):
+for router in (auth_router, access_router, users_router, tokens_router, devices_router, vendors_router, device_access_router, device_groups_router, polling_router, schedule_router, device_models_router, mib_router, events_router, maintenance_router, traps_router, realtime_router):
     app.include_router(router)
 
 

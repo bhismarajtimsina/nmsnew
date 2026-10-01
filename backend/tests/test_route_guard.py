@@ -111,14 +111,14 @@ def test_routers_contain_no_sql_against_scoped_tables():
 
 # Helpers that do not read or write scoped rows on the caller's behalf.
 UNSCOPED_HELPERS = {"as_dict", "resolve_family", "_check_access_profile", "_descendants", "list_trap_profiles"}
-SCOPED_ENTRY = ("get_device(", "get_group(", "get_interface(", "get_event(")
+SCOPED_ENTRY = ("get_device(", "get_group(", "get_interface(", "get_event(", "get_window(")
 
 
 def test_every_repository_function_touching_scoped_tables_applies_scope():
     """A function that runs SQL must either contain the visibility predicate or first call a scoped getter.
     Write functions take the caller and start with the getter, so a write can never reach a row the caller cannot see."""
     checked = 0
-    for name, predicates in (("devices.py", ("DEVICE_VISIBLE",)), ("interfaces.py", ("INTERFACE_VISIBLE",)), ("device_groups.py", ("GROUP_VISIBLE",)), ("polling.py", ("DEVICE_VISIBLE",)), ("events.py", ("EVENT_VISIBLE",)), ("traps.py", ("TRAP_VISIBLE",))):
+    for name, predicates in (("devices.py", ("DEVICE_VISIBLE",)), ("interfaces.py", ("INTERFACE_VISIBLE",)), ("device_groups.py", ("GROUP_VISIBLE",)), ("polling.py", ("DEVICE_VISIBLE",)), ("events.py", ("EVENT_VISIBLE",)), ("traps.py", ("TRAP_VISIBLE",)), ("maintenance.py", ("WINDOW_VISIBLE",))):
         source = (APP_DIR / "repositories" / name).read_text()
         for function in re.split(r"\nasync def |\ndef ", source)[1:]:
             header = function.splitlines()[0]

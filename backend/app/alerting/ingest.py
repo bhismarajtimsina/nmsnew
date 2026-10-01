@@ -18,6 +18,9 @@ with a `flap_count`, not one per flap. Once an event has flapped, its next resol
 window, and canceled if it reopens again first (see `requeue_after_reopen`). An event an operator resolved by hand is
 never reopened: re-firing after that is a new event, exactly as in legacy.
 
+Also not in legacy: an event created while its device is under a maintenance window is stored with
+`suppressed_by_maintenance` and notifies nobody (see app/alerting/maintenance.py for how it is released).
+
 No device is contacted: Alertmanager already did the polling (via the exporters), and this only relays its verdict.
 """
 from __future__ import annotations
@@ -29,6 +32,7 @@ from typing import Any
 
 import asyncpg
 
+from app.alerting.maintenance import device_in_maintenance
 from app.notifications.pipeline import queue_for_event, requeue_after_reopen
 
 RESOLVED_GRACE_PERIOD_SECONDS = 300
@@ -78,7 +82,7 @@ async def _recently_autoresolved(conn: asyncpg.Connection, name: str, dedup_key:
     if window_seconds <= 0:
         return None
     return await conn.fetchrow(
-        "select id from events where name = $1 and dedup_key = $2 and resolved_at is not null "
+        "select id, device_id, suppressed_by_maintenance from events where name = $1 and dedup_key = $2 and resolved_at is not null "
         "and resolved_by_user_id is null and resolved_at > now() - make_interval(secs => $3) "
         "order by resolved_at desc limit 1",
         name, dedup_key, window_seconds,
@@ -115,14 +119,24 @@ async def process_alert(
                     "last_reopened_at = now() where id = $1::uuid",
                     recent["id"],
                 )
-                await requeue_after_reopen(conn, str(recent["id"]))
+                event_device = str(recent["device_id"]) if recent["device_id"] else None
+                if recent["suppressed_by_maintenance"]:
+                    # Nobody was ever told about it. Still covered: stay quiet. Window over: everyone hears now.
+                    if not await device_in_maintenance(conn, event_device):
+                        await conn.execute("update events set suppressed_by_maintenance = false where id = $1", recent["id"])
+                        await requeue_after_reopen(conn, str(recent["id"]))
+                else:
+                    # Contacts already knew about this event before any window began, so they keep hearing about it.
+                    await requeue_after_reopen(conn, str(recent["id"]))
                 summary.reopened += 1
                 return
             device_id = await resolve_device(conn, labels)
+            suppressed = await device_in_maintenance(conn, device_id)
             event_id = await conn.fetchval(
-                "insert into events (name, dedup_key, labels, description, severity, device_id) "
-                "values ($1, $2, $3::jsonb, $4, $5, $6::uuid) returning id",
+                "insert into events (name, dedup_key, labels, description, severity, device_id, suppressed_by_maintenance) "
+                "values ($1, $2, $3::jsonb, $4, $5, $6::uuid, $7) returning id",
                 name, fingerprint, json.dumps(labels), (alert.get("annotations") or {}).get("description"), severity, device_id,
+                suppressed,
             )
             await queue_for_event(conn, str(event_id))
         summary.created += 1

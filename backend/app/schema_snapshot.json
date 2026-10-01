@@ -1285,6 +1285,12 @@
           "length": 10,
           "nullable": false,
           "type": "varchar"
+        },
+        "suppressed_by_maintenance": {
+          "default": "false",
+          "length": null,
+          "nullable": false,
+          "type": "bool"
         }
       },
       "constraints": {
@@ -1627,6 +1633,88 @@
         "ix_login_attempts_occurred_at": "CREATE INDEX ix_login_attempts_occurred_at ON public.login_attempts USING btree (occurred_at)",
         "ix_login_attempts_username": "CREATE INDEX ix_login_attempts_username ON public.login_attempts USING btree (username)",
         "login_attempts_pkey": "CREATE UNIQUE INDEX login_attempts_pkey ON public.login_attempts USING btree (id)"
+      },
+      "triggers": {}
+    },
+    "maintenance_windows": {
+      "columns": {
+        "canceled_at": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "timestamptz"
+        },
+        "canceled_by_user_id": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "uuid"
+        },
+        "created_at": {
+          "default": "now()",
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        "created_by_user_id": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "uuid"
+        },
+        "device_group_id": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "uuid"
+        },
+        "device_id": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "uuid"
+        },
+        "ends_at": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        "id": {
+          "default": "gen_random_uuid()",
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "reason": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "text"
+        },
+        "starts_at": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        }
+      },
+      "constraints": {
+        "ck_maintenance_windows_max_length": "CHECK (((ends_at - starts_at) <= '7 days'::interval))",
+        "ck_maintenance_windows_one_target": "CHECK (((device_id IS NULL) <> (device_group_id IS NULL)))",
+        "ck_maintenance_windows_order": "CHECK ((ends_at > starts_at))",
+        "ck_maintenance_windows_reason": "CHECK (((length(reason) >= 1) AND (length(reason) <= 500)))",
+        "maintenance_windows_canceled_by_user_id_fkey": "FOREIGN KEY (canceled_by_user_id) REFERENCES users(id) ON DELETE SET NULL",
+        "maintenance_windows_created_by_user_id_fkey": "FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL",
+        "maintenance_windows_device_group_id_fkey": "FOREIGN KEY (device_group_id) REFERENCES device_groups(id) ON DELETE CASCADE",
+        "maintenance_windows_device_id_fkey": "FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE",
+        "maintenance_windows_pkey": "PRIMARY KEY (id)"
+      },
+      "indexes": {
+        "ix_maintenance_windows_active": "CREATE INDEX ix_maintenance_windows_active ON public.maintenance_windows USING btree (starts_at, ends_at) WHERE (canceled_at IS NULL)",
+        "ix_maintenance_windows_device_group_id": "CREATE INDEX ix_maintenance_windows_device_group_id ON public.maintenance_windows USING btree (device_group_id)",
+        "ix_maintenance_windows_device_id": "CREATE INDEX ix_maintenance_windows_device_id ON public.maintenance_windows USING btree (device_id)",
+        "maintenance_windows_pkey": "CREATE UNIQUE INDEX maintenance_windows_pkey ON public.maintenance_windows USING btree (id)"
       },
       "triggers": {}
     },
@@ -2699,7 +2787,7 @@
         "ck_schedule_jobs_misfire": "CHECK (((misfire_policy)::text = ANY ((ARRAY['skip'::character varying, 'run_once'::character varying, 'catch_up'::character varying])::text[])))",
         "ck_schedule_jobs_overlap": "CHECK (((overlap_policy)::text = ANY ((ARRAY['forbid'::character varying, 'allow'::character varying])::text[])))",
         "ck_schedule_jobs_runtime": "CHECK (((max_runtime_seconds >= 10) AND (max_runtime_seconds <= 3600)))",
-        "ck_schedule_jobs_type": "CHECK (((job_type)::text = ANY ((ARRAY['poll_group'::character varying, 'retention'::character varying, 'cleanup_sessions'::character varying, 'sync_active_alerts'::character varying])::text[])))",
+        "ck_schedule_jobs_type": "CHECK (((job_type)::text = ANY ((ARRAY['poll_group'::character varying, 'retention'::character varying, 'cleanup_sessions'::character varying, 'sync_active_alerts'::character varying, 'maintenance_release'::character varying])::text[])))",
         "schedule_jobs_key_key": "UNIQUE (key)",
         "schedule_jobs_pkey": "PRIMARY KEY (id)"
       },

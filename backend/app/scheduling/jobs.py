@@ -59,6 +59,11 @@ class SyncActiveAlertsParams(BaseModel):
     timeout_seconds: Annotated[int, Field(ge=1, le=60)] = 15
 
 
+class MaintenanceReleaseParams(BaseModel):
+    """Announce events a maintenance window held back that are still open now the window is over."""
+    model_config = ConfigDict(extra="forbid")
+
+
 @dataclass
 class JobContext:
     pool: asyncpg.Pool
@@ -150,11 +155,20 @@ async def run_sync_active_alerts(ctx: JobContext, params: SyncActiveAlertsParams
     return f"{summary.active} active alert(s); {verb} {len(summary.resolved_ids)} orphaned event(s)"
 
 
+async def run_maintenance_release(ctx: JobContext, params: MaintenanceReleaseParams) -> str:
+    from app.alerting.maintenance import release_suppressed
+
+    async with ctx.pool.acquire() as conn:
+        released = await release_suppressed(conn)
+    return f"released {released} event(s) held by an ended maintenance window"
+
+
 JOB_TYPES: dict[str, tuple[type[BaseModel], Handler]] = {
     "poll_group": (PollGroupParams, run_poll_group),  # type: ignore[dict-item]
     "retention": (RetentionParams, run_retention),  # type: ignore[dict-item]
     "cleanup_sessions": (CleanupSessionsParams, run_cleanup_sessions),  # type: ignore[dict-item]
     "sync_active_alerts": (SyncActiveAlertsParams, run_sync_active_alerts),  # type: ignore[dict-item]
+    "maintenance_release": (MaintenanceReleaseParams, run_maintenance_release),  # type: ignore[dict-item]
 }
 
 

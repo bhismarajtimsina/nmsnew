@@ -38,12 +38,15 @@ EXTRA_PERMISSIONS: list[tuple[str, str, bool, str]] = [
     ("interfaces.mark", "interfaces", False, "Favorite an interface and set its tags"),
     ("onus.view", "onus", False, "View ONU inventory"),
     ("traps.view", "traps", False, "View received SNMP trap history"),
+    # Granted through EXPAND to every role that can resolve events: the people who act on alarms plan the work too.
+    ("maintenance.manage", "maintenance", False, "Create and cancel maintenance windows for devices and groups in scope"),
 ]
 
 # One legacy key grants more than one new permission.
 EXPAND: dict[str, list[str]] = {
     "devices.view": ["interfaces.view", "traps.view"],
     "olts.view": ["onus.view"],
+    "events.resolve": ["maintenance.manage"],
 }
 
 SCOPE_ALL = "all"

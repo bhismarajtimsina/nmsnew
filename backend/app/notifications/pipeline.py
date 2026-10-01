@@ -84,8 +84,14 @@ async def queue_for_event(
     fires again within that time, `requeue_after_reopen` cancels the held notification and nobody is told about a
     recovery that did not last. 0 (the default, and legacy's only behavior) sends it on the usual schedule."""
     now = now or datetime.now(timezone.utc)
-    event = await conn.fetchrow("select id, name, severity, device_id, resolved_at from events where id = $1::uuid", event_id)
+    event = await conn.fetchrow(
+        "select id, name, severity, device_id, resolved_at, suppressed_by_maintenance from events where id = $1::uuid", event_id
+    )
     if event is None:
+        return 0
+    if event["suppressed_by_maintenance"]:
+        # Held by a maintenance window (app/alerting/maintenance.py). Nobody was alerted, so nobody is told it
+        # resolved either; if it is still open when the window ends, release_suppressed alerts everyone then.
         return 0
     cfg = await get_event_config(conn, event["name"])
     if cfg is None:
