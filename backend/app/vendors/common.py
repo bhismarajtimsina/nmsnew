@@ -33,3 +33,32 @@ def lookup_reason(tables: dict[str, dict[int, tuple[str, str]]], table: str, cod
         return None
     label, reason = tables[table].get(code, (f"Code {code}", "unknown"))
     return DownReason(code, label, reason)
+
+
+@dataclass(frozen=True)
+class TextReason:
+    text: str    # exactly what the OLT returned
+    label: str   # the vendor's own word, as legacy shows it
+    reason: str  # one of COMMON_REASONS
+
+
+def lookup_text_reason(table: dict[str, tuple[str, str]], text: str | None) -> TextReason | None:
+    """For OLTs that report a down reason as text rather than a code. Matched after trimming, case kept (legacy's maps
+    are case-sensitive and "LOS" and "losi" mean different things). Unlisted text is "unknown" with the text visible."""
+    if text is None:
+        return None
+    key = text.strip()
+    label, reason = table.get(key, (key, "unknown"))
+    return TextReason(key, label, reason)
+
+
+def parse_number(raw: object) -> float | None:
+    """A reading some OLTs return as a string ("-19.10", " 3.3 "). Not a number, empty, NaN or infinite is no
+    reading, never 0."""
+    if raw is None or isinstance(raw, bool):
+        return None
+    try:
+        value = float(str(raw).strip())
+    except ValueError:
+        return None
+    return value if value == value and value not in (float("inf"), float("-inf")) else None
