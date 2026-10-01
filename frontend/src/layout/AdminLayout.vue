@@ -9,19 +9,18 @@ import TopMenu from './TopMenuItems.vue';
 import { PerfectScrollbar } from 'vue3-perfect-scrollbar';
 import 'vue3-perfect-scrollbar/style.css';
 import { computed, ref } from 'vue';
-import { useStore } from 'vuex';
+import { useLayoutStore } from '@/stores/layout';
 //import Customizer from './overview/Customizer.vue';
 
 const { Header, Footer, Sider, Content } = Layout;
 const collapsed = ref(false);
 //const customizerAction = ref(false);
 
-// const store = useStore();
-const { dispatch, state } = useStore();
+const layout = useLayoutStore();
 
-const rtl = computed(() => state.themeLayout.rtlData);
-const darkMode = computed(() => state.themeLayout.data);
-const topMenu = computed(() => state.themeLayout.topMenu);
+const rtl = computed(() => layout.rtl);
+const darkMode = computed(() => layout.darkMode);
+const topMenu = computed(() => layout.topMenu);
 const innerWidth: number = window.innerWidth;
 collapsed.value = window.innerWidth <= 1200 && true;
 
@@ -48,29 +47,29 @@ if (innerWidth <= 990) {
 const onRtlChange = () => {
   const html: any = document.querySelector('html');
   html.setAttribute('dir', 'rtl');
-  dispatch('changeRtlMode', true);
+  layout.setRtl(true);
 };
 
 const onLtrChange = () => {
   const html: any = document.querySelector('html');
   html.setAttribute('dir', 'ltr');
-  dispatch('changeRtlMode', false);
+  layout.setRtl(false);
 };
 
 const modeChangeDark = () => {
-  dispatch('changeLayoutMode', true);
+  layout.setDarkMode(true);
 };
 
 const modeChangeLight = () => {
-  dispatch('changeLayoutMode', false);
+  layout.setDarkMode(false);
 };
 
 const modeChangeTopNav = () => {
-  dispatch('changeMenuMode', true);
+  layout.setTopMenu(true);
 };
 
 const modeChangeSideNav = () => {
-  dispatch('changeMenuMode', false);
+  layout.setTopMenu(false);
 };
 
 const onEventChange = {

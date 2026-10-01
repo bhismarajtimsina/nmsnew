@@ -3,15 +3,14 @@ import { RouterView } from 'vue-router';
 import { ThemeProvider } from 'vue3-styled-components';
 import { themeColor } from './config/theme/themeVariables';
 import { computed, onMounted } from 'vue';
-import { useStore } from 'vuex';
+import { useLayoutStore } from '@/stores/layout';
 import 'v-calendar/dist/style.css';
 
-const { state } = useStore();
-const rtl = computed(() => state.themeLayout.rtlData);
-const isLoading = computed(() => state.themeLayout.loading);
-const darkMode = computed(() => state.themeLayout.data);
-const topMenu = computed(() => state.themeLayout.topMenu);
-const mainContent = computed(() => state.themeLayout.main);
+const layout = useLayoutStore();
+const rtl = computed(() => layout.rtl);
+const darkMode = computed(() => layout.darkMode);
+const topMenu = computed(() => layout.topMenu);
+const mainContent = computed(() => layout.main);
 
 onMounted(() => {
   window.addEventListener('load', () => {
@@ -22,11 +21,7 @@ onMounted(() => {
 });
 </script>
 <template>
-  <div v-if="isLoading" class="spin">
-    <a-spin />
-  </div>
   <ThemeProvider
-    v-else
     :theme="{
       rtl,
       topMenu,

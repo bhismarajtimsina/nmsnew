@@ -86,7 +86,7 @@
 
 <script lang="ts">
 import { PlusOutlined } from '@ant-design/icons-vue';
-import { useStore } from 'vuex';
+import { useLayoutStore } from '@/stores/layout';
 import { computed, ref, onMounted, defineComponent } from 'vue';
 export default defineComponent({
   name: 'Drawer',
@@ -111,10 +111,10 @@ export default defineComponent({
     },
   },
   setup() {
-    const { state } = useStore();
+    const layout = useLayoutStore();
     const visible = ref(false);
     const customPlacement = ref('left');
-    const rtl = computed(() => state.themeLayout.rtlData);
+    const rtl = computed(() => layout.rtl);
 
     const afterVisibleChange = (bool: boolean) => {
       console.log('visible', bool);

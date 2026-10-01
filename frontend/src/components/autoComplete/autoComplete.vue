@@ -1,7 +1,7 @@
 <script lang="ts">
 import { AutoCompleteStyled } from './style';
 import { toRefs, ref, computed, defineComponent } from 'vue';
-import { useStore } from 'vuex';
+import { useLayoutStore } from '@/stores/layout';
 
 export default defineComponent({
   name: 'AutoComplete',
@@ -33,10 +33,10 @@ export default defineComponent({
   },
   setup(props) {
     const { dataSource } = toRefs(props);
-    const { state } = useStore();
+    const layout = useLayoutStore();
     let value = ref('');
     const myData = ref(dataSource.value);
-    const rtl = computed(() => state.themeLayout.rtlData);
+    const rtl = computed(() => layout.rtl);
 
     const filterOption = (input: string, option: any) => {
       return option.value.toUpperCase().startsWith(input.toUpperCase());

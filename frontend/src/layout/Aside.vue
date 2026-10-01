@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, reactive, ref, toRefs, watchEffect } from 'vue';
-import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
 import { NavTitle } from './style';
 import { authBackend } from '@/auth/session';
 import { menuVisibility } from '@/auth/menu';
 import { useAuthStore } from '@/stores/auth';
+import { useLayoutStore } from '@/stores/layout';
 
 const props = defineProps({
   toggleCollapsed: {
@@ -18,8 +18,8 @@ const props = defineProps({
   },
 });
 
-const store = useStore();
-const darkMode = computed(() => store.state.themeLayout.data);
+const layout = useLayoutStore();
+const darkMode = computed(() => layout.darkMode);
 const mode = ref('inline');
 const { events } = toRefs(props);
 const { onRtlChange, onLtrChange, modeChangeDark, modeChangeLight, modeChangeTopNav, modeChangeSideNav } = events.value;

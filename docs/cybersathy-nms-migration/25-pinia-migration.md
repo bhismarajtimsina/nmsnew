@@ -120,4 +120,24 @@ Tests:
 Not checked in a browser: the frontend still cannot be built from git (R-09, 8 missing log views), so the rendered
 menu was verified by tests and type-checks only.
 
-Still not done in this plan: the `themeLayout` Vuex module and moving pages to the typed client.
+### Theme and layout store (2026-10-01)
+
+`src/stores/layout.ts` replaces the `themeLayout` Vuex module, which is deleted. It keeps the same fields (dark mode,
+text direction, top or side menu, main template) and the same starting values from `src/config/config.ts`. App.vue,
+AdminLayout.vue, Aside.vue, Drawer.vue and autoComplete.vue read it instead of Vuex.
+
+One deliberate change: the old actions set `loading` and applied the change 10 ms later. While `loading` was set,
+App.vue replaced the whole application with a spinner, so every toggle unmounted every page. The new setters apply
+the change at once and there is no `loading` state. No visible control calls these toggles today, so users see no
+difference.
+
+The Vuex store now holds only the legacy auth module. It goes when the auth switch flips (Plan 34).
+
+Tests:
+
+- 4 vitest tests, 44 frontend tests in total. One fails if any source file still reads `themeLayout`. Vuex state is
+  untyped, so a stale read would otherwise only show up at run time.
+- 6 mutations checked, all caught.
+- Not checked in a browser (R-09: the frontend cannot be built from git).
+
+Still not done in this plan: moving pages to the typed client.
