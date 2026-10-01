@@ -13,6 +13,7 @@ Each plan is small, independently testable, has a rollback, and starts only when
 | Decisions waiting for an answer | [Decision log](decisions.md) |
 | Whether anything legacy is being forgotten | [Parity inventory](parity-inventory.md) |
 | How to run the cutover and undo it | [Cutover runbook](cutover-runbook.md) |
+| How to rotate the encryption key | [Key-rotation runbook](key-rotation-runbook.md) |
 | What can go wrong | [Risk register](risk-register.md) |
 
 ## Reference documents

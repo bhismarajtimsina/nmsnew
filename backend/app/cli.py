@@ -9,6 +9,8 @@
   devices import <file.csv>    validate a CSV of devices; add --apply to create them (polling stays off)
   mib import <dir> [--vendor]  read every file in a directory as MIB text and index its objects (read-only, offline)
   crypto generate-key          print a new encryption key
+  crypto status                count stored secrets per encryption key id (never prints a secret)
+  crypto reencrypt [--apply]   move every stored secret onto the active key (default is a dry run)
 """
 from __future__ import annotations
 
@@ -208,6 +210,63 @@ async def _devices_import(path: str, apply: bool) -> int:
     return 1 if report.errors else 0
 
 
+async def _crypto_status() -> int:
+    from app.core.crypto import EncryptionNotConfigured, EncryptionService
+    from app.core.rotation import key_usage
+
+    try:
+        active = EncryptionService.from_settings().active_key_id
+    except EncryptionNotConfigured as exc:
+        print(f"encryption is not configured: {exc}", file=sys.stderr)
+        return 1
+    conn = await _connect()
+    try:
+        usage = await key_usage(conn)
+    finally:
+        await conn.close()
+    stale = 0
+    print(f"active key: {active}")
+    for column, counts in usage.items():
+        detail = ", ".join(f"{key}={n}" for key, n in sorted(counts.items())) or "no values"
+        print(f"  {column}: {detail}")
+        stale += sum(n for key, n in counts.items() if key != active)
+    if stale:
+        print(f"{stale} value(s) are not on the active key: run `python -m app.cli crypto reencrypt --apply`")
+        return 2
+    print("every stored value is on the active key; keys no longer listed above may be removed from ENCRYPTION_KEYS")
+    return 0
+
+
+async def _crypto_reencrypt(apply: bool) -> int:
+    from app.core.crypto import EncryptionNotConfigured, EncryptionService
+    from app.core.rotation import reencrypt_all
+
+    try:
+        enc = EncryptionService.from_settings()
+    except EncryptionNotConfigured as exc:
+        print(f"encryption is not configured: {exc}", file=sys.stderr)
+        return 1
+    conn = await _connect()
+    try:
+        report = await reencrypt_all(conn, enc, dry_run=not apply)
+    finally:
+        await conn.close()
+    for column, r in report.columns.items():
+        moved = f"re-encrypted {r.reencrypted}" if apply else f"would re-encrypt {r.total - r.already_active - len(r.failed_ids)}"
+        line = f"{column}: {r.total} value(s), {r.already_active} already on {enc.active_key_id}, {moved}"
+        if r.changed_concurrently:
+            line += f", {r.changed_concurrently} changed during the run (run again)"
+        print(line)
+        for row_id in r.failed_ids:
+            print(f"  cannot decrypt row {row_id}: its key is missing from ENCRYPTION_KEYS, or the value is damaged", file=sys.stderr)
+    if report.failed:
+        print(f"{report.failed} value(s) could not be decrypted and were left unchanged", file=sys.stderr)
+        return 1
+    if not apply:
+        print("dry run: nothing was written; add --apply to re-encrypt")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     sub = parser.add_subparsers(dest="group", required=True)
@@ -236,7 +295,11 @@ def main(argv: list[str] | None = None) -> int:
     imp.add_argument("--apply", action="store_true", help="create the devices (default is a dry run)")
 
     sub.add_parser("sessions").add_subparsers(dest="command", required=True).add_parser("cleanup")
-    sub.add_parser("crypto").add_subparsers(dest="command", required=True).add_parser("generate-key")
+    crypto = sub.add_parser("crypto").add_subparsers(dest="command", required=True)
+    crypto.add_parser("generate-key")
+    crypto.add_parser("status")
+    reenc = crypto.add_parser("reencrypt")
+    reenc.add_argument("--apply", action="store_true", help="write the re-encrypted values (default is a dry run)")
 
     args = parser.parse_args(argv)
     if args.group == "db":
@@ -256,6 +319,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.group == "sessions":
         return asyncio.run(_sessions_cleanup())
     if args.group == "crypto":
+        if args.command == "status":
+            return asyncio.run(_crypto_status())
+        if args.command == "reencrypt":
+            return asyncio.run(_crypto_reencrypt(args.apply))
         from app.core.crypto import generate_key
 
         print(generate_key())

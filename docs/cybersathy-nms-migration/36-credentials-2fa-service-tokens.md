@@ -68,3 +68,26 @@ Login endpoints keep the legacy alias, so the frontend can be repointed. Schema 
 Built and tested: argon2id with transparent upgrade of legacy bcrypt and sha1 hashes; constant-time-equivalent failures (unknown, disabled and wrong all answer identically, with a dummy verification for timing); per-account and per-address lockout in Redis that also blocks the correct password and fails closed when Redis is down; per-user IP restriction using the forwarded address only from a trusted proxy; TOTP (own RFC 6238 implementation, tested against the RFC vectors), replay refusal, single-use recovery codes; API tokens (hashed, permission-limited to the intersection with the owner's live permissions, cannot create tokens); sessions list and revoke; password change revoking other sessions; the Nginx auth gate; AES-256-GCM encryption service with key ids and rotation; audit redaction of every sensitive field.
 
 Not done: a command that re-encrypts stored values onto the active key, the key-rotation runbook, the short-lived WebSocket token (belongs with Plan 22), a global trusted-network list, Device credentials are now stored encrypted (Plan 9).
+
+## Implementation notes (2026-10-01): key rotation
+
+Built: `app/core/rotation.py` and two CLI commands. `python -m app.cli crypto status` counts stored values per key
+id without decrypting anything, and exits 2 while any value is not on the active key.
+`python -m app.cli crypto reencrypt [--apply]` (dry run by default) moves every stored secret onto the active key.
+The procedure is in the [key-rotation runbook](key-rotation-runbook.md).
+
+- `ENCRYPTED_COLUMNS` lists every ciphertext column with the exact AAD its writer uses: the access-profile secrets
+  (`device_access_profile:<id>:<field>`) and the TOTP secret (the bare user id). A test compares it against every
+  `*_enc` column in the live schema, so a new encrypted column cannot be silently skipped by a rotation and then
+  become unreadable when the old key is removed.
+- A value that cannot be decrypted (key missing, copied from another row, damaged) is left unchanged and reported
+  by row id; the run continues and exits 1. Every write is conditional on the stored value being unchanged since it
+  was read, so a credential edited during the run is never overwritten with an older one.
+- Nothing prints, logs or returns a secret; a test checks the CLI output.
+
+Tests: 11 in `test_key_rotation.py`. Secrets are created through the real repository and the real 2FA enrollment
+API, and a rotated TOTP secret is proven by a real 2FA login with the old key removed. 10 mutations checked, all
+caught (wrong AAD per column, a column dropped from the registry, dry run writing, no concurrent-edit guard,
+failures not reported, already-active values rewritten, CLI exit codes, key-id parsing).
+
+Still missing from this plan: the global trusted-network list, and the short-lived WebSocket token (Plan 22).
