@@ -23,7 +23,8 @@ async def results(db):
 async def test_a_poll_reads_bounds_the_walk_applies_scale_and_flags_out_of_range_values(ctx, db):
     await make_active_profile(db, entries=ENTRIES)
     device = await make_pollable(db, "10.50.0.1")
-    ctx.transport.script_get("10.50.0.1", {SYS_NAME: "core-1", RX_OK: -1500, RX_BAD: 5000})
+    # Scalars are answered at their .0 instance, as a real agent does (see engine.scalar_instance).
+    ctx.transport.script_get("10.50.0.1", {SYS_NAME: "core-1", RX_OK + ".0": -1500, RX_BAD + ".0": 5000})
     ctx.transport.script_table("10.50.0.1", IFDESCR, [(f"{IFDESCR}.{i}", f"Gi0/{i}") for i in range(1, 8)])
 
     class Sink:

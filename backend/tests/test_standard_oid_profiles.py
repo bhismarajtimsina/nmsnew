@@ -21,9 +21,11 @@ async def test_the_seeded_profiles_are_active_and_well_formed(db):
 
 async def test_polling_system_basic_against_a_fake_device_reads_every_real_standard_object(ctx, db):
     device = await make_pollable(db, "10.95.0.1")
+    # A real agent answers only for the scalar's instance (.0); the fake device is scripted the same way, so a profile
+    # that asked for the bare object OIDs would get nothing back here, as it would from a real device.
     ctx.transport.script_get("10.95.0.1", {
-        SYS_DESCR: "BDCOM(tm) S5612 Software, Version 127335", SYS_OBJECT_ID: "1.3.6.1.4.1.3320.1.283.0",
-        SYS_UPTIME: 123456, SYS_NAME: "edge-sw-1",
+        SYS_DESCR + ".0": "BDCOM(tm) S5612 Software, Version 127335", SYS_OBJECT_ID + ".0": "1.3.6.1.4.1.3320.1.283.0",
+        SYS_UPTIME + ".0": 123456, SYS_NAME + ".0": "edge-sw-1",
     })
     from app.polling.engine import poll_device
 
@@ -33,7 +35,8 @@ async def test_polling_system_basic_against_a_fake_device_reads_every_real_stand
     assert by_name[SYS_NAME] == "edge-sw-1" and by_name[SYS_OBJECT_ID] == "1.3.6.1.4.1.3320.1.283.0"
     # Every request the fake device saw came from the real, seeded profile's own OIDs, in one GET.
     (call,) = ctx.transport.calls
-    assert call[0] == "get" and set(call[2]) == {SYS_DESCR, SYS_OBJECT_ID, SYS_UPTIME, "1.3.6.1.2.1.1.4", "1.3.6.1.2.1.1.6", SYS_NAME}
+    instances = {oid + ".0" for oid in (SYS_DESCR, SYS_OBJECT_ID, SYS_UPTIME, "1.3.6.1.2.1.1.4", "1.3.6.1.2.1.1.6", SYS_NAME)}
+    assert call[0] == "get" and set(call[2]) == instances
 
 
 async def test_polling_interface_basic_walks_every_real_column_bounded(ctx, db):
@@ -60,3 +63,10 @@ async def test_a_table_larger_than_the_real_bound_is_truncated_not_walked_withou
 
     outcome = await poll_device(ctx, device, INTERFACE_BASIC_PROFILE)
     assert outcome.status == "ok" and outcome.truncated is True and outcome.rows <= 512 * len(INTERFACE_DEFINITIONS)
+
+
+def test_a_get_requests_the_scalar_instance_and_leaves_an_instanced_oid_alone():
+    from app.polling.engine import scalar_instance
+
+    assert scalar_instance("1.3.6.1.2.1.1.5") == "1.3.6.1.2.1.1.5.0"
+    assert scalar_instance("1.3.6.1.2.1.1.5.0") == "1.3.6.1.2.1.1.5.0"

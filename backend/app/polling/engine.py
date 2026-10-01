@@ -176,6 +176,15 @@ async def claim_slot(conn: asyncpg.Connection, cfg: Settings, device_id: str) ->
     return False, f"polled less than {cfg.poll_min_interval_seconds} seconds ago"
 
 
+def scalar_instance(numeric_oid: str) -> str:
+    """The instance a `get` entry actually requests. Definitions hold the MIB object's OID (what `mib check` compares
+    against the MIB), but an agent answers a GET only for an instance, and a scalar's only instance is `.0`: a GET for
+    sysDescr is a GET for 1.3.6.1.2.1.1.1.0. Asking for the bare object OID gets "no such instance" from a real agent.
+    An OID already ending in `.0` is taken as already instanced. Table columns are read with `walk`/`getnext`, never
+    `get`, so no other instance suffix is needed here."""
+    return numeric_oid if numeric_oid.endswith(".0") else numeric_oid + ".0"
+
+
 async def _load_profile(conn: asyncpg.Connection, name: str, row: asyncpg.Record) -> tuple[asyncpg.Record | None, list[asyncpg.Record]]:
     profile = await conn.fetchrow(
         """
@@ -291,10 +300,11 @@ async def _run(ctx: Context, row: asyncpg.Record, entries: list[asyncpg.Record],
     try:
         single = [e for e in entries if e["walk_strategy"] == "get"]
         if single:
-            values = await bounded.get(target, [e["numeric_oid"] for e in single], timeout_ms=default_timeout, retries=retries)
+            values = await bounded.get(target, [scalar_instance(e["numeric_oid"]) for e in single], timeout_ms=default_timeout, retries=retries)
             for e in single:
-                if e["numeric_oid"] in values:
-                    value, ok = _transform(e, values[e["numeric_oid"]])
+                instance = scalar_instance(e["numeric_oid"])
+                if instance in values:
+                    value, ok = _transform(e, values[instance])
                     readings.append(Reading(e["logical_name"], e["numeric_oid"], value, e["unit"], ok))
         for e in entries:
             if e["walk_strategy"] == "get":
