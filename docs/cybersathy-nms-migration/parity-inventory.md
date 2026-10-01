@@ -132,6 +132,12 @@ Migrations 062–070 are the newest business rules. Plan 32 imports their **resu
 
 Groups and their new home: SwitcherCore (fixture-only tools, Plan 33), Security (Plan 36), Cache (dropped with Memcached, Redis flush kept in Plan 40), Schedule (Plan 37), System (Plan 40), User (Plan 36), Devices/Access (admin CLI in Plan 9), Migrations (Alembic), Poller (Plan 11), Supervisor (dropped, containers replace it). Each group gets a `python -m app.cli` equivalent or is dropped with a reason in the plan.
 
+## 6b. Legacy behavior deliberately not carried over
+
+| Legacy behavior | Why not | Decision |
+|---|---|---|
+| `TRUSTED_HOST_NETWORK_LIST` / `LOCAL_SUBNET` authenticate a request by source address, with `?USER_ID=` choosing the user | An authentication bypass (R-08); every request now carries a credential | D-29 |
+
 ## 7. Configuration
 
 `.env` parameters map in [env-parameter-mapping.md](env-parameter-mapping.md). API routes map in [api-compatibility.md](api-compatibility.md). Permissions map in [permission-mapping.md](permission-mapping.md).

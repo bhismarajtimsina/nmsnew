@@ -91,3 +91,14 @@ caught (wrong AAD per column, a column dropped from the registry, dry run writin
 failures not reported, already-active values rewritten, CLI exit codes, key-id parsing).
 
 Still missing from this plan: the global trusted-network list, and the short-lived WebSocket token (Plan 22).
+
+## Finding (2026-10-01): the legacy trusted-network list is an authentication bypass
+
+Read before building the "global trusted-network list" this plan asks for. In legacy
+(`src/Api/Middleware/AuthCheckMiddleware.php`, `src/Infrastructure/TrustedIps.php`), the list does not restrict who
+may log in. It **replaces** logging in: a request with no `X-Auth-Key` from a listed address runs as the system
+user, or as whichever user `?USER_ID=` names. `LOCAL_SUBNET` grants system-user access the same way. Production sets
+the list to a `/0` network (R-08 in STATUS.md).
+
+Not ported (D-29). Every request to the new API carries a credential, and services use scoped API tokens. Whether to
+add a global network *restriction* on top is an open question in D-29. Nothing was built for it in this round.

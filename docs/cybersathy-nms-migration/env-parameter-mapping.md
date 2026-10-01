@@ -31,7 +31,7 @@ Target homes: **env** (process environment, read at start), **settings** (`syste
 
 | Legacy parameter | Target | Note |
 |---|---|---|
-| `TRUSTED_HOST_NETWORK_LIST` | settings | Feeds the trusted-IP logic (Plan 36) |
+| `TRUSTED_HOST_NETWORK_LIST` | **dropped** | Legacy uses it to skip authentication (R-08); not ported, see D-29 |
 | `RATE_LIMITER_ENABLED`, `RATE_LIMITER_TIME`, `RATE_LIMITER_ATTEMPTS` | settings | Login and action rate limits (Plan 36) |
 | `SECURE_CHECK_PASSWORD_STRENGTH` | settings | |
 | `SECURE_ENCRYPT_ACCESSES` | dropped | Encryption is always on |
