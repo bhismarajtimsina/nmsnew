@@ -20,6 +20,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from app.vendors.common import COMMON_REASONS, DownReason, lookup_reason  # noqa: F401  (re-exported)
+
 # --- PON port names and ONT indexes ---------------------------------------------------------------------------------
 
 _PON_NAME = re.compile(r"^(EPON|GPON) ([0-9]{1,2})/([0-9]{1,2})/([0-9]{1,2})$")
@@ -129,21 +131,6 @@ def scale_distance(raw: int | None) -> int | None:
 
 # --- Down reasons ---------------------------------------------------------------------------------------------------
 
-# The common alarm reasons every vendor's down cause maps to (Plan 15). Kept short on purpose: an operator acts on
-# these, not on the vendor's twenty variants.
-COMMON_REASONS = (
-    "los",             # fibre / optical signal lost
-    "power_off",       # dying gasp: the ONT lost power
-    "loki",            # loss of key synchronisation
-    "auth_fail",       # registration / authentication refused
-    "signal_failure",  # frame, PLOAM, acknowledge or signal failures on the link
-    "admin_action",    # deactivated, reset or re-registered on purpose
-    "rogue_ont",
-    "deleted",
-    "none",            # no error
-    "unknown",
-)
-
 # Per table, exactly as the legacy value maps word them, then the common reason. -1 is "the query failed".
 DOWN_CAUSE_TABLES: dict[str, dict[int, tuple[str, str]]] = {
     "gpon.last_down_cause": {
@@ -175,17 +162,7 @@ DOWN_CAUSE_TABLES: dict[str, dict[int, tuple[str, str]]] = {
 }
 
 
-@dataclass(frozen=True)
-class DownReason:
-    code: int
-    label: str   # Huawei's own word, as legacy shows it
-    reason: str  # one of COMMON_REASONS
-
-
 def normalize_down_cause(table: str, code: int | None) -> DownReason | None:
     """A raw down-cause code to Huawei's label and the common reason. An unlisted code is "unknown", never dropped, so a
     firmware that adds codes still raises an alarm with the raw code visible."""
-    if code is None:
-        return None
-    label, reason = DOWN_CAUSE_TABLES[table].get(code, (f"Code {code}", "unknown"))
-    return DownReason(code, label, reason)
+    return lookup_reason(DOWN_CAUSE_TABLES, table, code)
