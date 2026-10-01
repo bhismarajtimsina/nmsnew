@@ -11,6 +11,8 @@ from __future__ import annotations
 import hashlib
 import hmac
 import re
+import secrets
+import string
 
 import bcrypt
 from argon2 import PasswordHasher
@@ -87,3 +89,25 @@ def check_strength(password: str, min_length: int) -> list[str]:
     if classes < 3:
         problems.append("NEEDS_MIXED_CHARACTERS")
     return problems
+
+
+GENERATED_LENGTH = 24
+_ALPHABET = string.ascii_letters + string.digits + "-_"
+_MAX_DRAWS = 100
+
+
+def generate_password(min_length: int) -> str:
+    """A random password that always passes `check_strength` for the configured minimum length.
+
+    The routes used `secrets.token_urlsafe(18)` and then checked it, which failed about 1 time in 150 (24 characters
+    with no digit, `-` or `_` have only two character classes) and failed every time once `min_length` was set above
+    24. Drawing again until the result passes keeps every password uniformly random among the acceptable ones."""
+    length = max(GENERATED_LENGTH, min_length)
+    for _ in range(_MAX_DRAWS):
+        candidate = "".join(secrets.choice(_ALPHABET) for _ in range(length))
+        if not check_strength(candidate, min_length):
+            return candidate
+    # Unreachable with these rules (a draw fails about 1 time in 150); a rule change that made it reachable would
+    # otherwise hang the request instead of failing it.
+    raise RuntimeError("could not generate a password that meets the strength rules")
+

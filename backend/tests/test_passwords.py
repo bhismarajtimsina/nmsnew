@@ -51,3 +51,32 @@ def test_strength_rules():
     assert check_strength("Short1!", 12) == ["TOO_SHORT"]
     assert "NEEDS_MIXED_CHARACTERS" in check_strength("alllowercaseletters", 12)
     assert check_strength("Correct-Horse-Battery-9", 12) == []
+
+
+def test_generated_passwords_always_pass_the_strength_rules(monkeypatch):
+    """The old `token_urlsafe(18)` failed about 1 time in 150, so user creation randomly answered 422."""
+    from app.core import passwords
+
+    for min_length in (8, 12, 24, 40):
+        for _ in range(500):
+            generated = passwords.generate_password(min_length)
+            assert passwords.check_strength(generated, min_length) == []
+            assert len(generated) == max(24, min_length)
+
+
+def test_a_weak_draw_is_drawn_again_not_returned(monkeypatch):
+    from app.core import passwords
+
+    draws = iter("a" * 24 + "Ab1" + "c" * 21)  # first draw: one character class only; second: three classes
+    monkeypatch.setattr(passwords.secrets, "choice", lambda alphabet: next(draws))
+    assert passwords.generate_password(12) == "Ab1" + "c" * 21
+
+
+def test_rules_that_can_never_be_met_fail_instead_of_hanging(monkeypatch):
+    import pytest
+
+    from app.core import passwords
+
+    monkeypatch.setattr(passwords, "check_strength", lambda password, min_length: ["NEVER"])
+    with pytest.raises(RuntimeError):
+        passwords.generate_password(12)

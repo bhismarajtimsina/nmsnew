@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import secrets
 import uuid
 from datetime import datetime
 from typing import Annotated
@@ -13,7 +12,7 @@ from app.api import schemas
 from app.core.audit import write_audit
 from app.core.config import settings
 from app.core.database import get_conn
-from app.core.passwords import SCHEME_ARGON2, check_strength, hash_password
+from app.core.passwords import SCHEME_ARGON2, check_strength, generate_password, hash_password
 from app.core.security import CurrentUser, fetch_role_permissions, require
 from app.repositories import access as access_repo
 
@@ -153,7 +152,7 @@ async def create_user(
 ) -> dict:
     role = await _assert_can_grant_role(conn, actor, _uuid(payload.role_id, "role_id"))
     generated = payload.password is None
-    password = payload.password or secrets.token_urlsafe(18)
+    password = payload.password or generate_password(settings.password_min_length)
     problems = check_strength(password, settings.password_min_length)
     if problems:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"password_problems": problems})
@@ -244,7 +243,7 @@ async def reset_password(
     if not await conn.fetchval("select exists(select 1 from users where id = $1::uuid)", uid):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     generated = payload.password is None
-    password = payload.password or secrets.token_urlsafe(18)
+    password = payload.password or generate_password(settings.password_min_length)
     problems = check_strength(password, settings.password_min_length)
     if problems:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"password_problems": problems})

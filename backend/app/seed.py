@@ -7,14 +7,13 @@ removed. It inserts what is missing and refreshes the catalogue-managed fields o
 from __future__ import annotations
 
 import json
-import secrets
 from dataclasses import dataclass, field
 
 import asyncpg
 
 from app.access.catalogue import all_permissions, role_definitions
 from app.core.config import settings
-from app.core.passwords import check_strength, hash_password, SCHEME_ARGON2
+from app.core.passwords import check_strength, generate_password, hash_password, SCHEME_ARGON2
 from app.registry.alarm_rule_data import ALARM_RULES
 from app.registry.device_model_data import DEVICE_MODELS
 from app.registry.notification_event_config_data import NOTIFICATION_EVENT_CONFIGS
@@ -134,7 +133,7 @@ async def seed(
         user = await conn.fetchrow("select id, password_hash from users where username = $1", admin_username)
         if user is None:
             generated = admin_password is None
-            password = admin_password or secrets.token_urlsafe(18)
+            password = admin_password or generate_password(settings.password_min_length)
             await conn.execute(
                 """
                 insert into users (role_id, username, email, display_name, password_hash, hash_scheme,

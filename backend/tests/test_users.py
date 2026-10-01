@@ -151,3 +151,18 @@ async def test_resellers_can_be_created_and_users_assigned_to_them(app_client, d
     assert (await app_client.put(f"/api/v1/resellers/{made.json()['id']}/users", headers=admin, json={"user_ids": [member]})).json() == {"users": 1}
     assert (await app_client.get(f"/api/v1/users/{member}", headers=admin)).json()["reseller"] == "Himalaya ISP"
     assert (await app_client.get("/api/v1/resellers", headers=admin)).json()[0]["users"] == 1
+
+
+async def test_creating_and_resetting_without_a_password_never_fails_on_the_generated_one(app_client, db, monkeypatch):
+    """Forces the weak first draw that used to make the route answer 422."""
+    from app.core import passwords
+
+    await make_user(db, "root2", "Super Admin")
+    headers = await bearer(app_client, "root2")
+    app_client.cookies.clear()
+    weak_then_strong = iter(("a" * 24 + "Ab1" + "c" * 21) * 2)
+    monkeypatch.setattr(passwords.secrets, "choice", lambda alphabet: next(weak_then_strong))
+    created = await app_client.post("/api/v1/users", headers=headers, json={"username": "gen1", "display_name": "Gen", "role_id": await role_id(db, "ISP NOC")})
+    assert created.status_code == 201 and created.json()["generated_password"] == "Ab1" + "c" * 21
+    reset = await app_client.post(f"/api/v1/users/{created.json()['id']}/password", headers=headers, json={})
+    assert reset.status_code == 200 and reset.json()["generated_password"] == "Ab1" + "c" * 21
