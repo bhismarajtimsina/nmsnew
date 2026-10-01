@@ -63,6 +63,47 @@ class DiscoveryQueued(Strict):
     reason: str | None
 
 
+class OverviewGroup(Strict):
+    id: str
+    name: str
+
+
+class OverviewModel(Strict):
+    id: str
+    name: str
+    vendor: str
+    icon: str | None
+
+
+class OverviewPing(Strict):
+    status: Literal["unknown", "up", "down"]
+    latency_ms: float | None
+    last_checked_at: datetime | None
+
+
+class InterfaceCounts(Strict):
+    up: int
+    down: int
+
+
+class DeviceOverviewOut(Strict):
+    id: str
+    name: str
+    management_ip: str
+    polling_enabled: bool
+    group: OverviewGroup | None
+    model: OverviewModel | None
+    ping: OverviewPing | None
+    interfaces: InterfaceCounts
+
+
+class DeviceOverviewPage(Strict):
+    items: list[DeviceOverviewOut]
+    total: int
+    limit: int
+    offset: int
+
+
 class DeviceCreated(Strict):
     device: DeviceOut
     discovery: DiscoveryQueued

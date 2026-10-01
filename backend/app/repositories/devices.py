@@ -37,6 +37,59 @@ async def list_devices(
     return rows, total
 
 
+OVERVIEW_SORT = {"name": "d.name, d.id", "ip": "d.management_ip, d.id"}
+
+
+async def device_overview(
+    conn: asyncpg.Connection, user: CurrentUser, *, limit: int, offset: int, sort: str = "name", search: str | None = None,
+) -> tuple[list[dict[str, Any]], int]:
+    """The device list page (Plan 25, legacy `/dev-dashboard/devices`): each visible device with its group, model,
+    last ping result and interface counts, devices the pinger last saw down first.
+
+    An interface counts as up only when its operational status is `up`; every other status counts as down, as the
+    legacy count does (anything not Up/Online). A device never pinged has `ping` null and sorts with the up ones,
+    again as legacy does: only a device whose last ping failed goes to the top."""
+    order = OVERVIEW_SORT[sort]
+    where = f"where {DEVICE_VISIBLE} and ($3::text is null or d.name ilike '%' || $3 || '%' or host(d.management_ip) like $3 || '%')"
+    rows = await conn.fetch(
+        f"""{GRANTED_GROUPS_CTE}
+        select d.id, d.name, host(d.management_ip) as management_ip, d.polling_enabled,
+               g.id as group_id, g.name as group_name,
+               m.id as model_id, m.model_name, m.vendor as model_vendor, m.icon as model_icon,
+               p.status as ping_status, p.latency_ms, p.last_checked_at,
+               coalesce(i.up, 0) as interfaces_up, coalesce(i.down, 0) as interfaces_down
+        from devices d
+        left join device_groups g on g.id = d.group_id
+        left join device_models m on m.id = d.model_id
+        left join device_ping_status p on p.device_id = d.id
+        left join lateral (
+            select count(*) filter (where oper_status = 'up') as up, count(*) filter (where oper_status <> 'up') as down
+            from interfaces where device_id = d.id
+        ) i on true
+        {where}
+        order by (p.status = 'down') is true desc, {order}
+        limit $4 offset $5""",
+        user.id, user.scope_all, search, limit, offset,
+    )
+    total = await conn.fetchval(f"{GRANTED_GROUPS_CTE} select count(*) from devices d {where}", user.id, user.scope_all, search)
+    return [_overview_item(r) for r in rows], total
+
+
+def _overview_item(r: asyncpg.Record) -> dict[str, Any]:
+    return {
+        "id": str(r["id"]),
+        "name": r["name"],
+        "management_ip": r["management_ip"],
+        "polling_enabled": r["polling_enabled"],
+        "group": {"id": str(r["group_id"]), "name": r["group_name"]} if r["group_id"] else None,
+        "model": {"id": str(r["model_id"]), "name": r["model_name"], "vendor": r["model_vendor"], "icon": r["model_icon"]}
+        if r["model_id"] else None,
+        "ping": {"status": r["ping_status"], "latency_ms": r["latency_ms"], "last_checked_at": r["last_checked_at"]}
+        if r["ping_status"] is not None else None,
+        "interfaces": {"up": r["interfaces_up"], "down": r["interfaces_down"]},
+    }
+
+
 async def get_device(conn: asyncpg.Connection, user: CurrentUser, device_id: str) -> asyncpg.Record | None:
     return await conn.fetchrow(
         f"{GRANTED_GROUPS_CTE} select {DEVICE_COLUMNS} from devices d where d.id = $3::uuid and {DEVICE_VISIBLE}",

@@ -53,6 +53,20 @@ async def list_devices(
     return Page(items=[device_repo.as_dict(r) for r in rows], total=total, limit=limit, offset=offset)
 
 
+@router.get("/devices/overview", response_model=schemas.DeviceOverviewPage)
+async def device_overview(
+    user: Annotated[CurrentUser, Depends(require("devices.view"))],
+    conn: Annotated[asyncpg.Connection, Depends(get_conn)],
+    limit: Annotated[int, Query(ge=1, le=1000)] = 500,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    sort: Literal["name", "ip"] = "name",
+    search: Annotated[str | None, Query(max_length=120)] = None,
+) -> dict[str, Any]:
+    """The device list page: groups, models, last ping and interface counts in one call, read from the database only."""
+    items, total = await device_repo.device_overview(conn, user, limit=limit, offset=offset, sort=sort, search=search)
+    return {"items": items, "total": total, "limit": limit, "offset": offset}
+
+
 @router.get("/devices/{device_id}", response_model=schemas.DeviceOut)
 async def get_device(
     device_id: str,

@@ -5,65 +5,64 @@ import { DataService } from '@/config/dataService/dataService';
 import { notification } from 'ant-design-vue';
 import { wsClient } from '@/services/wsClient';
 import { mergeById, removeById } from '@/utility/listMerge';
+import { api, ApiError } from '@/api/client';
+import { authBackend } from '@/auth/session';
+import { fromLegacy, legacyPatch, loadGroupOptions, loadOverview, modelOptionsFrom, type DeviceCard, type Id, type LegacyRow, type Option } from './deviceList';
 import { Main } from '../styled';
-
-interface DeviceRow {
-  id: number;
-  ip: string;
-  name: string;
-  description: string;
-  model: { id: number; name: string; vendor: string; model: string; type: string; icon: string | null };
-  group: { id: number; name: string };
-  enabled: boolean;
-  pinger: { latency: number } | null;
-  ifaces_stat: { up: number; down: number } | null;
-}
-interface GroupOption {
-  id: number;
-  name: string;
-  description: string;
-}
-interface ModelOption {
-  key: string;
-  name: string;
-  vendor: string;
-  model: string;
-  id?: number;
-}
 
 const router = useRouter();
 const loading = ref(true);
-const devices = ref<DeviceRow[]>([]);
-const groupOptions = ref<GroupOption[]>([]);
-const modelOptions = ref<ModelOption[]>([]);
+// With the new login the page reads the new API (src/views/devices/deviceList.ts); the legacy build is unchanged.
+const newApi = authBackend() === 'cybersathy';
+const devices = ref<DeviceCard[]>([]);
+const groupOptions = ref<Option[]>([]);
+const legacyModelOptions = ref<Option[]>([]);
+const modelOptions = computed(() => (newApi ? modelOptionsFrom(devices.value) : legacyModelOptions.value));
 const filtersOpen = ref(false);
-const collapsedGroups = ref<Set<number>>(new Set());
+const collapsedGroups = ref<Set<Id>>(new Set());
 
 const filters = reactive({
   status: 'all' as 'online' | 'offline' | 'all',
   query: '',
-  groups: [] as number[],
-  models: [] as string[],
+  groups: [] as Id[],
+  models: [] as Id[],
   sort: 'ip' as 'ip' | 'name' | 'location',
   showGroups: true,
 });
 
 async function loadOptions() {
+  if (newApi) {
+    try {
+      groupOptions.value = await loadGroupOptions(api);
+    } catch {
+      groupOptions.value = []; // the filter just offers no groups; the list itself still loads
+    }
+    return;
+  }
   const [groupsRes, modelsRes] = await Promise.allSettled([DataService.get('/dev-dashboard/groups'), DataService.get('/dev-dashboard/models')]);
-  if (groupsRes.status === 'fulfilled') groupOptions.value = groupsRes.value.data.data || [];
-  if (modelsRes.status === 'fulfilled') modelOptions.value = modelsRes.value.data.data || [];
+  if (groupsRes.status === 'fulfilled') {
+    groupOptions.value = (groupsRes.value.data.data || []).map((g: any) => ({ id: g.id, label: g.name, description: g.description || '' }));
+  }
+  if (modelsRes.status === 'fulfilled') {
+    legacyModelOptions.value = (modelsRes.value.data.data || []).map((m: any) => ({ id: m.id, label: `${m.vendor} ${m.model}`, description: '' }));
+  }
 }
 
 async function load() {
   loading.value = true;
   try {
-    const { data } = await DataService.get(`/dev-dashboard/devices?sort=${filters.sort}&down_on_top=yes`, {
-      limit: 999999,
-      query: filters.query || undefined,
-    });
-    devices.value = data.data || [];
+    if (newApi) {
+      devices.value = await loadOverview(api, filters.sort, filters.query);
+    } else {
+      const { data } = await DataService.get(`/dev-dashboard/devices?sort=${filters.sort}&down_on_top=yes`, {
+        limit: 999999,
+        query: filters.query || undefined,
+      });
+      devices.value = ((data.data || []) as LegacyRow[]).map(fromLegacy);
+    }
   } catch (err: any) {
-    notification.error({ message: 'Could not load devices', description: err?.response?.data?.error?.description || 'Please try again.' });
+    const description = newApi ? (err instanceof ApiError ? err.message : undefined) : err?.response?.data?.error?.description;
+    notification.error({ message: 'Could not load devices', description: description || 'Please try again.' });
   } finally {
     loading.value = false;
   }
@@ -81,17 +80,17 @@ function clearFilters() {
 
 const filteredDevices = computed(() =>
   devices.value.filter((d) => {
-    if (filters.status === 'online' && !(d.pinger && d.pinger.latency > 0)) return false;
-    if (filters.status === 'offline' && d.pinger && d.pinger.latency > 0) return false;
-    if (filters.groups.length && !filters.groups.includes(d.group?.id)) return false;
-    if (filters.models.length && !filters.models.includes(d.model?.id as any)) return false;
+    if (filters.status === 'online' && !d.online) return false;
+    if (filters.status === 'offline' && d.online) return false;
+    if (filters.groups.length && !filters.groups.includes(d.group?.id ?? 0)) return false;
+    if (filters.models.length && !(d.model && filters.models.includes(d.model.id))) return false;
     return true;
   }),
 );
 
 interface GroupedRow {
-  group: GroupOption;
-  devices: DeviceRow[];
+  group: { id: Id; name: string; description: string };
+  devices: DeviceCard[];
   onlineCount: number;
   ifacesUp: number;
   ifacesTotal: number;
@@ -102,28 +101,34 @@ const groupedDevices = computed<GroupedRow[]>(() => {
       {
         group: { id: 0, name: 'All devices', description: '' },
         devices: filteredDevices.value,
-        onlineCount: filteredDevices.value.filter((d) => d.pinger && d.pinger.latency > 0).length,
-        ifacesUp: filteredDevices.value.reduce((s, d) => s + (d.ifaces_stat?.up || 0), 0),
-        ifacesTotal: filteredDevices.value.reduce((s, d) => s + (d.ifaces_stat?.up || 0) + (d.ifaces_stat?.down || 0), 0),
+        onlineCount: filteredDevices.value.filter((d) => d.online).length,
+        ifacesUp: filteredDevices.value.reduce((s, d) => s + (d.ifaces?.up || 0), 0),
+        ifacesTotal: filteredDevices.value.reduce((s, d) => s + (d.ifaces?.up || 0) + (d.ifaces?.down || 0), 0),
       },
     ];
   }
-  const byGroup = new Map<number, DeviceRow[]>();
+  const byGroup = new Map<Id, DeviceCard[]>();
   for (const d of filteredDevices.value) {
     const gid = d.group?.id ?? 0;
     if (!byGroup.has(gid)) byGroup.set(gid, []);
     byGroup.get(gid)!.push(d);
   }
   return Array.from(byGroup.entries()).map(([gid, list]) => ({
-    group: groupOptions.value.find((g) => g.id === gid) || { id: gid, name: list[0]?.group?.name || 'Unknown', description: '' },
+    group: groupHeader(gid, list),
     devices: list,
-    onlineCount: list.filter((d) => d.pinger && d.pinger.latency > 0).length,
-    ifacesUp: list.reduce((s, d) => s + (d.ifaces_stat?.up || 0), 0),
-    ifacesTotal: list.reduce((s, d) => s + (d.ifaces_stat?.up || 0) + (d.ifaces_stat?.down || 0), 0),
+    onlineCount: list.filter((d) => d.online).length,
+    ifacesUp: list.reduce((s, d) => s + (d.ifaces?.up || 0), 0),
+    ifacesTotal: list.reduce((s, d) => s + (d.ifaces?.up || 0) + (d.ifaces?.down || 0), 0),
   }));
 });
 
-function toggleGroup(id: number) {
+function groupHeader(gid: Id, list: DeviceCard[]) {
+  const option = groupOptions.value.find((g) => g.id === gid);
+  if (option) return { id: gid, name: option.label, description: option.description };
+  return { id: gid, name: list[0]?.group?.name || 'Unknown', description: '' };
+}
+
+function toggleGroup(id: Id) {
   if (collapsedGroups.value.has(id)) collapsedGroups.value.delete(id);
   else collapsedGroups.value.add(id);
 }
@@ -134,7 +139,7 @@ function hideAll() {
   collapsedGroups.value = new Set(groupedDevices.value.map((g) => g.group.id));
 }
 
-function goToDevice(id: number) {
+function goToDevice(id: Id) {
   router.push({ name: 'device-detail', params: { id } });
 }
 
@@ -160,16 +165,20 @@ onMounted(async () => {
 // falls back to a real reload instead of risking a device that doesn't
 // match appearing (added) or one that's already shown going stale as if
 // it still matched (updated).
-function onDeviceChanged(record: DeviceRow) {
+//
+// The pushed record is a legacy device row; legacyPatch maps just the fields it carries onto the card shape.
+// The new API publishes no device changes yet (Plan 22), so with the new login the list refreshes on Reload only.
+function onDeviceChanged(record: LegacyRow) {
   if (filters.query) {
     load();
     return;
   }
-  mergeById(devices, record);
+  mergeById(devices, legacyPatch(record));
 }
-const unsubAdded = wsClient.subscribe('event:device:added', (msg) => onDeviceChanged(msg.data));
-const unsubUpdated = wsClient.subscribe('event:device:updated', (msg) => onDeviceChanged(msg.data));
-const unsubDeleted = wsClient.subscribe('event:device:deleted', (msg) => removeById(devices, msg.data.id));
+const noop = () => {};
+const unsubAdded = newApi ? noop : wsClient.subscribe('event:device:added', (msg) => onDeviceChanged(msg.data));
+const unsubUpdated = newApi ? noop : wsClient.subscribe('event:device:updated', (msg) => onDeviceChanged(msg.data));
+const unsubDeleted = newApi ? noop : wsClient.subscribe('event:device:deleted', (msg) => removeById(devices, msg.data.id));
 onBeforeUnmount(() => {
   unsubAdded();
   unsubUpdated();
@@ -207,11 +216,11 @@ onBeforeUnmount(() => {
             </a-col>
             <a-col :xs="12" :md="4" style="margin-bottom: 12px">
               <label class="log-filter-label">Device groups</label>
-              <a-select v-model:value="filters.groups" mode="multiple" allow-clear placeholder="All groups" style="width: 100%" :options="groupOptions.map((g) => ({ value: g.id, label: g.name }))" />
+              <a-select v-model:value="filters.groups" mode="multiple" allow-clear placeholder="All groups" style="width: 100%" :options="groupOptions.map((g) => ({ value: g.id, label: g.label }))" />
             </a-col>
             <a-col :xs="12" :md="4" style="margin-bottom: 12px">
               <label class="log-filter-label">Device models</label>
-              <a-select v-model:value="filters.models" mode="multiple" allow-clear placeholder="All models" style="width: 100%" :options="modelOptions.map((m) => ({ value: m.id, label: `${m.vendor} ${m.model}` }))" />
+              <a-select v-model:value="filters.models" mode="multiple" allow-clear placeholder="All models" style="width: 100%" :options="modelOptions.map((m) => ({ value: m.id, label: m.label }))" />
             </a-col>
             <a-col :xs="12" :md="3" style="margin-bottom: 12px">
               <label class="log-filter-label">Sort by</label>
@@ -252,7 +261,7 @@ onBeforeUnmount(() => {
               </div>
             </div>
             <div v-show="!collapsedGroups.has(g.group.id)" class="dl-group__grid">
-              <div v-for="d in g.devices" :key="d.id" class="dl-card" :class="d.pinger && d.pinger.latency > 0 ? 'is-online' : 'is-offline'" @click="goToDevice(d.id)">
+              <div v-for="d in g.devices" :key="d.id" class="dl-card" :class="d.online ? 'is-online' : 'is-offline'" @click="goToDevice(d.id)">
                 <div class="dl-card__top">
                   <img v-if="d.model?.icon" :src="d.model.icon" class="dl-card__icon" alt="" />
                   <unicon v-else name="server-network" class="dl-card__icon-fallback"></unicon>
@@ -261,7 +270,7 @@ onBeforeUnmount(() => {
                 <div class="dl-card__ip"><unicon name="desktop"></unicon> {{ d.ip }}</div>
                 <div class="dl-card__ifaces">
                   <unicon name="wifi-router"></unicon>
-                  <span class="up">{{ d.ifaces_stat?.up ?? 0 }}</span>/<span class="down">{{ d.ifaces_stat?.down ?? 0 }}</span>/{{ (d.ifaces_stat?.up ?? 0) + (d.ifaces_stat?.down ?? 0) }}
+                  <span class="up">{{ d.ifaces?.up ?? 0 }}</span>/<span class="down">{{ d.ifaces?.down ?? 0 }}</span>/{{ (d.ifaces?.up ?? 0) + (d.ifaces?.down ?? 0) }}
                 </div>
                 <div class="dl-card__model">{{ d.model?.name }}</div>
               </div>

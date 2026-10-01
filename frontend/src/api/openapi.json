@@ -858,6 +858,104 @@
         "title": "DeviceOut",
         "type": "object"
       },
+      "DeviceOverviewOut": {
+        "additionalProperties": false,
+        "properties": {
+          "group": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OverviewGroup"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "interfaces": {
+            "$ref": "#/components/schemas/InterfaceCounts"
+          },
+          "management_ip": {
+            "title": "Management Ip",
+            "type": "string"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OverviewModel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "ping": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OverviewPing"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "polling_enabled": {
+            "title": "Polling Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "management_ip",
+          "polling_enabled",
+          "group",
+          "model",
+          "ping",
+          "interfaces"
+        ],
+        "title": "DeviceOverviewOut",
+        "type": "object"
+      },
+      "DeviceOverviewPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DeviceOverviewOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "DeviceOverviewPage",
+        "type": "object"
+      },
       "DevicePage": {
         "additionalProperties": false,
         "properties": {
@@ -1607,6 +1705,25 @@
           "event_ids"
         ],
         "title": "IncidentOut",
+        "type": "object"
+      },
+      "InterfaceCounts": {
+        "additionalProperties": false,
+        "properties": {
+          "down": {
+            "title": "Down",
+            "type": "integer"
+          },
+          "up": {
+            "title": "Up",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "up",
+          "down"
+        ],
+        "title": "InterfaceCounts",
         "type": "object"
       },
       "InterfaceHistoryPage": {
@@ -2790,6 +2907,105 @@
           "entries"
         ],
         "title": "OidProfileSummary",
+        "type": "object"
+      },
+      "OverviewGroup": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "OverviewGroup",
+        "type": "object"
+      },
+      "OverviewModel": {
+        "additionalProperties": false,
+        "properties": {
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "vendor": {
+            "title": "Vendor",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "vendor",
+          "icon"
+        ],
+        "title": "OverviewModel",
+        "type": "object"
+      },
+      "OverviewPing": {
+        "additionalProperties": false,
+        "properties": {
+          "last_checked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Checked At"
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency Ms"
+          },
+          "status": {
+            "enum": [
+              "unknown",
+              "up",
+              "down"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "latency_ms",
+          "last_checked_at"
+        ],
+        "title": "OverviewPing",
         "type": "object"
       },
       "PasswordChange": {
@@ -7229,6 +7445,110 @@
           }
         },
         "summary": "Create Device",
+        "tags": [
+          "devices"
+        ]
+      }
+    },
+    "/api/v1/devices/overview": {
+      "get": {
+        "description": "The device list page: groups, models, last ping and interface counts in one call, read from the database only.",
+        "operationId": "device_overview_api_v1_devices_overview_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 500,
+              "maximum": 1000,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "name",
+              "enum": [
+                "name",
+                "ip"
+              ],
+              "title": "Sort",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 120,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceOverviewPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Device Overview",
         "tags": [
           "devices"
         ]

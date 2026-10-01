@@ -458,6 +458,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/devices/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Device Overview
+         * @description The device list page: groups, models, last ping and interface counts in one call, read from the database only.
+         */
+        get: operations["device_overview_api_v1_devices_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/devices/{device_id}": {
         parameters: {
             query?: never;
@@ -1544,6 +1564,32 @@ export interface components {
             /** Vendor */
             vendor: string | null;
         };
+        /** DeviceOverviewOut */
+        DeviceOverviewOut: {
+            group: components["schemas"]["OverviewGroup"] | null;
+            /** Id */
+            id: string;
+            interfaces: components["schemas"]["InterfaceCounts"];
+            /** Management Ip */
+            management_ip: string;
+            model: components["schemas"]["OverviewModel"] | null;
+            /** Name */
+            name: string;
+            ping: components["schemas"]["OverviewPing"] | null;
+            /** Polling Enabled */
+            polling_enabled: boolean;
+        };
+        /** DeviceOverviewPage */
+        DeviceOverviewPage: {
+            /** Items */
+            items: components["schemas"]["DeviceOverviewOut"][];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            /** Total */
+            total: number;
+        };
         /** DevicePage */
         DevicePage: {
             /** Items */
@@ -1751,6 +1797,13 @@ export interface components {
             started_at: string;
             /** Where */
             where: string;
+        };
+        /** InterfaceCounts */
+        InterfaceCounts: {
+            /** Down */
+            down: number;
+            /** Up */
+            up: number;
         };
         /** InterfaceHistoryPage */
         InterfaceHistoryPage: {
@@ -2104,6 +2157,36 @@ export interface components {
             vendor_slug: string | null;
             /** Version */
             version: number;
+        };
+        /** OverviewGroup */
+        OverviewGroup: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+        };
+        /** OverviewModel */
+        OverviewModel: {
+            /** Icon */
+            icon: string | null;
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Vendor */
+            vendor: string;
+        };
+        /** OverviewPing */
+        OverviewPing: {
+            /** Last Checked At */
+            last_checked_at: string | null;
+            /** Latency Ms */
+            latency_ms: number | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "unknown" | "up" | "down";
         };
         /** PasswordChange */
         PasswordChange: {
@@ -3963,6 +4046,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DeviceCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    device_overview_api_v1_devices_overview_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+                sort?: "name" | "ip";
+                search?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceOverviewPage"];
                 };
             };
             /** @description Validation Error */

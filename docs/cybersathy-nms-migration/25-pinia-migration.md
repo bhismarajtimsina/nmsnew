@@ -140,4 +140,44 @@ Tests:
 - 6 mutations checked, all caught.
 - Not checked in a browser (R-09: the frontend cannot be built from git).
 
-Still not done in this plan: moving pages to the typed client.
+### First page on the typed client: the device list (2026-10-01)
+
+**New endpoint.** The legacy page reads `/dev-dashboard/devices`. That route returns each device with its pinger
+latency and interface counts. The new `GET /api/v1/devices` has neither, so `GET /api/v1/devices/overview` was added
+(`devices.view`, scoped like every device read, database only). Each item carries:
+
+- the device, its group, and its model;
+- the pinger's last result (`device_ping_status`);
+- interface counts.
+
+Ported from `DeviceListAction.php`:
+
+- An interface counts as up only when its operational status is `up`; every other status counts as down.
+- Devices whose last ping failed come first; never-pinged devices sort with the rest.
+- Sort is by name or address. There is no location field, so a location sort falls back to name.
+
+**Frontend.** `src/views/devices/deviceList.ts` turns either API's answer into one card shape, and the page filters
+and groups those cards. The legacy build makes the same calls as before. With `VITE_AUTH_BACKEND=cybersathy`:
+
+- the page pages through the overview 1000 at a time, capped at 50 pages;
+- group options come from `/api/v1/device-groups`, and model options from the models in use (no extra permission
+  needed).
+
+Known gaps with the new login, all deliberate for now:
+
+- No live updates. The new API publishes no device-change events yet (Plan 22), so the list refreshes on Reload.
+- Clicking a card opens the device detail page, which is still legacy and expects a legacy numeric id. It moves next.
+- Disabled devices are shown with "(disabled)", read from `polling_enabled`, where legacy hid them. Which new flag
+  stands for legacy's `enabled` is still the open Plan 9/20 question. Showing them hides nothing until that is
+  decided.
+
+Tests:
+
+- 6 backend tests: fields, nulls, ordering, search and paging, scope, permission. 8 mutations checked, all caught.
+- 11 vitest tests for the data module: both mappings, the WebSocket patch keeping poller fields, paging and its cap,
+  errors, options. 9 mutations checked, all caught. One survivor showed a redundant check in the model-options code;
+  the code was simplified instead.
+- 55 frontend tests in total.
+- Not checked in a browser (R-09).
+
+Still not done in this plan: the remaining pages on the typed client.
