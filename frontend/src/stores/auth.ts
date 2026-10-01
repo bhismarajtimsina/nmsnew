@@ -8,6 +8,7 @@
 import { defineStore } from 'pinia';
 import { api, ApiError, AUTH_KEY, USER_KEY, type ApiClient } from '@/api/client';
 import type { components } from '@/api/schema';
+import { useRealtimeStore } from './realtime';
 
 export type AuthUser = components['schemas']['AuthUser'];
 
@@ -73,6 +74,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem(USER_KEY, JSON.stringify(user));
       this.hasToken = true;
       this.user = user;
+      useRealtimeStore().start();
     },
 
     forget() {
@@ -80,6 +82,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem(USER_KEY);
       this.hasToken = false;
       this.user = null;
+      useRealtimeStore().stop();
     },
 
     async login(credentials: Credentials): Promise<LoginResult> {
@@ -118,6 +121,7 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem(USER_KEY, JSON.stringify(data));
         this.user = data;
         this.hasToken = true;
+        useRealtimeStore().start(); // after a refresh, the socket comes back with the session
         return true;
       } catch {
         // Any failure signs the shell out, as the legacy checkSession does: better a sign-in page than a "logged in"

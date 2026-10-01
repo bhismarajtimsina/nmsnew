@@ -74,3 +74,23 @@ the 8 errors it had before this change (R-09); the store and guard are also chec
 Not done: the permissions-driven menu, the realtime store (WebSocket reconnect using the ticket), the remaining Vuex
 modules (`themeLayout`), and moving pages to the typed client. `vite build` cannot be run from the repository until
 R-09's missing files are added.
+
+## Implementation notes (2026-10-01): realtime store
+
+`src/realtime/client.ts` (`RealtimeClient`) and `src/stores/realtime.ts`, used with `VITE_AUTH_BACKEND=cybersathy`.
+The legacy build keeps `services/wsClient.ts`. Same shape as the legacy client: one shared socket, channels
+resubscribed after every reconnect, exponential backoff capped at 30 seconds and reset once connected, and a full stop
+on sign-out that also cancels a pending reconnect. Changes for the new API:
+- every connection, first or reconnect, mints a fresh single-use ticket (`POST /realtime/ticket`, `/ws?ticket=`), and
+  a used ticket is never reused;
+- three ticket refusals in a row (close code 4401) stop the client instead of looping;
+- a 401 while minting means the login is gone, so the client stops (the API client has already signed the user out);
+  any other minting failure is retried with backoff.
+
+The auth store starts the connection after sign-in and after a successful session check, so it comes back after a
+page refresh (Plan 25's acceptance check), and stops it on sign-out. The socket, the ticket call and the timers are
+injected, so the tests drive reconnects without a browser or a server. 8 new tests (7 client, 1 store); 31 frontend
+tests in total. 9 mutations checked, all caught.
+
+Still not done in this plan: the permissions-driven menu, the `themeLayout` Vuex module, and moving pages to the
+typed client.

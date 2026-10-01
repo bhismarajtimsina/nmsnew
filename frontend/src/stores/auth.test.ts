@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { createApiClient, AUTH_KEY, USER_KEY } from '@/api/client';
 import { useAuthClient, useAuthStore } from './auth';
+import { useRealtimeDeps, useRealtimeStore } from './realtime';
 
 const USER = {
   id: 'u1', username: 'alice', display_name: 'Alice', email: null, role: 'ISP Admin', scope_mode: 'all',
@@ -23,9 +24,21 @@ function serve(replies: Record<string, Reply>) {
   return seen;
 }
 
+let realtimeStarts = 0;
+
 beforeEach(() => {
   localStorage.clear();
   setActivePinia(createPinia());
+  realtimeStarts = 0;
+  // No real sockets in these tests: a ticket that never resolves keeps the realtime client parked in "connecting".
+  useRealtimeDeps((onStatus) => ({
+    onStatus,
+    mintTicket: () => { realtimeStarts += 1; return new Promise<string>(() => {}); },
+    openSocket: () => { throw new Error('not in these tests'); },
+    socketUrl: (t) => t,
+    setTimer: () => null,
+    clearTimer: () => {},
+  }));
 });
 
 describe('signing in', () => {
@@ -106,5 +119,23 @@ describe('permissions and sign-out', () => {
     await auth.logout();
     expect(auth.loggedIn).toBe(false);
     expect(localStorage.getItem(AUTH_KEY)).toBeNull();
+  });
+});
+
+describe('the realtime connection follows the session', () => {
+  it('starts on sign-in and after a refresh, and stops on sign-out', async () => {
+    serve({ 'POST /api/v1/auth/login': { status: 200, body: { token: 'css_t', token_type: 'Bearer', need_2fa: false, must_change_password: false, user: USER } } });
+    const auth = useAuthStore();
+    await auth.login({ login: 'alice', password: 'pw' });
+    expect(useRealtimeStore().status).toBe('connecting');
+    expect(realtimeStarts).toBe(1);
+    await auth.logout();
+    expect(useRealtimeStore().status).toBe('stopped');
+
+    localStorage.setItem(AUTH_KEY, 'css_t'); // signed in again in another tab, then...
+    setActivePinia(createPinia()); // ...a page refresh
+    serve({ 'GET /api/v1/auth/session': { status: 200, body: USER } });
+    await useAuthStore().checkSession();
+    expect(useRealtimeStore().status).toBe('connecting');
   });
 });
