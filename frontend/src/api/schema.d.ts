@@ -295,6 +295,179 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/dashboards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Dashboards
+         * @description The dashboards this user may open, with the widgets they may see on each, and the one their role opens on.
+         */
+        get: operations["list_dashboards_api_v1_dashboards_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboards/widgets/device-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Device Status */
+        get: operations["device_status_api_v1_dashboards_widgets_device_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboards/widgets/error-calling-by-device": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Error Calling By Device */
+        get: operations["error_calling_by_device_api_v1_dashboards_widgets_error_calling_by_device_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboards/widgets/events-by-name": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Events By Name */
+        get: operations["events_by_name_api_v1_dashboards_widgets_events_by_name_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboards/widgets/events-by-severity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Events By Severity */
+        get: operations["events_by_severity_api_v1_dashboards_widgets_events_by_severity_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboards/widgets/last-user-activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Last User Activity */
+        get: operations["last_user_activity_api_v1_dashboards_widgets_last_user_activity_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboards/widgets/latest-system-actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Latest System Actions */
+        get: operations["latest_system_actions_api_v1_dashboards_widgets_latest_system_actions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboards/widgets/poller-health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Poller Health */
+        get: operations["poller_health_api_v1_dashboards_widgets_poller_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboards/widgets/ports-down": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ports Down */
+        get: operations["ports_down_api_v1_dashboards_widgets_ports_down_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboards/widgets/system-stat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** System Stat */
+        get: operations["system_stat_api_v1_dashboards_widgets_system_stat_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/dead-letters": {
         parameters: {
             query?: never;
@@ -1424,6 +1597,54 @@ export interface components {
             /** Numeric Oid */
             numeric_oid: string;
         };
+        /** CountByName */
+        CountByName: {
+            /** Count */
+            count: number;
+            /** Name */
+            name: string;
+        };
+        /** CountBySeverity */
+        CountBySeverity: {
+            /** Count */
+            count: number;
+            /** Severity */
+            severity: string;
+        };
+        /** DashboardList */
+        DashboardList: {
+            /** Dashboards */
+            dashboards: components["schemas"]["DashboardOut"][];
+            /** Default */
+            default: string | null;
+        };
+        /** DashboardOut */
+        DashboardOut: {
+            /** Key */
+            key: string;
+            /** Noc Wide */
+            noc_wide: boolean;
+            /** Title */
+            title: string;
+            /** Widgets */
+            widgets: components["schemas"]["DashboardWidgetOut"][];
+        };
+        /** DashboardWidgetOut */
+        DashboardWidgetOut: {
+            /** Endpoint */
+            endpoint: string | null;
+            /** Key */
+            key: string;
+            /** Pending Reason */
+            pending_reason: string | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "live" | "pending";
+            /** Title */
+            title: string;
+        };
         /** DeadLetterOut */
         DeadLetterOut: {
             /**
@@ -1469,6 +1690,14 @@ export interface components {
             } | null;
             /** Status */
             status: string;
+        };
+        /** DeviceCallErrors */
+        DeviceCallErrors: {
+            device: components["schemas"]["DeviceRef"];
+            /** Errors */
+            errors: number;
+            /** Not Responding */
+            not_responding: number;
         };
         /** DeviceCreate */
         DeviceCreate: {
@@ -1621,6 +1850,26 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** DeviceRef */
+        DeviceRef: {
+            /** Id */
+            id: string;
+            /** Ip */
+            ip: string | null;
+            /** Name */
+            name: string;
+        };
+        /** DeviceStatusWidget */
+        DeviceStatusWidget: {
+            /** Down */
+            down: number;
+            /** Never Checked */
+            never_checked: number;
+            /** Total */
+            total: number;
+            /** Up */
+            up: number;
+        };
         /** DeviceUpdate */
         DeviceUpdate: {
             /** Access Profile Id */
@@ -1677,6 +1926,27 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** ErrorCallingWidget */
+        ErrorCallingWidget: {
+            /** Devices */
+            devices: components["schemas"]["DeviceCallErrors"][];
+            /** Errors */
+            errors: number;
+            /** Limit */
+            limit: number;
+            /** Not Responding */
+            not_responding: number;
+        };
+        /** EventCountsWidget */
+        EventCountsWidget: {
+            /** Items */
+            items: components["schemas"]["CountBySeverity"][];
+        };
+        /** EventNamesWidget */
+        EventNamesWidget: {
+            /** Items */
+            items: components["schemas"]["CountByName"][];
+        };
         /** EventOut */
         EventOut: {
             /** Dedup Key */
@@ -1726,6 +1996,19 @@ export interface components {
             offset: number;
             /** Total */
             total: number;
+        };
+        /** FailingPoll */
+        FailingPoll: {
+            device: components["schemas"]["DeviceRef"];
+            /** Failed Runs */
+            failed_runs: number;
+            /**
+             * Last Failure
+             * Format: date-time
+             */
+            last_failure: string;
+            /** Profile */
+            profile: string;
         };
         /** FamilyCapabilityOut */
         FamilyCapabilityOut: {
@@ -2307,12 +2590,52 @@ export interface components {
             /** Last Success At */
             last_success_at: string | null;
         };
+        /** PollerHealthWidget */
+        PollerHealthWidget: {
+            /** Error */
+            error: number;
+            /** Failing */
+            failing: components["schemas"]["FailingPoll"][];
+            /** Ok */
+            ok: number;
+            /** Skipped */
+            skipped: number;
+            /** Timeout */
+            timeout: number;
+            /** Truncated */
+            truncated: number;
+            /** Window Hours */
+            window_hours: number;
+        };
         /** PollingToggle */
         PollingToggle: {
             /** Enabled */
             enabled: boolean;
             /** Reason */
             reason?: string | null;
+        };
+        /** PortDown */
+        PortDown: {
+            /** Alias */
+            alias: string | null;
+            device: components["schemas"]["DeviceRef"];
+            /** Down Since */
+            down_since: string | null;
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Oper Status */
+            oper_status: string | null;
+        };
+        /** PortsDownWidget */
+        PortsDownWidget: {
+            /** Items */
+            items: components["schemas"]["PortDown"][];
+            /** Limit */
+            limit: number;
+            /** Total */
+            total: number;
         };
         /** ProfileCreate */
         ProfileCreate: {
@@ -2562,6 +2885,42 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** SystemAction */
+        SystemAction: {
+            /** Action */
+            action: string;
+            /** Actor */
+            actor: string | null;
+            /** Id */
+            id: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Resource Id */
+            resource_id: string | null;
+            /** Resource Type */
+            resource_type: string | null;
+        };
+        /** SystemActionsWidget */
+        SystemActionsWidget: {
+            /** Items */
+            items: components["schemas"]["SystemAction"][];
+        };
+        /** SystemStatWidget */
+        SystemStatWidget: {
+            /** Device Groups */
+            device_groups: number;
+            /** Devices */
+            devices: number;
+            /** Interfaces */
+            interfaces: number;
+            /** Roles */
+            roles: number | null;
+            /** Users */
+            users: number | null;
+        };
         /** TagsOut */
         TagsOut: {
             /** Tags */
@@ -2713,6 +3072,26 @@ export interface components {
              * @constant
              */
             status: "enabled";
+        };
+        /** UserActivity */
+        UserActivity: {
+            /** Display Name */
+            display_name: string;
+            /** Id */
+            id: string;
+            /** Last Activity At */
+            last_activity_at: string | null;
+            /** Last Login At */
+            last_login_at: string | null;
+            /** Role */
+            role: string;
+            /** Username */
+            username: string;
+        };
+        /** UserActivityWidget */
+        UserActivityWidget: {
+            /** Items */
+            items: components["schemas"]["UserActivity"][];
         };
         /** UserCreate */
         UserCreate: {
@@ -3524,6 +3903,329 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CapabilityOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_dashboards_api_v1_dashboards_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    device_status_api_v1_dashboards_widgets_device_status_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceStatusWidget"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    error_calling_by_device_api_v1_dashboards_widgets_error_calling_by_device_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorCallingWidget"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    events_by_name_api_v1_dashboards_widgets_events_by_name_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventNamesWidget"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    events_by_severity_api_v1_dashboards_widgets_events_by_severity_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventCountsWidget"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    last_user_activity_api_v1_dashboards_widgets_last_user_activity_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserActivityWidget"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    latest_system_actions_api_v1_dashboards_widgets_latest_system_actions_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SystemActionsWidget"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    poller_health_api_v1_dashboards_widgets_poller_health_get: {
+        parameters: {
+            query?: {
+                hours?: number;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PollerHealthWidget"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ports_down_api_v1_dashboards_widgets_ports_down_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortsDownWidget"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    system_stat_api_v1_dashboards_widgets_system_stat_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SystemStatWidget"];
                 };
             };
             /** @description Validation Error */

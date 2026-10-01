@@ -585,3 +585,135 @@ class HealthOut(Strict):
 class ReadyOut(Strict):
     ready: bool
     checks: dict[str, str]
+
+
+# --- Dashboards (Plan 23) ---
+
+class DashboardWidgetOut(Strict):
+    key: str
+    title: str
+    state: Literal["live", "pending"]
+    endpoint: str | None
+    pending_reason: str | None
+
+
+class DashboardOut(Strict):
+    key: str
+    title: str
+    noc_wide: bool
+    widgets: list[DashboardWidgetOut]
+
+
+class DashboardList(Strict):
+    default: str | None
+    dashboards: list[DashboardOut]
+
+
+class DeviceRef(Strict):
+    id: str
+    name: str
+    ip: str | None
+
+
+class DeviceStatusWidget(Strict):
+    up: int
+    down: int
+    never_checked: int
+    total: int
+
+
+class CountBySeverity(Strict):
+    severity: str
+    count: int
+
+
+class CountByName(Strict):
+    name: str
+    count: int
+
+
+class EventCountsWidget(Strict):
+    items: list[CountBySeverity]
+
+
+class EventNamesWidget(Strict):
+    items: list[CountByName]
+
+
+class PortDown(Strict):
+    id: str
+    name: str
+    alias: str | None
+    oper_status: str | None
+    device: DeviceRef
+    down_since: datetime | None
+
+
+class PortsDownWidget(Strict):
+    items: list[PortDown]
+    total: int
+    limit: int
+
+
+class FailingPoll(Strict):
+    device: DeviceRef
+    profile: str
+    failed_runs: int
+    last_failure: datetime
+
+
+class PollerHealthWidget(Strict):
+    window_hours: int
+    ok: int
+    timeout: int
+    error: int
+    skipped: int
+    truncated: int
+    failing: list[FailingPoll]
+
+
+class DeviceCallErrors(Strict):
+    device: DeviceRef
+    errors: int
+    not_responding: int
+
+
+class ErrorCallingWidget(Strict):
+    errors: int
+    not_responding: int
+    limit: int
+    devices: list[DeviceCallErrors]
+
+
+class SystemStatWidget(Strict):
+    devices: int
+    interfaces: int
+    device_groups: int
+    users: int | None
+    roles: int | None
+
+
+class SystemAction(Strict):
+    id: str
+    occurred_at: datetime
+    action: str
+    resource_type: str | None
+    resource_id: str | None
+    actor: str | None
+
+
+class SystemActionsWidget(Strict):
+    items: list[SystemAction]
+
+
+class UserActivity(Strict):
+    id: str
+    username: str
+    display_name: str
+    role: str
+    last_login_at: datetime | None
+    last_activity_at: datetime | None
+
+
+class UserActivityWidget(Strict):
+    items: list[UserActivity]
