@@ -7,6 +7,7 @@ from typing import Annotated, Any
 import asyncpg
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
 
+from app.api import schemas
 from app.alerting.ingest import process_webhook
 from app.core.audit import write_audit
 from app.core.config import settings
@@ -46,7 +47,7 @@ async def alertmanager_webhook(
     }
 
 
-@router.get("/events")
+@router.get("/events", response_model=schemas.EventPage)
 async def list_events(
     user: Annotated[CurrentUser, Depends(require("events.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -61,7 +62,7 @@ async def list_events(
     return {"items": [repo.as_dict(r) for r in rows], "total": total, "limit": limit, "offset": offset}
 
 
-@router.get("/events/{event_id}")
+@router.get("/events/{event_id}", response_model=schemas.EventOut)
 async def get_event(
     event_id: str,
     user: Annotated[CurrentUser, Depends(require("events.view"))],
@@ -73,7 +74,7 @@ async def get_event(
     return repo.as_dict(row)
 
 
-@router.put("/events/{event_id}/resolve")
+@router.put("/events/{event_id}/resolve", response_model=schemas.StatusOut)
 async def resolve_event(
     event_id: str,
     request: Request,
@@ -95,7 +96,7 @@ async def resolve_event(
     return {"status": "resolved"}
 
 
-@router.get("/incidents")
+@router.get("/incidents", response_model=schemas.IncidentList)
 async def list_incidents(
     user: Annotated[CurrentUser, Depends(require("events.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -117,7 +118,7 @@ async def list_incidents(
     }
 
 
-@router.get("/alarm-rules")
+@router.get("/alarm-rules", response_model=list[schemas.AlarmRuleOut])
 async def list_alarm_rules(
     _: Annotated[CurrentUser, Depends(require("events.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],

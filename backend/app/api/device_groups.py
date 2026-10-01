@@ -7,6 +7,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
+from app.api import schemas
 from app.core.audit import write_audit
 from app.core.config import settings
 from app.core.database import get_conn
@@ -41,7 +42,7 @@ def _not_found() -> HTTPException:
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 
 
-@router.get("")
+@router.get("", response_model=list[schemas.DeviceGroupOut])
 async def list_groups(
     user: Annotated[CurrentUser, Depends(require("devices.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -49,7 +50,7 @@ async def list_groups(
     return [repo.as_dict(r) for r in await repo.list_groups(conn, user)]
 
 
-@router.get("/{group_id}")
+@router.get("/{group_id}", response_model=schemas.DeviceGroupOut)
 async def get_group(
     group_id: str,
     user: Annotated[CurrentUser, Depends(require("devices.view"))],
@@ -61,7 +62,7 @@ async def get_group(
     return repo.as_dict(row)
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.DeviceGroupOut)
 async def create_group(
     payload: GroupCreate,
     request: Request,
@@ -81,7 +82,7 @@ async def create_group(
     return row
 
 
-@router.patch("/{group_id}")
+@router.patch("/{group_id}", response_model=schemas.DeviceGroupOut)
 async def update_group(
     group_id: str,
     payload: GroupUpdate,
@@ -110,7 +111,7 @@ async def update_group(
     return row
 
 
-@router.delete("/{group_id}")
+@router.delete("/{group_id}", response_model=schemas.StatusOut)
 async def delete_group(
     group_id: str,
     request: Request,

@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field, field_validator
 from redis.asyncio import Redis
 
+from app.api import schemas
 from app.core.audit import write_audit
 from app.core.config import settings
 from app.core.database import get_conn
@@ -38,7 +39,7 @@ def _uuid_or_404(conn_value: str) -> str:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from exc
 
 
-@router.get("/devices", response_model=Page)
+@router.get("/devices", response_model=schemas.DevicePage)
 async def list_devices(
     user: Annotated[CurrentUser, Depends(require("devices.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -52,7 +53,7 @@ async def list_devices(
     return Page(items=[device_repo.as_dict(r) for r in rows], total=total, limit=limit, offset=offset)
 
 
-@router.get("/devices/{device_id}")
+@router.get("/devices/{device_id}", response_model=schemas.DeviceOut)
 async def get_device(
     device_id: str,
     user: Annotated[CurrentUser, Depends(require("devices.view"))],
@@ -244,7 +245,7 @@ def _not_found() -> HTTPException:
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 
 
-@router.post("/devices", status_code=status.HTTP_201_CREATED)
+@router.post("/devices", status_code=status.HTTP_201_CREATED, response_model=schemas.DeviceCreated)
 async def create_device(
     payload: DeviceCreate,
     request: Request,
@@ -280,7 +281,7 @@ async def _publish(redis: Redis, job_id: str, conn: asyncpg.Connection) -> None:
     await publish_job(conn, redis, job_id)
 
 
-@router.patch("/devices/{device_id}")
+@router.patch("/devices/{device_id}", response_model=schemas.DeviceOut)
 async def update_device(
     device_id: str,
     payload: DeviceUpdate,
@@ -312,7 +313,7 @@ async def update_device(
     return after
 
 
-@router.delete("/devices/{device_id}")
+@router.delete("/devices/{device_id}", response_model=schemas.StatusOut)
 async def delete_device(
     device_id: str,
     request: Request,
@@ -336,7 +337,7 @@ async def delete_device(
     return {"status": "deleted"}
 
 
-@router.get("/devices/{device_id}/discovery")
+@router.get("/devices/{device_id}/discovery", response_model=list[schemas.DiscoveryJobOut])
 async def device_discovery(
     device_id: str,
     user: Annotated[CurrentUser, Depends(require("devices.view"))],
@@ -348,7 +349,7 @@ async def device_discovery(
     return jobs
 
 
-@router.post("/devices/{device_id}/discovery", status_code=status.HTTP_202_ACCEPTED)
+@router.post("/devices/{device_id}/discovery", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.DiscoveryQueued)
 async def request_discovery(
     device_id: str,
     request: Request,

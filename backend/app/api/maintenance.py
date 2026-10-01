@@ -8,6 +8,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
+from app.api import schemas
 from app.alerting.maintenance import release_suppressed
 from app.core.audit import write_audit
 from app.core.config import settings
@@ -41,7 +42,7 @@ def _aware(value: datetime) -> datetime:
     return value
 
 
-@router.get("")
+@router.get("", response_model=schemas.MaintenanceWindowPage)
 async def list_windows(
     user: Annotated[CurrentUser, Depends(require("events.view"))],
     conn: Annotated[asyncpg.Connection, Depends(get_conn)],
@@ -54,7 +55,7 @@ async def list_windows(
     return {"items": [repo.as_dict(r) for r in rows], "limit": limit, "offset": offset}
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.MaintenanceWindowOut)
 async def create_window(
     payload: WindowCreate,
     request: Request,
@@ -81,7 +82,7 @@ async def create_window(
     return row
 
 
-@router.post("/{window_id}/cancel")
+@router.post("/{window_id}/cancel", response_model=schemas.MaintenanceCanceled)
 async def cancel_window(
     window_id: str,
     request: Request,

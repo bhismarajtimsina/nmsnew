@@ -1266,6 +1266,35 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AlarmRuleOut */
+        AlarmRuleOut: {
+            /** Alert Name */
+            alert_name: string;
+            /** Annotation Description */
+            annotation_description: string;
+            /** Annotation Summary */
+            annotation_summary: string;
+            /** Audience */
+            audience: string | null;
+            /** Enabled */
+            enabled: boolean;
+            /** Expression */
+            expression: string;
+            /** For Duration */
+            for_duration: string;
+            /** Group Name */
+            group_name: string;
+            /** Id */
+            id: string;
+            /** Internal */
+            internal: boolean;
+            /** Isp Focus */
+            isp_focus: string;
+            /** Reseller Focus */
+            reseller_focus: string;
+            /** Severity */
+            severity: string;
+        };
         /** AuthUser */
         AuthUser: {
             /**
@@ -1347,6 +1376,79 @@ export interface components {
             /** Vendor Slug */
             vendor_slug?: string | null;
         };
+        /** DeviceCreated */
+        DeviceCreated: {
+            device: components["schemas"]["DeviceOut"];
+            discovery: components["schemas"]["DiscoveryQueued"];
+        };
+        /** DeviceGroupOut */
+        DeviceGroupOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Description */
+            description: string | null;
+            /** Devices */
+            devices: number;
+            /** Id */
+            id: string;
+            /** Legacy Id */
+            legacy_id: number | null;
+            /** Name */
+            name: string;
+            /** Parent Id */
+            parent_id: string | null;
+        };
+        /** DeviceOut */
+        DeviceOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Device Type */
+            device_type: string;
+            /** Group Id */
+            group_id: string | null;
+            /** Hostname */
+            hostname: string | null;
+            /** Id */
+            id: string;
+            /** Legacy Id */
+            legacy_id: number | null;
+            /** Management Ip */
+            management_ip: string;
+            /** Model Id */
+            model_id: string | null;
+            /** Name */
+            name: string;
+            /** Polling Enabled */
+            polling_enabled: boolean;
+            /** Polling Owner */
+            polling_owner: string;
+            /** Status */
+            status: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Vendor */
+            vendor: string | null;
+        };
+        /** DevicePage */
+        DevicePage: {
+            /** Items */
+            items: components["schemas"]["DeviceOut"][];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            /** Total */
+            total: number;
+        };
         /** DeviceUpdate */
         DeviceUpdate: {
             /** Access Profile Id */
@@ -1367,6 +1469,91 @@ export interface components {
             polling_enabled?: boolean | null;
             /** Vendor Slug */
             vendor_slug?: string | null;
+        };
+        /** DiscoveryJobOut */
+        DiscoveryJobOut: {
+            /** Error */
+            error: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /** Id */
+            id: string;
+            /** Oids */
+            oids: string[];
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Result */
+            result: unknown;
+            /** Retries */
+            retries: number;
+            /** Started At */
+            started_at: string | null;
+            /** Status */
+            status: string;
+            /** Timeout Ms */
+            timeout_ms: number;
+        };
+        /** DiscoveryQueued */
+        DiscoveryQueued: {
+            /** Job Id */
+            job_id: string | null;
+            /** Reason */
+            reason: string | null;
+            /** Status */
+            status: string;
+        };
+        /** EventOut */
+        EventOut: {
+            /** Dedup Key */
+            dedup_key: string | null;
+            /** Description */
+            description: string | null;
+            /** Device Id */
+            device_id: string | null;
+            /** Device Ip */
+            device_ip: string | null;
+            /** Device Name */
+            device_name: string | null;
+            /** Flap Count */
+            flap_count: number;
+            /** Id */
+            id: string;
+            /** Labels */
+            labels: {
+                [key: string]: unknown;
+            };
+            /** Last Reopened At */
+            last_reopened_at: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Resolved At */
+            resolved_at: string | null;
+            /** Resolved By User Id */
+            resolved_by_user_id: string | null;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "info" | "warning" | "critical";
+        };
+        /** EventPage */
+        EventPage: {
+            /** Items */
+            items: components["schemas"]["EventOut"][];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            /** Total */
+            total: number;
         };
         /** FavoriteSet */
         FavoriteSet: {
@@ -1395,6 +1582,40 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** IncidentList */
+        IncidentList: {
+            /** Incidents */
+            incidents: components["schemas"]["IncidentOut"][];
+            /** Open Events */
+            open_events: number;
+        };
+        /** IncidentOut */
+        IncidentOut: {
+            /** Alarms */
+            alarms: {
+                [key: string]: number;
+            };
+            /** Device Id */
+            device_id: string | null;
+            /** Device Ip */
+            device_ip: string | null;
+            /** Event Ids */
+            event_ids: string[];
+            /** Events */
+            events: number;
+            /** Key */
+            key: string;
+            /** Kind */
+            kind: string;
+            /** Latest At */
+            latest_at: string;
+            /** Severity */
+            severity: string;
+            /** Started At */
+            started_at: string;
+            /** Where */
+            where: string;
         };
         /** JobUpdate */
         JobUpdate: {
@@ -1451,6 +1672,59 @@ export interface components {
             token_type: string;
             user?: components["schemas"]["AuthUser"] | null;
         };
+        /** MaintenanceCanceled */
+        MaintenanceCanceled: {
+            /** Released Events */
+            released_events: number;
+            /**
+             * Status
+             * @constant
+             */
+            status: "canceled";
+        };
+        /** MaintenanceWindowOut */
+        MaintenanceWindowOut: {
+            /** Active */
+            active: boolean;
+            /** Canceled At */
+            canceled_at: string | null;
+            /** Canceled By User Id */
+            canceled_by_user_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By User Id */
+            created_by_user_id: string | null;
+            /** Device Group Id */
+            device_group_id: string | null;
+            /** Device Id */
+            device_id: string | null;
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+            /** Id */
+            id: string;
+            /** Reason */
+            reason: string;
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+        };
+        /** MaintenanceWindowPage */
+        MaintenanceWindowPage: {
+            /** Items */
+            items: components["schemas"]["MaintenanceWindowOut"][];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
         /** Page */
         Page: {
             /** Items */
@@ -1472,9 +1746,19 @@ export interface components {
             new_password: string;
         };
         /** PasswordReset */
-        PasswordReset: {
+        "PasswordReset-Input": {
             /** Password */
             password?: string | null;
+        };
+        /** PasswordReset */
+        "PasswordReset-Output": {
+            /** Generated Password */
+            generated_password: string | null;
+            /**
+             * Status
+             * @constant
+             */
+            status: "password_reset";
         };
         /** PermissionItem */
         PermissionItem: {
@@ -1643,6 +1927,11 @@ export interface components {
             /** User Agent */
             user_agent: string | null;
         };
+        /** StatusOut */
+        StatusOut: {
+            /** Status */
+            status: string;
+        };
         /** TagsSet */
         TagsSet: {
             /** Tags */
@@ -1723,6 +2012,16 @@ export interface components {
             otpauth_uri: string;
             /** Secret */
             secret: string;
+        };
+        /** TwoFactorEnabled */
+        TwoFactorEnabled: {
+            /** Recovery Codes */
+            recovery_codes: string[];
+            /**
+             * Status
+             * @constant
+             */
+            status: "enabled";
         };
         /** UserCreate */
         UserCreate: {
@@ -2029,9 +2328,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["AlarmRuleOut"][];
                 };
             };
             /** @description Validation Error */
@@ -2132,9 +2429,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: string;
-                    };
+                    "application/json": components["schemas"]["StatusOut"];
                 };
             };
             /** @description Validation Error */
@@ -2169,9 +2464,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: string;
-                    };
+                    "application/json": components["schemas"]["StatusOut"];
                 };
             };
             /** @description Validation Error */
@@ -2206,9 +2499,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["TwoFactorEnabled"];
                 };
             };
             /** @description Validation Error */
@@ -2303,9 +2594,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: string;
-                    };
+                    "application/json": components["schemas"]["StatusOut"];
                 };
             };
             /** @description Validation Error */
@@ -2340,9 +2629,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: string;
-                    };
+                    "application/json": components["schemas"]["StatusOut"];
                 };
             };
             /** @description Validation Error */
@@ -2437,9 +2724,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: string;
-                    };
+                    "application/json": components["schemas"]["StatusOut"];
                 };
             };
             /** @description Validation Error */
@@ -2717,9 +3002,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["DeviceGroupOut"][];
                 };
             };
             /** @description Validation Error */
@@ -2754,9 +3037,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["DeviceGroupOut"];
                 };
             };
             /** @description Validation Error */
@@ -2789,9 +3070,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["DeviceGroupOut"];
                 };
             };
             /** @description Validation Error */
@@ -2824,9 +3103,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: string;
-                    };
+                    "application/json": components["schemas"]["StatusOut"];
                 };
             };
             /** @description Validation Error */
@@ -2863,9 +3140,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["DeviceGroupOut"];
                 };
             };
             /** @description Validation Error */
@@ -3005,7 +3280,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Page"];
+                    "application/json": components["schemas"]["DevicePage"];
                 };
             };
             /** @description Validation Error */
@@ -3040,9 +3315,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["DeviceCreated"];
                 };
             };
             /** @description Validation Error */
@@ -3075,9 +3348,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["DeviceOut"];
                 };
             };
             /** @description Validation Error */
@@ -3113,9 +3384,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: string;
-                    };
+                    "application/json": components["schemas"]["StatusOut"];
                 };
             };
             /** @description Validation Error */
@@ -3152,9 +3421,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["DeviceOut"];
                 };
             };
             /** @description Validation Error */
@@ -3187,9 +3454,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["DiscoveryJobOut"][];
                 };
             };
             /** @description Validation Error */
@@ -3222,9 +3487,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["DiscoveryQueued"];
                 };
             };
             /** @description Validation Error */
@@ -3373,9 +3636,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["EventPage"];
                 };
             };
             /** @description Validation Error */
@@ -3408,9 +3669,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["EventOut"];
                 };
             };
             /** @description Validation Error */
@@ -3443,9 +3702,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: string;
-                    };
+                    "application/json": components["schemas"]["StatusOut"];
                 };
             };
             /** @description Validation Error */
@@ -3500,9 +3757,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["IncidentList"];
                 };
             };
             /** @description Validation Error */
@@ -3793,9 +4048,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["MaintenanceWindowPage"];
                 };
             };
             /** @description Validation Error */
@@ -3830,9 +4083,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["MaintenanceWindowOut"];
                 };
             };
             /** @description Validation Error */
@@ -3865,9 +4116,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["MaintenanceCanceled"];
                 };
             };
             /** @description Validation Error */
@@ -4566,9 +4815,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: string;
-                    };
+                    "application/json": components["schemas"]["StatusOut"];
                 };
             };
             /** @description Validation Error */
@@ -4595,7 +4842,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PasswordReset"];
+                "application/json": components["schemas"]["PasswordReset-Input"];
             };
         };
         responses: {
@@ -4605,9 +4852,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: string | null;
-                    };
+                    "application/json": components["schemas"]["PasswordReset-Output"];
                 };
             };
             /** @description Validation Error */

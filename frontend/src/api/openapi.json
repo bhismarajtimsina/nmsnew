@@ -1,6 +1,87 @@
 {
   "components": {
     "schemas": {
+      "AlarmRuleOut": {
+        "additionalProperties": false,
+        "properties": {
+          "alert_name": {
+            "title": "Alert Name",
+            "type": "string"
+          },
+          "annotation_description": {
+            "title": "Annotation Description",
+            "type": "string"
+          },
+          "annotation_summary": {
+            "title": "Annotation Summary",
+            "type": "string"
+          },
+          "audience": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audience"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "expression": {
+            "title": "Expression",
+            "type": "string"
+          },
+          "for_duration": {
+            "title": "For Duration",
+            "type": "string"
+          },
+          "group_name": {
+            "title": "Group Name",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "internal": {
+            "title": "Internal",
+            "type": "boolean"
+          },
+          "isp_focus": {
+            "title": "Isp Focus",
+            "type": "string"
+          },
+          "reseller_focus": {
+            "title": "Reseller Focus",
+            "type": "string"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "group_name",
+          "alert_name",
+          "expression",
+          "for_duration",
+          "severity",
+          "audience",
+          "isp_focus",
+          "reseller_focus",
+          "annotation_summary",
+          "annotation_description",
+          "enabled",
+          "internal"
+        ],
+        "title": "AlarmRuleOut",
+        "type": "object"
+      },
       "AuthUser": {
         "properties": {
           "auth_kind": {
@@ -245,6 +326,237 @@
         "title": "DeviceCreate",
         "type": "object"
       },
+      "DeviceCreated": {
+        "additionalProperties": false,
+        "properties": {
+          "device": {
+            "$ref": "#/components/schemas/DeviceOut"
+          },
+          "discovery": {
+            "$ref": "#/components/schemas/DiscoveryQueued"
+          }
+        },
+        "required": [
+          "device",
+          "discovery"
+        ],
+        "title": "DeviceCreated",
+        "type": "object"
+      },
+      "DeviceGroupOut": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "devices": {
+            "title": "Devices",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "legacy_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legacy Id"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          }
+        },
+        "required": [
+          "id",
+          "parent_id",
+          "name",
+          "description",
+          "legacy_id",
+          "created_at",
+          "devices"
+        ],
+        "title": "DeviceGroupOut",
+        "type": "object"
+      },
+      "DeviceOut": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "device_type": {
+            "title": "Device Type",
+            "type": "string"
+          },
+          "group_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group Id"
+          },
+          "hostname": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hostname"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "legacy_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legacy Id"
+          },
+          "management_ip": {
+            "title": "Management Ip",
+            "type": "string"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "polling_enabled": {
+            "title": "Polling Enabled",
+            "type": "boolean"
+          },
+          "polling_owner": {
+            "title": "Polling Owner",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "vendor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vendor"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "hostname",
+          "management_ip",
+          "device_type",
+          "vendor",
+          "status",
+          "group_id",
+          "model_id",
+          "polling_enabled",
+          "polling_owner",
+          "legacy_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "DeviceOut",
+        "type": "object"
+      },
+      "DevicePage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DeviceOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "DevicePage",
+        "type": "object"
+      },
       "DeviceUpdate": {
         "properties": {
           "access_profile_id": {
@@ -362,6 +674,305 @@
         "title": "DeviceUpdate",
         "type": "object"
       },
+      "DiscoveryJobOut": {
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "oids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Oids",
+            "type": "array"
+          },
+          "requested_at": {
+            "format": "date-time",
+            "title": "Requested At",
+            "type": "string"
+          },
+          "result": {
+            "title": "Result"
+          },
+          "retries": {
+            "title": "Retries",
+            "type": "integer"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "timeout_ms": {
+            "title": "Timeout Ms",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "oids",
+          "timeout_ms",
+          "retries",
+          "requested_at",
+          "started_at",
+          "finished_at",
+          "result",
+          "error"
+        ],
+        "title": "DiscoveryJobOut",
+        "type": "object"
+      },
+      "DiscoveryQueued": {
+        "additionalProperties": false,
+        "properties": {
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id",
+          "status",
+          "reason"
+        ],
+        "title": "DiscoveryQueued",
+        "type": "object"
+      },
+      "EventOut": {
+        "additionalProperties": false,
+        "properties": {
+          "dedup_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dedup Key"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "device_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Id"
+          },
+          "device_ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Ip"
+          },
+          "device_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Name"
+          },
+          "flap_count": {
+            "title": "Flap Count",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "labels": {
+            "additionalProperties": true,
+            "title": "Labels",
+            "type": "object"
+          },
+          "last_reopened_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Reopened At"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
+          "resolved_by_user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved By User Id"
+          },
+          "severity": {
+            "enum": [
+              "info",
+              "warning",
+              "critical"
+            ],
+            "title": "Severity",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "occurred_at",
+          "name",
+          "dedup_key",
+          "labels",
+          "description",
+          "severity",
+          "device_id",
+          "device_name",
+          "device_ip",
+          "resolved_at",
+          "resolved_by_user_id",
+          "flap_count",
+          "last_reopened_at"
+        ],
+        "title": "EventOut",
+        "type": "object"
+      },
+      "EventPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "EventPage",
+        "type": "object"
+      },
       "FavoriteSet": {
         "properties": {
           "favorite": {
@@ -466,6 +1077,112 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "IncidentList": {
+        "additionalProperties": false,
+        "properties": {
+          "incidents": {
+            "items": {
+              "$ref": "#/components/schemas/IncidentOut"
+            },
+            "title": "Incidents",
+            "type": "array"
+          },
+          "open_events": {
+            "title": "Open Events",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "incidents",
+          "open_events"
+        ],
+        "title": "IncidentList",
+        "type": "object"
+      },
+      "IncidentOut": {
+        "additionalProperties": false,
+        "properties": {
+          "alarms": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Alarms",
+            "type": "object"
+          },
+          "device_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Id"
+          },
+          "device_ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Ip"
+          },
+          "event_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Event Ids",
+            "type": "array"
+          },
+          "events": {
+            "title": "Events",
+            "type": "integer"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "latest_at": {
+            "title": "Latest At",
+            "type": "string"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          },
+          "started_at": {
+            "title": "Started At",
+            "type": "string"
+          },
+          "where": {
+            "title": "Where",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "kind",
+          "device_id",
+          "device_ip",
+          "where",
+          "severity",
+          "events",
+          "alarms",
+          "started_at",
+          "latest_at",
+          "event_ids"
+        ],
+        "title": "IncidentOut",
         "type": "object"
       },
       "JobUpdate": {
@@ -680,6 +1397,156 @@
         "title": "LoginResponse",
         "type": "object"
       },
+      "MaintenanceCanceled": {
+        "additionalProperties": false,
+        "properties": {
+          "released_events": {
+            "title": "Released Events",
+            "type": "integer"
+          },
+          "status": {
+            "const": "canceled",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "released_events"
+        ],
+        "title": "MaintenanceCanceled",
+        "type": "object"
+      },
+      "MaintenanceWindowOut": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean"
+          },
+          "canceled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Canceled At"
+          },
+          "canceled_by_user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Canceled By User Id"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by_user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By User Id"
+          },
+          "device_group_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Group Id"
+          },
+          "device_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Id"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "title": "Ends At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "device_id",
+          "device_group_id",
+          "starts_at",
+          "ends_at",
+          "reason",
+          "created_by_user_id",
+          "created_at",
+          "canceled_at",
+          "canceled_by_user_id",
+          "active"
+        ],
+        "title": "MaintenanceWindowOut",
+        "type": "object"
+      },
+      "MaintenanceWindowPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MaintenanceWindowOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "limit",
+          "offset"
+        ],
+        "title": "MaintenanceWindowPage",
+        "type": "object"
+      },
       "Page": {
         "properties": {
           "items": {
@@ -734,7 +1601,7 @@
         "title": "PasswordChange",
         "type": "object"
       },
-      "PasswordReset": {
+      "PasswordReset-Input": {
         "properties": {
           "password": {
             "anyOf": [
@@ -749,6 +1616,33 @@
             "title": "Password"
           }
         },
+        "title": "PasswordReset",
+        "type": "object"
+      },
+      "PasswordReset-Output": {
+        "additionalProperties": false,
+        "properties": {
+          "generated_password": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated Password"
+          },
+          "status": {
+            "const": "password_reset",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "generated_password"
+        ],
         "title": "PasswordReset",
         "type": "object"
       },
@@ -1371,6 +2265,20 @@
         "title": "SessionItem",
         "type": "object"
       },
+      "StatusOut": {
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "StatusOut",
+        "type": "object"
+      },
       "TagsSet": {
         "properties": {
           "tags": {
@@ -1662,6 +2570,29 @@
           "otpauth_uri"
         ],
         "title": "TotpEnroll",
+        "type": "object"
+      },
+      "TwoFactorEnabled": {
+        "additionalProperties": false,
+        "properties": {
+          "recovery_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Recovery Codes",
+            "type": "array"
+          },
+          "status": {
+            "const": "enabled",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "recovery_codes"
+        ],
+        "title": "TwoFactorEnabled",
         "type": "object"
       },
       "UserCreate": {
@@ -2438,8 +3369,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/AlarmRuleOut"
                   },
                   "title": "Response List Alarm Rules Api V1 Alarm Rules Get",
                   "type": "array"
@@ -2620,11 +3550,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "title": "Response Revoke Token Api V1 Api Tokens  Token Id  Delete",
-                  "type": "object"
+                  "$ref": "#/components/schemas/StatusOut"
                 }
               }
             },
@@ -2683,11 +3609,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "title": "Response Disable 2Fa Api V1 Auth 2Fa Disable Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/StatusOut"
                 }
               }
             },
@@ -2746,9 +3668,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Enable 2Fa Api V1 Auth 2Fa Enable Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/TwoFactorEnabled"
                 }
               }
             },
@@ -2887,11 +3807,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "title": "Response Logout Api V1 Auth Logout Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/StatusOut"
                 }
               }
             },
@@ -2950,11 +3866,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "title": "Response Change Password Api V1 Auth Password Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/StatusOut"
                 }
               }
             },
@@ -3114,11 +4026,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "title": "Response Revoke Session Api V1 Auth Sessions  Session Id  Delete",
-                  "type": "object"
+                  "$ref": "#/components/schemas/StatusOut"
                 }
               }
             },
@@ -3589,8 +4497,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/DeviceGroupOut"
                   },
                   "title": "Response List Groups Api V1 Device Groups Get",
                   "type": "array"
@@ -3650,9 +4557,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Create Group Api V1 Device Groups Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/DeviceGroupOut"
                 }
               }
             },
@@ -3710,11 +4615,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "title": "Response Delete Group Api V1 Device Groups  Group Id  Delete",
-                  "type": "object"
+                  "$ref": "#/components/schemas/StatusOut"
                 }
               }
             },
@@ -3770,9 +4671,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Group Api V1 Device Groups  Group Id  Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/DeviceGroupOut"
                 }
               }
             },
@@ -3838,9 +4737,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Update Group Api V1 Device Groups  Group Id  Patch",
-                  "type": "object"
+                  "$ref": "#/components/schemas/DeviceGroupOut"
                 }
               }
             },
@@ -4136,7 +5033,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Page"
+                  "$ref": "#/components/schemas/DevicePage"
                 }
               }
             },
@@ -4194,9 +5091,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Create Device Api V1 Devices Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/DeviceCreated"
                 }
               }
             },
@@ -4265,11 +5160,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "title": "Response Delete Device Api V1 Devices  Device Id  Delete",
-                  "type": "object"
+                  "$ref": "#/components/schemas/StatusOut"
                 }
               }
             },
@@ -4325,9 +5216,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Device Api V1 Devices  Device Id  Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/DeviceOut"
                 }
               }
             },
@@ -4393,9 +5282,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Update Device Api V1 Devices  Device Id  Patch",
-                  "type": "object"
+                  "$ref": "#/components/schemas/DeviceOut"
                 }
               }
             },
@@ -4454,8 +5341,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
-                    "type": "object"
+                    "$ref": "#/components/schemas/DiscoveryJobOut"
                   },
                   "title": "Response Device Discovery Api V1 Devices  Device Id  Discovery Get",
                   "type": "array"
@@ -4515,9 +5401,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Request Discovery Api V1 Devices  Device Id  Discovery Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/DiscoveryQueued"
                 }
               }
             },
@@ -4856,9 +5740,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response List Events Api V1 Events Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/EventPage"
                 }
               }
             },
@@ -4916,9 +5798,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Event Api V1 Events  Event Id  Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/EventOut"
                 }
               }
             },
@@ -4976,11 +5856,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "title": "Response Resolve Event Api V1 Events  Event Id  Resolve Put",
-                  "type": "object"
+                  "$ref": "#/components/schemas/StatusOut"
                 }
               }
             },
@@ -5067,9 +5943,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response List Incidents Api V1 Incidents Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/IncidentList"
                 }
               }
             },
@@ -5723,9 +6597,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response List Windows Api V1 Maintenance Windows Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/MaintenanceWindowPage"
                 }
               }
             },
@@ -5782,9 +6654,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Create Window Api V1 Maintenance Windows Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/MaintenanceWindowOut"
                 }
               }
             },
@@ -5842,9 +6712,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Cancel Window Api V1 Maintenance Windows  Window Id  Cancel Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/MaintenanceCanceled"
                 }
               }
             },
@@ -7120,11 +7988,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "title": "Response Reset 2Fa Api V1 Users  User Id  2Fa Reset Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/StatusOut"
                 }
               }
             },
@@ -7181,7 +8045,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PasswordReset"
+                "$ref": "#/components/schemas/PasswordReset-Input"
               }
             }
           },
@@ -7192,18 +8056,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "title": "Response Reset Password Api V1 Users  User Id  Password Post",
-                  "type": "object"
+                  "$ref": "#/components/schemas/PasswordReset-Output"
                 }
               }
             },

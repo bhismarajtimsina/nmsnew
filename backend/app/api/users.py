@@ -9,6 +9,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
+from app.api import schemas
 from app.core.audit import write_audit
 from app.core.config import settings
 from app.core.database import get_conn
@@ -231,7 +232,7 @@ async def update_user(
     return _item(after)
 
 
-@router.post("/users/{user_id}/password")
+@router.post("/users/{user_id}/password", response_model=schemas.PasswordReset)
 async def reset_password(
     user_id: str,
     payload: PasswordReset,
@@ -258,7 +259,7 @@ async def reset_password(
     return {"status": "password_reset", "generated_password": password if generated else None}
 
 
-@router.post("/users/{user_id}/2fa/reset")
+@router.post("/users/{user_id}/2fa/reset", response_model=schemas.StatusOut)
 async def reset_2fa(
     user_id: str,
     request: Request,

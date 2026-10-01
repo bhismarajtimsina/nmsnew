@@ -79,3 +79,18 @@ on 401, the API's error detail ignored.
   move one at a time with Plan 25. The login page and the auth store come first.
 - `npm run type-check` for the whole project fails on 8 Vue files that are not in git (R-09), which is why the API
   layer has its own check.
+
+## Implementation notes (2026-10-01): response models
+
+`backend/app/api/schemas.py` adds response models for devices, device groups, discovery jobs, events, incidents,
+alarm rules, maintenance windows, and the status replies of the auth, user and token routes. **48 of 89 operations
+now have a typed response, up from 21.** The regenerated `schema.d.ts` gives the frontend real fields for them (for
+example `DeviceOut.management_ip: string`).
+
+Every response model forbids extra fields. FastAPI validates a route's return value against its model, so a route
+that starts returning a field its model lacks fails with a 500 in the API tests instead of silently dropping the
+field from every response. Checked by removing one field from each of the 10 models: the routes' own tests failed
+every time.
+
+Still untyped (41): registries, device access profiles, interfaces, polling, schedule, MIB, device models, trap
+profiles, users/resellers listings, and the health and metrics endpoints. Same pattern, next round.

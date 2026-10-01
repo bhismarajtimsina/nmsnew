@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
 
+from app.api import schemas
 from app.core import totp
 from app.core.audit import write_audit
 from app.core.config import settings
@@ -276,7 +277,7 @@ async def session(
     return await build_auth_user(conn, user)
 
 
-@router.post("/logout")
+@router.post("/logout", response_model=schemas.StatusOut)
 async def logout(
     request: Request,
     response: Response,
@@ -315,7 +316,7 @@ async def list_sessions(
     ]
 
 
-@router.delete("/sessions/{session_id}")
+@router.delete("/sessions/{session_id}", response_model=schemas.StatusOut)
 async def revoke_session(
     session_id: str,
     request: Request,
@@ -339,7 +340,7 @@ async def revoke_session(
     return {"status": "revoked"}
 
 
-@router.post("/password")
+@router.post("/password", response_model=schemas.StatusOut)
 async def change_password(
     payload: PasswordChange,
     request: Request,
@@ -393,7 +394,7 @@ async def enroll_2fa(
     return TotpEnroll(secret=secret, otpauth_uri=totp.otpauth_uri(secret, user.username, settings.app_name))
 
 
-@router.post("/2fa/enable")
+@router.post("/2fa/enable", response_model=schemas.TwoFactorEnabled)
 async def enable_2fa(
     payload: TotpEnable,
     request: Request,
@@ -423,7 +424,7 @@ async def enable_2fa(
     return {"status": "enabled", "recovery_codes": codes}
 
 
-@router.post("/2fa/disable")
+@router.post("/2fa/disable", response_model=schemas.StatusOut)
 async def disable_2fa(
     payload: TotpDisable,
     request: Request,

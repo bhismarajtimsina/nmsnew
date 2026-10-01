@@ -7,6 +7,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
+from app.api import schemas
 from app.access.catalogue import SERVICE_ONLY_PERMISSIONS
 from app.core.audit import write_audit
 from app.core.config import settings
@@ -99,7 +100,7 @@ async def list_tokens(
             for r in rows]
 
 
-@router.delete("/{token_id}")
+@router.delete("/{token_id}", response_model=schemas.StatusOut)
 async def revoke_token(
     token_id: str,
     request: Request,
