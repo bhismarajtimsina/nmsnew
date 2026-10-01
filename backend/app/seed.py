@@ -122,6 +122,7 @@ async def seed(
         await _seed_standard_oid_profiles(conn)
         await _seed_bdcom_switch_profile(conn)
         await _seed_bdcom_olt_profiles(conn)
+        await _seed_switch_standard_profiles(conn)
         await _seed_alarm_rules(conn)
         await _seed_trap_profiles(conn)
         await _seed_notification_event_config(conn)
@@ -319,6 +320,36 @@ async def _seed_bdcom_switch_profile(conn: asyncpg.Connection) -> None:
             "insert into oid_profile_entries (profile_id, definition_id, walk_strategy, max_rows, timeout_ms, position) values ($1, $2, $3, $4, $5, $6)",
             profile_id, definition_id, d.strategy, d.max_rows, d.timeout_ms if d.strategy != "get" else GET_TIMEOUT_MS, position,
         )
+
+
+async def _seed_switch_standard_profiles(conn: asyncpg.Connection) -> None:
+    """The vendor-neutral RMON and VLAN switch profiles (Plan 18), as DRAFTS: published standards, but their walk cost
+    across many access switches is measured first (app/registry/switch_standard_oids.py). Each inserted once."""
+    from app.registry.switch_standard_oids import DESCRIPTIONS, GET_TIMEOUT_MS, MIB_DIRECTORY, PROFILES
+
+    for name, definitions in PROFILES.items():
+        if await conn.fetchval("select exists(select 1 from oid_profiles where name = $1)", name):
+            continue
+        profile_id = await conn.fetchval(
+            "insert into oid_profiles (name, version, status, description) values ($1, 1, 'draft', $2) returning id",
+            name, DESCRIPTIONS[name],
+        )
+        for position, d in enumerate(definitions):
+            definition_id = await conn.fetchval("select id from oid_definitions where vendor_id is null and logical_name = $1", d.logical_name)
+            if definition_id is None:
+                definition_id = await conn.fetchval(
+                    """
+                    insert into oid_definitions (logical_name, numeric_oid, module, access, safety_level, unit, mib_object, source_note)
+                    values ($1, $2, $3, 'read-only', $4, $5, $6, $7)
+                    returning id
+                    """,
+                    d.logical_name, d.numeric_oid, d.logical_name.split(".")[0], "safe" if d.strategy == "get" else "bounded",
+                    d.unit, d.mib_object, f"{MIB_DIRECTORY}/{d.mib_file}, object {d.mib_object} (published standard)",
+                )
+            await conn.execute(
+                "insert into oid_profile_entries (profile_id, definition_id, walk_strategy, max_rows, timeout_ms, position) values ($1, $2, $3, $4, $5, $6)",
+                profile_id, definition_id, d.strategy, d.max_rows, d.timeout_ms if d.strategy != "get" else GET_TIMEOUT_MS, position,
+            )
 
 
 async def _seed_bdcom_olt_profiles(conn: asyncpg.Connection) -> None:

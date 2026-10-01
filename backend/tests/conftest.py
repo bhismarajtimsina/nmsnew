@@ -74,7 +74,7 @@ from alembic import command  # noqa: E402
 
 from app.core.config import settings  # noqa: E402
 from app.schema import alembic_config  # noqa: E402
-from app.seed import SeedResult, _seed_bdcom_olt_profiles, _seed_bdcom_switch_profile, _seed_device_models, _seed_registry, _seed_schedule, _seed_standard_oid_profiles, seed  # noqa: E402
+from app.seed import SeedResult, _seed_bdcom_olt_profiles, _seed_bdcom_switch_profile, _seed_device_models, _seed_registry, _seed_schedule, _seed_standard_oid_profiles, _seed_switch_standard_profiles, seed  # noqa: E402
 
 TRUSTED_CLIENT = ("172.18.0.5", 44321)  # inside FORWARDED_ALLOW_IPS: behaves like the Nginx container
 
@@ -180,6 +180,7 @@ async def clean(database):
         await _seed_standard_oid_profiles(conn)
         await _seed_bdcom_switch_profile(conn)
         await _seed_bdcom_olt_profiles(conn)
+        await _seed_switch_standard_profiles(conn)
         # Tests change roles on purpose (grant a permission, flip a scope mode). Put them back so tests stay independent.
         await conn.execute("delete from role_permissions")
         await conn.executemany(
