@@ -139,9 +139,33 @@ Still missing:
 - **Maintenance windows.** Proposed approach: as in legacy, create them as Alertmanager silences through its API
   (silenced alerts send no webhook, so no event and no notification are created), with the window list, scope
   checks and audit in this system. Not started.
-- **`sync-active-alerts` is not ported.** Legacy's `SyncActiveAlertsCommand` resolves events that stay open because
-  Alertmanager restarted and never sent "resolved". It needs a scheduled job that reads Alertmanager's
-  `/api/v2/alerts` (Alertmanager, not a device).
+- ~~**`sync-active-alerts` is not ported.**~~ Done the same day; see the next section.
 - **Events for disabled devices.** Legacy's `createEvent` skips an event whose device is disabled. The new `devices`
   table has only `polling_enabled`, not legacy's `enabled`, so this is not ported until it is decided which flag
   maps to which (Plan 9).
+
+## Implementation notes (2026-10-01): port of `sync-active-alerts`
+
+Ported from `components/Events/Console/SyncActiveAlertsCommand.php` as `app/alerting/sync.py` and a typed
+`sync_active_alerts` scheduled job (migration `20261001_0019` adds it to the job-type constraint). It closes open
+events whose alert Alertmanager no longer reports, which is what happens when Alertmanager restarts and never sends
+"resolved".
+
+The same as legacy:
+- the active set comes from `/api/v2/alerts?active=true&silenced=true&inhibited=true&unprocessed=false`, so a
+  silenced or inhibited alert keeps its event open; an alert reported as `unprocessed` is left out of the set;
+- candidates are only open events named after an alarm rule and with a non-empty fingerprint;
+- every event it closes notifies contacts (legacy fires `event:resolved`), including the flap hold;
+- a dry-run mode (`{"dry_run": true}`).
+
+Added: legacy would close **every** open alarm if run just after Alertmanager restarted, because its active list
+is near empty until rules are evaluated again. The port reads Alertmanager's start time from `/api/v2/status` and
+skips the run until Alertmanager has been up for 5 minutes, the same grace period the webhook ingest applies.
+
+Seeded **disabled**, every 10 minutes. Legacy never scheduled it (operators ran it by hand), and Alertmanager is not
+yet part of this stack (Plan 31). Enable it once `ALERTMANAGER_URL` points at one. It talks to Alertmanager only.
+The HTTP client uses the standard library in a thread, so no new dependency.
+
+Tests: 12 in `test_alert_sync.py`. The reconciliation runs against a fake Alertmanager, and the real HTTP client
+against a stand-in server on 127.0.0.1. 9 mutations checked, all caught. One first survived: the URL test compared
+against the code's own constant, so it was changed to assert the literal query string.

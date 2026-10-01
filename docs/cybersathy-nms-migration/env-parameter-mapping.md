@@ -83,7 +83,7 @@ Target homes: **env** (process environment, read at start), **settings** (`syste
 
 | Legacy parameter | Target |
 |---|---|
-| `PROMETHEUS_URL`, `ALERTMANAGER_URL`, `PROMETHEUS_RETENTION_TIME` | env |
+| `PROMETHEUS_URL`, `ALERTMANAGER_URL`, `PROMETHEUS_RETENTION_TIME` | env (`ALERTMANAGER_URL` is read by the `sync_active_alerts` job; empty by default) |
 | `OXIDIZED_URL`, `OXIDIZED_THREADS`, `OXIDIZED_INTERVAL`, `OXIDIZED_TIMEOUT` | settings for the own `config-backup` worker (`URL` dropped, the rest become concurrency, interval and timeout) |
 
 ## Integrations (secrets)

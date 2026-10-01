@@ -67,6 +67,13 @@ async def _is_open(conn: asyncpg.Connection, name: str, dedup_key: str) -> bool:
     )
 
 
+async def queue_resolved(conn: asyncpg.Connection, event_id: str, flap_count: int, flap_window_seconds: int) -> None:
+    """Notifications for an event this system just closed automatically. Once it has flapped, the resolved
+    notification is held for the flap window (see the module docstring)."""
+    hold = flap_window_seconds if flap_count > 0 else 0
+    await queue_for_event(conn, event_id, resolved_hold_seconds=hold)
+
+
 async def _recently_autoresolved(conn: asyncpg.Connection, name: str, dedup_key: str, window_seconds: int) -> asyncpg.Record | None:
     if window_seconds <= 0:
         return None
@@ -130,8 +137,7 @@ async def process_alert(
                 name, fingerprint,
             )
             for row in rows:
-                hold = flap_window_seconds if row["flap_count"] > 0 else 0
-                await queue_for_event(conn, str(row["id"]), resolved_hold_seconds=hold)
+                await queue_resolved(conn, str(row["id"]), row["flap_count"], flap_window_seconds)
         if not rows:
             summary.resolved_not_found += 1
         else:

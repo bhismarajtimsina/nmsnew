@@ -2699,7 +2699,7 @@
         "ck_schedule_jobs_misfire": "CHECK (((misfire_policy)::text = ANY ((ARRAY['skip'::character varying, 'run_once'::character varying, 'catch_up'::character varying])::text[])))",
         "ck_schedule_jobs_overlap": "CHECK (((overlap_policy)::text = ANY ((ARRAY['forbid'::character varying, 'allow'::character varying])::text[])))",
         "ck_schedule_jobs_runtime": "CHECK (((max_runtime_seconds >= 10) AND (max_runtime_seconds <= 3600)))",
-        "ck_schedule_jobs_type": "CHECK (((job_type)::text = ANY ((ARRAY['poll_group'::character varying, 'retention'::character varying, 'cleanup_sessions'::character varying])::text[])))",
+        "ck_schedule_jobs_type": "CHECK (((job_type)::text = ANY ((ARRAY['poll_group'::character varying, 'retention'::character varying, 'cleanup_sessions'::character varying, 'sync_active_alerts'::character varying])::text[])))",
         "schedule_jobs_key_key": "UNIQUE (key)",
         "schedule_jobs_pkey": "PRIMARY KEY (id)"
       },

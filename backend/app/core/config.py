@@ -79,6 +79,8 @@ class Settings:
 
     # Flapping suppression for events. See docs/cybersathy-nms-migration/20-events-alarms.md.
     event_flap_window_seconds: int
+    # Alertmanager's base URL, for the sync_active_alerts job. Empty until Alertmanager joins this stack (Plan 31).
+    alertmanager_url: str
 
     # ICMP pinger. See docs/cybersathy-nms-migration/12-worker-services.md and own-components.md §3.1.
     pinger_cycle_seconds: int
@@ -176,6 +178,7 @@ def load_settings() -> Settings:
         # An alarm that fires again within this many seconds of Alertmanager resolving it reopens the same event.
         # 0 turns flapping suppression off (legacy behavior: a new event per firing).
         event_flap_window_seconds=int(os.getenv("EVENT_FLAP_WINDOW_SECONDS", "900")),
+        alertmanager_url=os.getenv("ALERTMANAGER_URL", ""),
         pinger_cycle_seconds=int(os.getenv("PINGER_CYCLE_SECONDS", "30")),
         pinger_count=int(os.getenv("PINGER_COUNT", "3")),
         pinger_timeout_seconds=float(os.getenv("PINGER_TIMEOUT_SECONDS", "1.0")),

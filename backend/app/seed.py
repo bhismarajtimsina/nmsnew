@@ -188,6 +188,9 @@ DEFAULT_JOBS: list[tuple[str, str, dict, str, bool, str]] = [
     ("retention_dead_letters", "retention", {"target": "dead_letter_jobs", "days": 180}, "41 3 * * *", True, "Keep resolved dead-letter jobs for 180 days"),
     ("poll_switch_basic", "poll_group", {"profile": "switch_basic", "device_type": "switch"}, "*/5 * * * *", False, "Poll every switch with the switch_basic profile"),
     ("poll_olt_basic", "poll_group", {"profile": "olt_basic", "device_type": "olt"}, "*/5 * * * *", False, "Poll every OLT with the olt_basic profile"),
+    # Off until Alertmanager is part of this stack (Plan 31) and ALERTMANAGER_URL points at it. Legacy only ever ran
+    # `wca sync-active-alerts` by hand.
+    ("sync_active_alerts", "sync_active_alerts", {}, "*/10 * * * *", False, "Close events whose alert Alertmanager no longer reports as active"),
     ("poll_router_basic", "poll_group", {"profile": "router_basic", "device_type": "router"}, "*/5 * * * *", False, "Poll every router with the router_basic profile"),
 ]
 

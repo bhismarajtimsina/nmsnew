@@ -19,6 +19,9 @@ x-api-env: &api-env
   APP_NAME: CyberSathy-NMS
   ENVIRONMENT: ${CYBERSATHY_ENVIRONMENT:-development}
   LOG_LEVEL: ${CYBERSATHY_LOG_LEVEL:-INFO}
+  # Read by the sync_active_alerts scheduled job; empty until Alertmanager joins this stack (Plan 31).
+  ALERTMANAGER_URL: ${CYBERSATHY_ALERTMANAGER_URL:-}
+  EVENT_FLAP_WINDOW_SECONDS: ${CYBERSATHY_EVENT_FLAP_WINDOW_SECONDS:-900}
   SESSION_TTL_HOURS: ${CYBERSATHY_SESSION_TTL_HOURS:-24}
   POSTGRES_HOST: cybersathy-postgres
   POSTGRES_PORT: 5432

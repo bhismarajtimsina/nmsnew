@@ -52,6 +52,13 @@ class CleanupSessionsParams(BaseModel):
     older_than_days: Annotated[int, Field(ge=1, le=365)] = 7
 
 
+class SyncActiveAlertsParams(BaseModel):
+    """Close events whose alert Alertmanager no longer reports as active (app/alerting/sync.py)."""
+    model_config = ConfigDict(extra="forbid")
+    dry_run: bool = False
+    timeout_seconds: Annotated[int, Field(ge=1, le=60)] = 15
+
+
 @dataclass
 class JobContext:
     pool: asyncpg.Pool
@@ -128,10 +135,26 @@ async def run_cleanup_sessions(ctx: JobContext, params: CleanupSessionsParams) -
     return f"user_sessions: {status.lower()}"
 
 
+async def run_sync_active_alerts(ctx: JobContext, params: SyncActiveAlertsParams) -> str:
+    from app.alerting.sync import HttpAlertmanager, sync_active_alerts
+    from app.core.config import settings
+
+    client = HttpAlertmanager(settings.alertmanager_url, params.timeout_seconds)
+    async with ctx.pool.acquire() as conn:
+        summary = await sync_active_alerts(
+            conn, client, dry_run=params.dry_run, flap_window_seconds=settings.event_flap_window_seconds
+        )
+    if summary.skipped_reason:
+        return f"skipped: {summary.skipped_reason}"
+    verb = "would resolve" if params.dry_run else "resolved"
+    return f"{summary.active} active alert(s); {verb} {len(summary.resolved_ids)} orphaned event(s)"
+
+
 JOB_TYPES: dict[str, tuple[type[BaseModel], Handler]] = {
     "poll_group": (PollGroupParams, run_poll_group),  # type: ignore[dict-item]
     "retention": (RetentionParams, run_retention),  # type: ignore[dict-item]
     "cleanup_sessions": (CleanupSessionsParams, run_cleanup_sessions),  # type: ignore[dict-item]
+    "sync_active_alerts": (SyncActiveAlertsParams, run_sync_active_alerts),  # type: ignore[dict-item]
 }
 
 
