@@ -77,12 +77,12 @@ strings go through the same table.
 | Metric | RouterOS | SNMP-managed L3 router | Why |
 |---|---|---|---|
 | Interfaces | SNMP | SNMP | RFC 1213 `interface_basic`, already active |
-| Resources | API | none yet | HOST-RESOURCES-MIB not in the repository; L3 vendors use private MIBs (K-25) |
+| Resources | API (CPU, memory); SNMP (health) | none yet | MIKROTIK-MIB has health but no CPU load; HOST-RESOURCES-MIB not in the repository |
 | Connected networks | SNMP | SNMP | RFC 1213 `ipAddrTable`, read-only (`router_addresses`) |
 | ARP | API | none yet | RFC 1213 ARP table is read-write (D-30) |
 | BGP sessions | API | SNMP | BGP4-MIB file not in the repository yet |
 | DHCP leases | API | none | no standard MIB |
-| Simple queues | API | none | RouterOS only |
+| Simple queues | SNMP | none | MIKROTIK-MIB queue table (`mikrotik_routeros`) |
 
 **`router_addresses` profile** (`app/registry/router_standard_oids.py`). IPv4 address, interface and mask from
 RFC 1213's `ipAddrTable`, re-derived from `RFC1213-MIB.my` and capped at 1024 rows. Seeded as a draft. This is how
@@ -106,3 +106,35 @@ Still to do:
 - the BGP4-MIB file added to the repository, then a bounded `bgp_peers` profile;
 - router, BGP and ARP history storage, and the router pages;
 - **fixtures for RouterOS and one L3 vendor**, then the hardware sign-off. Not verified against a device.
+
+### MikroTik MIB added (2026-10-01)
+
+The operator supplied MikroTik's MIKROTIK-MIB (revision 2026-07-07), now in `MIKROTIK_MIBS/MIKROTIK-MIB.mib`. It
+imports only standard modules already in the repository, so its OIDs are checked offline like BDCOM's.
+
+The `mikrotik_routeros` profile (`app/registry/mikrotik_oids.py`) has 32 read-only objects:
+
+- serial, firmware, board name and license (GETs);
+- voltage, temperatures, power, CPU frequency and power-supply state (GETs);
+- DHCP lease count (GET);
+- simple queues: name, bytes and drops, capped at 2048 rows;
+- neighbours: IP, MAC, identity, platform and interface, capped at 256;
+- SFP optics: name, receive loss, temperature, supply voltage, bias, transmit and receive power, capped at 128.
+
+How it is checked and seeded:
+
+- Each OID, its read-only ACCESS and its GET-or-walk shape are re-derived from the MIB.
+- Each reading's divisor comes from the object's own textual convention: tenths for Voltage, Temperature and Power;
+  thousandths for SFP voltage and power.
+- The MIB's two writable actions (`mtxrSystemReboot`, `mtxrUSBPowerReset`) are tested to be absent.
+- Seeded as a **draft**: the MIB says what each object means, not what a given RouterOS release answers. Activation
+  waits for a fixture and the hardware sign-off.
+
+What the MIB changes for the metric-source table above:
+
+- RouterOS resources can now come from SNMP for health, though not CPU load: MIKROTIK-MIB has none, and that is in
+  HOST-RESOURCES-MIB, which is not in the repository.
+- DHCP gives only a lease count over SNMP. The lease list stays on the API.
+- Simple queues are on SNMP.
+
+Tests: 76 (`tests/test_mikrotik_profile.py`). 10 mutations checked, all caught. Not verified against a device.

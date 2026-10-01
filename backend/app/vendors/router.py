@@ -104,14 +104,18 @@ class MetricSource:
 METRIC_SOURCES: dict[str, MetricSource] = {
     "interfaces": MetricSource("snmp", "snmp", "RFC 1213 interface table (interface_basic): standard, already "
                                                "active, the same on every vendor"),
-    "resources": MetricSource("api", "none", "RouterOS `/system/resource/print` (legacy); HOST-RESOURCES-MIB is not "
-                                             "in the repository, and L3 vendors keep CPU and memory in private MIBs (K-25)"),
+    "resources": MetricSource("api", "none", "CPU load and memory from RouterOS `/system/resource/print` (legacy): "
+                                             "MIKROTIK-MIB has none and HOST-RESOURCES-MIB is not in the repository; "
+                                             "health (temperatures, voltage, power) is SNMP in mikrotik_routeros. L3 "
+                                             "vendors keep CPU and memory in private MIBs (K-25)"),
     "connected_networks": MetricSource("snmp", "snmp", "RFC 1213 ipAddrTable (router_addresses), read-only; legacy "
                                                        "derives connected routes the same way, never from the routing table"),
     "arp": MetricSource("api", "none", "RFC 1213 ipNetToMediaTable is read-write, so the registry will not poll it "
                                        "(D-30); RouterOS `/ip/arp/print`, bounded"),
     "bgp_sessions": MetricSource("api", "snmp", "RouterOS 6 `/routing/bgp/peer/print`; L3 vendors through BGP4-MIB "
                                                 "bgpPeerTable, whose MIB file is not in the repository yet"),
-    "dhcp_leases": MetricSource("api", "none", "RouterOS `/ip/dhcp-server/lease/print`, bounded; no standard MIB"),
-    "simple_queues": MetricSource("api", "none", "RouterOS `/queue/simple/print`, bounded; RouterOS only"),
+    "dhcp_leases": MetricSource("api", "none", "RouterOS `/ip/dhcp-server/lease/print`, bounded; MIKROTIK-MIB gives only "
+                                               "the lease count (mtxrDHCPLeaseCount, in mikrotik_routeros)"),
+    "simple_queues": MetricSource("snmp", "none", "MIKROTIK-MIB mtxrQueueSimpleTable (mikrotik_routeros), bounded at "
+                                                 "2048 rows; RouterOS only"),
 }

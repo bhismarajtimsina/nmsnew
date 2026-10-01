@@ -123,6 +123,7 @@ async def seed(
         await _seed_bdcom_switch_profile(conn)
         await _seed_bdcom_olt_profiles(conn)
         await _seed_switch_standard_profiles(conn)
+        await _seed_mikrotik_profile(conn)
         await _seed_alarm_rules(conn)
         await _seed_trap_profiles(conn)
         await _seed_notification_event_config(conn)
@@ -353,6 +354,41 @@ async def _seed_switch_standard_profiles(conn: asyncpg.Connection) -> None:
                 "insert into oid_profile_entries (profile_id, definition_id, walk_strategy, max_rows, timeout_ms, position) values ($1, $2, $3, $4, $5, $6)",
                 profile_id, definition_id, d.strategy, d.max_rows, d.timeout_ms if d.strategy != "get" else GET_TIMEOUT_MS, position,
             )
+
+
+async def _seed_mikrotik_profile(conn: asyncpg.Connection) -> None:
+    """The MikroTik RouterOS profile (Plan 19), from the operator-supplied MIKROTIK-MIB, as a DRAFT for the same reason
+    as every vendor-private profile: nothing polls it until a fixture and a hardware sign-off exist
+    (app/registry/mikrotik_oids.py). Inserted once."""
+    from app.registry.mikrotik_oids import DEFINITIONS, FAMILY_SLUG, GET_TIMEOUT_MS, MIB_DIRECTORY, MIB_FILE, PROFILE_NAME, VENDOR_SLUG
+
+    if await conn.fetchval("select exists(select 1 from oid_profiles where name = $1)", PROFILE_NAME):
+        return
+    vendor_id = await conn.fetchval("select id from vendors where slug = $1", VENDOR_SLUG)
+    family_id = await conn.fetchval("select id from vendor_model_families where vendor_id = $1 and slug = $2", vendor_id, FAMILY_SLUG)
+    if vendor_id is None or family_id is None:
+        return
+    profile_id = await conn.fetchval(
+        "insert into oid_profiles (name, version, status, vendor_id, family_id, description) values ($1, 1, 'draft', $2, $3, $4) returning id",
+        PROFILE_NAME, vendor_id, family_id,
+        "MikroTik RouterOS: identity, health, DHCP lease count, simple queues, neighbours, SFP optics. From MIKROTIK-MIB. "
+        "Draft until a fixture and a hardware sign-off exist (Plan 19).",
+    )
+    for position, d in enumerate(DEFINITIONS):
+        definition_id = await conn.fetchval(
+            """
+            insert into oid_definitions (vendor_id, logical_name, numeric_oid, module, access, safety_level, unit, mib_object, source_note)
+            values ($1, $2, $3, $4, 'read-only', $5, $6, $7, $8)
+            on conflict (coalesce(vendor_id, '00000000-0000-0000-0000-000000000000'::uuid), logical_name) do update set numeric_oid = excluded.numeric_oid
+            returning id
+            """,
+            vendor_id, d.logical_name, d.numeric_oid, d.logical_name.split(".")[1], "safe" if d.strategy == "get" else "bounded",
+            d.unit, d.mib_object, f"{MIB_DIRECTORY}/{MIB_FILE}, object {d.mib_object}. Not verified against a device.",
+        )
+        await conn.execute(
+            "insert into oid_profile_entries (profile_id, definition_id, walk_strategy, max_rows, timeout_ms, position) values ($1, $2, $3, $4, $5, $6)",
+            profile_id, definition_id, d.strategy, d.max_rows, d.timeout_ms if d.strategy != "get" else GET_TIMEOUT_MS, position,
+        )
 
 
 async def _seed_bdcom_olt_profiles(conn: asyncpg.Connection) -> None:
