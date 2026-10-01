@@ -125,7 +125,7 @@ async def test_once_activated_the_vlan_summary_gets_scalars_at_instance_zero_and
     assert outcome.status == "ok"
     gets = [oid for call in ctx.transport.calls if call[0] == "get" for oid in call[2]]
     assert sorted(gets) == sorted(d.numeric_oid + ".0" for d in PROFILES[VLAN_PROFILE] if d.strategy == "get")
-    assert [(root, rows) for _, root, rows, _ in ctx.transport.walk_limits] == [("1.3.6.1.2.1.17.7.1.4.2.1.6", 4096)]
+    assert [(root, rows - 1) for _, root, rows, _ in ctx.transport.walk_limits] == [("1.3.6.1.2.1.17.7.1.4.2.1.6", 4096)]
 
 
 async def test_once_activated_the_rmon_profile_walks_only_its_bounded_columns(ctx, db):
@@ -134,4 +134,4 @@ async def test_once_activated_the_rmon_profile_walks_only_its_bounded_columns(ct
     await db.execute("update oid_profiles set status = 'active' where name = $1", RMON_PROFILE)
     device = await make_pollable(db, "10.96.0.3")
     assert (await poll_device(ctx, device, RMON_PROFILE)).status == "ok"
-    assert {(root, rows) for _, root, rows, _ in ctx.transport.walk_limits} == {(d.numeric_oid, 512) for d in PROFILES[RMON_PROFILE]}
+    assert {(root, rows - 1) for _, root, rows, _ in ctx.transport.walk_limits} == {(d.numeric_oid, 512) for d in PROFILES[RMON_PROFILE]}

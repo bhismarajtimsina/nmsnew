@@ -5,7 +5,8 @@ and it is what the workers are wired to. Choosing and wiring a real one is decis
 recorded fixtures and a simulator, never against a device.
 
 `BoundedTransport` wraps any transport and enforces the rules the plans require: every walk has a row limit and a timeout,
-a response longer than the limit is cut, timeouts are clamped, and a single request cannot ask for more than a fixed
+a response longer than the limit is cut and flagged (one probe row past the limit is asked for, so a table larger than
+the limit is told apart from one that fits it exactly), timeouts are clamped, and a single request cannot ask for more than a fixed
 number of OIDs.
 """
 from __future__ import annotations
@@ -87,6 +88,7 @@ class BoundedTransport:
         self.requests: list[RequestRecord] = []
         self.rows_returned = 0
         self.truncated = False
+        self.truncated_roots: list[str] = []
 
     @staticmethod
     def _timeout(value: int) -> int:
@@ -103,15 +105,21 @@ class BoundedTransport:
         self.rows_returned += len(result)
         return result
 
-    async def walk(self, target: Target, root_oid: str, *, max_rows: int | None, timeout_ms: int | None, retries: int) -> list[tuple[str, Any]]:
+    async def walk(self, target: Target, root_oid: str, *, max_rows: int | None, timeout_ms: int | None, retries: int,
+                   probe: bool = True) -> list[tuple[str, Any]]:
+        """probe=False is for a read that wants only the first rows by design (a getnext): no probe row is asked for, so
+        stopping at max_rows is not reported as truncation."""
         if max_rows is None or timeout_ms is None:
             raise UnboundedRequest("a walk needs both max_rows and timeout_ms")
         if not 1 <= max_rows <= MAX_ROWS_HARD:
             raise UnboundedRequest(f"max_rows must be between 1 and {MAX_ROWS_HARD}")
         timeout = self._timeout(timeout_ms)
         self.requests.append(RequestRecord("walk", target.address, (root_oid,), max_rows, timeout))
-        rows = await self.inner.walk(target, root_oid, max_rows=max_rows, timeout_ms=timeout, retries=max(0, min(retries, MAX_RETRIES)))
-        if len(rows) > max_rows:  # a transport that ignores the limit must not be able to flood the engine
+        # One probe row past the limit: getting it back is how a table larger than the limit is known to be cut. Without
+        # it, a well-behaved transport stopping at exactly max_rows would make a cut table look complete.
+        rows = await self.inner.walk(target, root_oid, max_rows=max_rows + 1 if probe else max_rows, timeout_ms=timeout, retries=max(0, min(retries, MAX_RETRIES)))
+        if len(rows) > max_rows:  # also stops a transport that ignores the limit from flooding the engine
             rows, self.truncated = rows[:max_rows], True
+            self.truncated_roots.append(root_oid)
         self.rows_returned += len(rows)
         return rows

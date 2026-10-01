@@ -50,7 +50,7 @@ async def test_polling_interface_basic_walks_every_real_column_bounded(ctx, db):
     walked = {call[2][0] for call in ctx.transport.calls if call[0] == "walk"}
     assert len(walked) == len(INTERFACE_DEFINITIONS)  # every real column was walked, once each
     for _, root, max_rows, timeout in ctx.transport.walk_limits:
-        assert max_rows == 512 and timeout == 8000  # the real seeded bounds, not a test-only override
+        assert max_rows == 512 + 1 and timeout == 8000  # the real seeded bounds plus one probe row, not a test-only override
     by_oid = {r.oid: r.value for r in outcome.readings}
     assert len(by_oid[IF_DESCR]) == 4 and by_oid[IF_DESCR][0] == (f"{IF_DESCR}.1", "v1")
 

@@ -148,4 +148,4 @@ async def test_once_activated_an_epon_poll_keeps_every_walk_within_its_bounds(ct
     bounds = {d.numeric_oid: (d.max_rows, d.timeout_ms) for d in PROFILES[EPON_PROFILE] if d.strategy == "walk"}
     assert {root for _, root, *_ in ctx.transport.walk_limits} == set(bounds)
     for _, root, max_rows, timeout in ctx.transport.walk_limits:
-        assert (max_rows, timeout) == bounds[root] and max_rows <= ONU_ROWS
+        assert (max_rows - 1, timeout) == bounds[root] and max_rows - 1 <= ONU_ROWS  # the cap plus one probe row

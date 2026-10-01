@@ -130,6 +130,6 @@ async def test_once_an_operator_activates_it_a_poll_stays_within_every_bound(ctx
     assert {w[2][0] for w in walks} == {d.numeric_oid for d in DEFINITIONS if d.strategy == "walk"}
     bounds = {d.numeric_oid: (d.max_rows, d.timeout_ms) for d in DEFINITIONS if d.strategy == "walk"}
     for _, root, max_rows, timeout in ctx.transport.walk_limits:
-        assert (max_rows, timeout) == bounds[root]
+        assert (max_rows - 1, timeout) == bounds[root]  # the cap plus one probe row
     readings = {r.name: r.value for r in outcome.readings}
     assert readings["bdcom.system.serial_number"] == "SN-TEST" and len(readings["bdcom.sfp.rx_power"]) == 4

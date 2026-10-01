@@ -323,16 +323,19 @@ async def _seed_bdcom_switch_profile(conn: asyncpg.Connection) -> None:
 
 
 async def _seed_switch_standard_profiles(conn: asyncpg.Connection) -> None:
-    """The vendor-neutral RMON and VLAN switch profiles (Plan 18), as DRAFTS: published standards, but their walk cost
+    """The vendor-neutral RMON and VLAN switch profiles (Plan 18) and the router address profile (Plan 19), as DRAFTS: published standards, but their walk cost
     across many access switches is measured first (app/registry/switch_standard_oids.py). Each inserted once."""
-    from app.registry.switch_standard_oids import DESCRIPTIONS, GET_TIMEOUT_MS, MIB_DIRECTORY, PROFILES
+    from app.registry import router_standard_oids, switch_standard_oids
+    from app.registry.switch_standard_oids import GET_TIMEOUT_MS, MIB_DIRECTORY
 
-    for name, definitions in PROFILES.items():
+    profiles = {**switch_standard_oids.PROFILES, **router_standard_oids.PROFILES}
+    descriptions = {**switch_standard_oids.DESCRIPTIONS, **router_standard_oids.DESCRIPTIONS}
+    for name, definitions in profiles.items():
         if await conn.fetchval("select exists(select 1 from oid_profiles where name = $1)", name):
             continue
         profile_id = await conn.fetchval(
             "insert into oid_profiles (name, version, status, description) values ($1, 1, 'draft', $2) returning id",
-            name, DESCRIPTIONS[name],
+            name, descriptions[name],
         )
         for position, d in enumerate(definitions):
             definition_id = await conn.fetchval("select id from oid_definitions where vendor_id is null and logical_name = $1", d.logical_name)

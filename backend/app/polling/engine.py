@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 import asyncpg
+from prometheus_client import Counter
 from redis.asyncio import Redis
 
 from app.core.config import Settings
@@ -37,6 +38,7 @@ from app.repositories import vendors as vendor_repo
 from app.workers.queue import Locks
 
 logger = logging.getLogger("cybersathy.polling")
+POLL_TRUNCATIONS = Counter("cybersathy_poll_truncations_total", "Walked columns cut at their max_rows", ["profile"])
 
 
 @dataclass
@@ -53,6 +55,7 @@ class PollOutcome:
     status: str  # ok | timeout | error | skipped
     rows: int = 0
     truncated: bool = False
+    truncated_columns: list[str] = field(default_factory=list)
     duration_ms: int = 0
     error: str | None = None
     profile_version: int | None = None
@@ -281,6 +284,10 @@ async def poll_device(ctx: Context, device_id: str, profile_name: str, sink: Sin
                 await _record(ctx, device_id, profile_name, outcome)
                 return outcome
             outcome = await _run(ctx, row, entries, version)
+            for column in outcome.truncated_columns:
+                # Plan 19: a table larger than its max_rows is cut, flagged and counted, never walked further.
+                POLL_TRUNCATIONS.labels(profile=profile_name).inc()
+                logger.warning("poll truncated: device %s, profile %s, column %s hit its max_rows", device_id, profile_name, column)
     outcome = finish(outcome)
     await _record(ctx, device_id, profile_name, outcome)
     if outcome.status == "ok" and sink is not None:
@@ -309,13 +316,17 @@ async def _run(ctx: Context, row: asyncpg.Record, entries: list[asyncpg.Record],
         for e in entries:
             if e["walk_strategy"] == "get":
                 continue
+            getnext = e["walk_strategy"] == "getnext"
             rows = await bounded.walk(
-                target, e["numeric_oid"], max_rows=1 if e["walk_strategy"] == "getnext" else e["max_rows"],
-                timeout_ms=e["timeout_ms"] or default_timeout, retries=retries)
+                target, e["numeric_oid"], max_rows=1 if getnext else e["max_rows"],
+                timeout_ms=e["timeout_ms"] or default_timeout, retries=retries, probe=not getnext)
             converted = [(oid, *_transform(e, value)) for oid, value in rows]
             readings.append(Reading(e["logical_name"], e["numeric_oid"], [(o, v) for o, v, _ in converted], e["unit"], all(ok for *_, ok in converted)))
     except TransportTimeout as exc:
-        return PollOutcome("timeout", rows=bounded.rows_returned, truncated=bounded.truncated, error=scrub(str(exc) or "timeout", secrets), profile_version=version)
+        return PollOutcome("timeout", rows=bounded.rows_returned, truncated=bounded.truncated, error=scrub(str(exc) or "timeout", secrets), profile_version=version,
+                           truncated_columns=list(bounded.truncated_roots))
     except TransportError as exc:
-        return PollOutcome("error", rows=bounded.rows_returned, truncated=bounded.truncated, error=scrub(str(exc) or type(exc).__name__, secrets), profile_version=version)
-    return PollOutcome("ok", rows=bounded.rows_returned, truncated=bounded.truncated, profile_version=version, readings=readings)
+        return PollOutcome("error", rows=bounded.rows_returned, truncated=bounded.truncated, error=scrub(str(exc) or type(exc).__name__, secrets), profile_version=version,
+                           truncated_columns=list(bounded.truncated_roots))
+    return PollOutcome("ok", rows=bounded.rows_returned, truncated=bounded.truncated, profile_version=version, readings=readings,
+                       truncated_columns=list(bounded.truncated_roots))

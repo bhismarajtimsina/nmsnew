@@ -34,7 +34,7 @@ async def test_a_poll_reads_bounds_the_walk_applies_scale_and_flags_out_of_range
             Sink.got = readings
 
     outcome = await poll_device(ctx, device, "switch_basic", Sink())
-    assert outcome.status == "ok" and outcome.rows == 6 and outcome.truncated is False and outcome.profile_version == 1
+    assert outcome.status == "ok" and outcome.rows == 6 and outcome.truncated is True and outcome.profile_version == 1  # 7 rows, cap 3
     by_name = {r.name.split(".")[-1]: r for r in Sink.got}
     assert by_name["sys_name"].value == "core-1"
     assert by_name["rx_ok"].value == pytest.approx(-15.0) and by_name["rx_ok"].in_range is True
@@ -50,7 +50,7 @@ async def test_every_request_the_device_sees_carries_the_profiles_limits(ctx, db
     await make_active_profile(db, entries=ENTRIES)
     device = await make_pollable(db, "10.50.0.1")
     await poll_device(ctx, device, "switch_basic")
-    assert ctx.transport.walk_limits == [("10.50.0.1", IFDESCR, 3, 4000)]
+    assert ctx.transport.walk_limits == [("10.50.0.1", IFDESCR, 3 + 1, 4000)]  # the cap plus one probe row
     (address, timeout, retries), = ctx.transport.get_limits
     assert (address, timeout, retries) == ("10.50.0.1", 2000, 1)
 
@@ -216,3 +216,38 @@ async def test_the_sink_only_receives_readings_from_a_successful_poll(ctx, db):
 
     await poll_device(ctx, device, "switch_basic", Sink())
     assert calls == []
+
+
+async def test_a_cut_table_is_counted_in_the_truncation_metric_per_profile(ctx, db):
+    from app.polling.engine import POLL_TRUNCATIONS
+
+    await make_active_profile(db, name="router_arp", entries=[("arp", "1.3.6.1.2.1.4.22.1.2", "walk", 5, 4000, None)])
+    device = await make_pollable(db, "10.50.0.9")
+    ctx.transport.script_table("10.50.0.9", "1.3.6.1.2.1.4.22.1.2", [(f"1.3.6.1.2.1.4.22.1.2.{i}", i) for i in range(20)])
+    before = POLL_TRUNCATIONS.labels(profile="router_arp")._value.get()
+    outcome = await poll_device(ctx, device, "router_arp")
+    assert outcome.status == "ok" and outcome.rows == 5 and outcome.truncated is True
+    assert outcome.truncated_columns == ["1.3.6.1.2.1.4.22.1.2"]
+    assert POLL_TRUNCATIONS.labels(profile="router_arp")._value.get() == before + 1
+    assert (await results(db))[0]["truncated"] is True
+
+
+async def test_a_table_within_its_cap_is_not_counted(ctx, db):
+    from app.polling.engine import POLL_TRUNCATIONS
+
+    await make_active_profile(db, name="router_arp", entries=[("arp", "1.3.6.1.2.1.4.22.1.2", "walk", 5, 4000, None)])
+    device = await make_pollable(db, "10.50.0.10")
+    ctx.transport.script_table("10.50.0.10", "1.3.6.1.2.1.4.22.1.2", [(f"1.3.6.1.2.1.4.22.1.2.{i}", i) for i in range(5)])
+    before = POLL_TRUNCATIONS.labels(profile="router_arp")._value.get()
+    outcome = await poll_device(ctx, device, "router_arp")
+    assert outcome.truncated is False and outcome.truncated_columns == []
+    assert POLL_TRUNCATIONS.labels(profile="router_arp")._value.get() == before
+
+
+async def test_a_getnext_entry_reads_one_row_without_a_probe_and_is_not_truncation(ctx, db):
+    await make_active_profile(db, name="first_row", entries=[("first", IFDESCR, "getnext", None, 4000, None)])
+    device = await make_pollable(db, "10.50.0.11")
+    ctx.transport.script_table("10.50.0.11", IFDESCR, [(f"{IFDESCR}.{i}", i) for i in range(1, 9)])
+    outcome = await poll_device(ctx, device, "first_row")
+    assert outcome.status == "ok" and outcome.rows == 1 and outcome.truncated is False
+    assert ctx.transport.walk_limits == [("10.50.0.11", IFDESCR, 1, 4000)]
