@@ -95,21 +95,27 @@ const wcaRouteDefs: WcaRoute[] = [
     name: 'device-management',
     title: 'Device management',
     apiPaths: ['GET/DELETE /device', 'GET /device-group'],
-    component: () => import('@/views/devices/DeviceManagementListPage.vue'),
+    // The new login manages devices in place on the new API (Plan 25); legacy keeps its list and form pages.
+    component: () =>
+      authBackend() === 'cybersathy' ? import('@/views/devices/DeviceManagementNewPage.vue') : import('@/views/devices/DeviceManagementListPage.vue'),
   },
   {
     path: 'management/device/new',
     name: 'device-management-create',
     title: 'Add new device',
     apiPaths: ['POST /device', 'GET /device-access', 'GET /device-model', 'GET /device-group'],
-    component: () => import('@/views/devices/DeviceFormPage.vue'),
+    // The new login manages devices in place on the new API (Plan 25); legacy keeps its list and form pages.
+    component: () =>
+      authBackend() === 'cybersathy' ? import('@/views/devices/DeviceManagementNewPage.vue') : import('@/views/devices/DeviceFormPage.vue'),
   },
   {
     path: 'management/device/:id',
     name: 'device-management-edit',
     title: 'Edit device',
     apiPaths: ['GET/PUT/DELETE /device/{id}', 'GET /device-access', 'GET /device-model', 'GET /device-group'],
-    component: () => import('@/views/devices/DeviceFormPage.vue'),
+    // The new login manages devices in place on the new API (Plan 25); legacy keeps its list and form pages.
+    component: () =>
+      authBackend() === 'cybersathy' ? import('@/views/devices/DeviceManagementNewPage.vue') : import('@/views/devices/DeviceFormPage.vue'),
   },
   {
     path: 'management/device-access',

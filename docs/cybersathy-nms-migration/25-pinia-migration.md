@@ -343,4 +343,29 @@ change them, so the roles pages are not moved yet.
 Tests: 11 vitest tests. 8 mutations checked, all caught. 106 frontend tests in total. Not checked in a browser
 (R-09).
 
+### Device management page for the new login (2026-10-01)
+
+The legacy form (1,011 lines) is built around legacy-only features: device detection by polling the device, CLI and
+console access, links, Oxidized, per-interface poll switches. So the new login gets `DeviceManagementNewPage.vue`,
+which lists devices and adds, edits and deletes them in place. The router serves it for the list and for both legacy
+form routes. The legacy build is unchanged. The rules live in `src/views/devices/deviceManagement.ts`:
+
+- **Polling is never switched on here.** The API accepts `polling_enabled`, but turning it on makes the new system
+  poll a production device. That belongs to the controlled ownership handover (Plan 34), so the page only shows
+  polling state and owner, read-only. Tests check that neither request ever carries it and that the page has no
+  control for it.
+- Adding a device queues only the safe discovery the API allows. The page reports what happened (queued, or skipped
+  and why), and the device starts with polling off.
+- Edits send only what changed. Clearing the group sends `null`. An empty vendor, family or access profile keeps the
+  current one, because the device record does not say which profile or family it has, so an empty field is not a
+  request to clear it.
+- Deleting needs `devices.delete` and `dangerous_actions.execute`, and the device's exact name typed. The Delete
+  button stays disabled until it matches, and the name goes to the API as its confirmation.
+- Vendors, model families and access profiles the viewer may not read come back as empty choices instead of failing
+  the page.
+- No device is contacted by this page. Detection by polling the device is not offered; the API's own safe discovery
+  runs in the worker.
+
+Tests: 15 vitest tests. 7 mutations checked, all caught. 121 frontend tests in total. Not checked in a browser (R-09).
+
 Still not done in this plan: the remaining pages on the typed client.
