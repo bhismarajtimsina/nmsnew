@@ -1,18 +1,24 @@
 """The realtime WebSocket endpoint, ported from `WebSocketServerCommand`'s open/message handlers - see
 app/realtime/permissions.py and app/realtime/manager.py for the pieces this wires together.
 
-Auth is a `?token=...` query parameter, exactly like the legacy `/ws?token=...` - not a cookie (a WebSocket
-handshake is a cross-origin-capable request the same way any other state-affecting call is, so it gets the same
-"cookies are read-only, present a real token" treatment `authenticate()` already gives every other route).
+Auth is a `?ticket=...` query parameter: a short-lived, single-use ticket from `POST /api/v1/realtime/ticket`
+(app/realtime/tickets.py), so no session token is ever written into a URL, where proxies and access logs would keep
+it. Not a cookie: a WebSocket handshake is a cross-origin-capable request, so it gets the same "cookies are
+read-only, present a real credential" treatment `authenticate()` gives every other route. Legacy's `/ws?token=...`
+(the session token in the URL) is deliberately not accepted; any compatibility shim for it is Plan 41's decision.
 """
 from __future__ import annotations
 
 import json
 import logging
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from typing import Annotated
 
-from app.core.security import CurrentUser, authenticate_token
+from fastapi import APIRouter, Depends, Request, WebSocket, WebSocketDisconnect
+
+from app.core.config import settings
+from app.core.security import CurrentUser, authenticate_credential, get_current_user
+from app.realtime import tickets
 from app.realtime.manager import Connection
 from app.realtime.permissions import CHANNEL_RULES, is_subscribe_allowed
 
@@ -24,17 +30,28 @@ def _identity(user: CurrentUser) -> dict:
     return {"id": user.id, "username": user.username, "role": user.role, "scope_all": user.scope_all}
 
 
+@router.post(f"{settings.api_prefix}/realtime/ticket")
+async def mint_ticket(request: Request, user: Annotated[CurrentUser, Depends(get_current_user)]) -> dict:
+    """A ticket for one `/ws?ticket=...` handshake within the next few seconds. Needs a Bearer credential: the
+    session cookie is read-only, so a cross-site page cannot mint one with it."""
+    ticket = await tickets.mint(request.app.state.redis, user)
+    return {"ticket": ticket, "expires_in": tickets.TICKET_TTL_SECONDS}
+
+
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket) -> None:
-    token = websocket.query_params.get("token", "")
-    if not token:
+    record = await tickets.redeem(websocket.app.state.redis, websocket.query_params.get("ticket", ""))
+    if record is None:
         await websocket.close(code=4401, reason="unauthorized")
         return
 
     async with websocket.app.state.pool.acquire() as conn:
         try:
-            user = await authenticate_token(conn, token, ip=websocket.client.host if websocket.client else None, source="bearer")
-        except Exception:  # noqa: BLE001 - any auth failure (bad token, expired, disabled user) is just "unauthorized"
+            user = await authenticate_credential(
+                conn, record["kind"], record["credential_id"],
+                ip=websocket.client.host if websocket.client else None, source="ticket",
+            )
+        except Exception:  # noqa: BLE001 - any auth failure (revoked, expired, disabled user, address) is "unauthorized"
             await websocket.close(code=4401, reason="unauthorized")
             return
 

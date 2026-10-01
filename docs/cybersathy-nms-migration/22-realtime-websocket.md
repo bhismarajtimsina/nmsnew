@@ -111,3 +111,26 @@ an existing one out from under them). The short-lived WebSocket-specific token m
 (Plan 36) was never built as a separate thing - the existing session/API-token scheme already produces a short
 prefix-checked token, and `authenticate_token` is exactly the reusable core a dedicated WS token would have needed
 anyway.
+
+## Implementation notes (2026-10-01): short-lived WebSocket ticket
+
+The "short-lived WebSocket token from Plan 36" this plan called for is built. `/ws` no longer takes the session token
+in the URL (`?token=`), because URLs are kept by proxies and access logs. The client first calls
+`POST /api/v1/realtime/ticket` with its normal Bearer credential and gets a ticket, then connects with
+`/ws?ticket=...`. A ticket (`app/realtime/tickets.py`):
+
+- is random, and Redis stores only its SHA-256 hash, with the kind and id of the session or API token that minted
+  it. Neither the ticket nor the credential is stored;
+- lives 30 seconds and works once: it is taken out with `GETDEL`, so a copy found in a log is already spent or
+  expired;
+- is honored only while the minting credential is still valid. The handshake re-runs the full credential check by
+  id (`authenticate_credential`, the same code path as token authentication), so logging out also stops that
+  session's unused tickets, and IP-strict users are checked against the connecting address;
+- cannot be minted with the session cookie: cookies are read-only for state-changing requests, so a cross-site page
+  cannot get one.
+
+Legacy's `/ws?token=` shape is deliberately not accepted. A compatibility shim, if one is needed, is Plan 41's
+decision. Tests: `test_realtime_ws.py` moved to tickets, plus 6 new tests (missing or invalid ticket, a session token
+in the URL refused, single use, expiry, revocation, cookie refused, nothing sensitive in Redis). 5 mutations checked,
+all caught: reusable ticket, no expiry, ticket stored unhashed, revoked sessions accepted, and the old `?token=`
+handshake restored.

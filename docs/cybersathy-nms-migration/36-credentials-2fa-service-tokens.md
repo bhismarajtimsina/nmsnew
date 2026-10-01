@@ -102,3 +102,8 @@ the list to a `/0` network (R-08 in STATUS.md).
 
 Not ported (D-29). Every request to the new API carries a credential, and services use scoped API tokens. Whether to
 add a global network *restriction* on top is an open question in D-29. Nothing was built for it in this round.
+
+## Note (2026-10-01): WebSocket ticket
+
+The short-lived WebSocket credential is built; see [22-realtime-websocket.md](22-realtime-websocket.md). This plan's
+remaining item is D-29's open question (a global network restriction), which waits for the owner.

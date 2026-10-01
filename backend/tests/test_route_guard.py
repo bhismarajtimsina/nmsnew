@@ -24,6 +24,8 @@ AUTHENTICATED_ONLY = {
     ("POST", "/api/v1/auth/2fa/enable"),
     ("POST", "/api/v1/auth/2fa/disable"),
     ("GET", "/api/v1/access/me/scope"),
+    # Any authenticated user may open the realtime socket; each channel subscription is then permission-checked.
+    ("POST", "/api/v1/realtime/ticket"),
 }
 
 

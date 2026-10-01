@@ -110,45 +110,57 @@ async def authenticate(conn: asyncpg.Connection, request: Request, authorization
 
 
 async def authenticate_token(conn: asyncpg.Connection, token: str, *, ip: str | None, source: str) -> CurrentUser:
-    """The credential-lookup core `authenticate()` uses once it has a bare token string - shared with the WebSocket
-    endpoint (app/api/realtime.py), which has no `Request` to extract a cookie or check a method against: a
-    WebSocket handshake carries its token as a query parameter only, the same `?token=...` shape the legacy
-    WebSocket server used."""
-    digest = hash_token(token)
-    now = datetime.now(timezone.utc)
-
+    """The credential-lookup core `authenticate()` uses once it has a bare token string."""
     if token.startswith(API_TOKEN_PREFIX):
+        kind = "api_token"
+    elif token.startswith(SESSION_PREFIX):
+        kind = "session"
+    else:
+        raise _unauthorized()
+    return await _authenticate(conn, kind, "token_hash", hash_token(token), ip=ip, source=source)
+
+
+async def authenticate_credential(conn: asyncpg.Connection, kind: str, credential_id: str, *, ip: str | None, source: str) -> CurrentUser:
+    """The same checks as `authenticate_token`, for a credential already identified by id rather than presented as a
+    token - used by the WebSocket ticket (app/realtime/tickets.py), so a ticket is honored only while the session or
+    API token that minted it is still valid, its user still active and allowed from this address."""
+    if kind not in ("session", "api_token"):
+        raise _unauthorized()
+    return await _authenticate(conn, kind, "id", credential_id, ip=ip, source=source)
+
+
+async def _authenticate(conn: asyncpg.Connection, kind: str, column: str, value: str, *, ip: str | None, source: str) -> CurrentUser:
+    assert column in ("token_hash", "id")
+    now = datetime.now(timezone.utc)
+    cast = "::uuid" if column == "id" else ""
+
+    if kind == "api_token":
         row = await conn.fetchrow(
-            """
+            f"""
             select t.id as credential_id, t.permissions as token_permissions, t.last_used_at,
                    u.id, u.username, u.email, u.display_name, u.role_id, u.strict_ip_enabled, u.allowed_ips,
                    u.must_change_password, r.name as role_name, r.scope_mode
             from api_tokens t
             join users u on u.id = t.user_id
             join roles r on r.id = u.role_id
-            where t.token_hash = $1 and t.revoked_at is null
+            where t.{column} = $1{cast} and t.revoked_at is null
               and (t.expires_at is null or t.expires_at > now()) and u.is_active
             """,
-            digest,
+            value,
         )
-        kind = "api_token"
-    elif token.startswith(SESSION_PREFIX):
+    else:
         row = await conn.fetchrow(
-            """
+            f"""
             select s.id as credential_id, s.last_activity_at,
                    u.id, u.username, u.email, u.display_name, u.role_id, u.strict_ip_enabled, u.allowed_ips,
                    u.must_change_password, r.name as role_name, r.scope_mode
             from user_sessions s
             join users u on u.id = s.user_id
             join roles r on r.id = u.role_id
-            where s.token_hash = $1 and s.revoked_at is null and s.expires_at > now() and u.is_active
+            where s.{column} = $1{cast} and s.revoked_at is null and s.expires_at > now() and u.is_active
             """,
-            digest,
+            value,
         )
-        kind = "session"
-    else:
-        row = None
-        kind = "session"
 
     if row is None:
         raise _unauthorized()

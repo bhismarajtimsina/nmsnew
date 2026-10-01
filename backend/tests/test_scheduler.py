@@ -186,7 +186,9 @@ async def test_only_one_scheduler_leads_and_another_takes_over_when_the_leader_d
     assert await first.ensure_leader() is True
     assert await second.ensure_leader() is False and (await second.tick()).leader is False
     pid = await first._lock_conn.fetchval("select pg_backend_pid()")
-    await db.execute("select pg_terminate_backend($1)", pid)                          # the leader's session is killed
+    # The leader's session is killed. The timeout makes this wait until the backend has really exited (and so released
+    # its advisory lock); without it the call returns once the signal is sent, and the next line raced the exit.
+    assert await db.fetchval("select pg_terminate_backend($1, 5000)", pid) is True
     assert await second.ensure_leader() is True                                       # the lock was released with it
     assert await first.ensure_leader() is False
     await second.release()
