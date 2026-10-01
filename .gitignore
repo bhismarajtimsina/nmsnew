@@ -56,8 +56,10 @@ nmsbackup/
 *.xlsx
 
 # Logs and runtime files
-logs/
-log/
+# Anchored to the top level: a bare `logs/` also hid frontend/src/views/logs and frontend/src/components/logs.
+/logs/
+/log/
+var/logs/
 *.log
 *.pid
 *.pid.lock

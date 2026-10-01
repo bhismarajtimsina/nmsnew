@@ -1,0 +1,31 @@
+# The typed API layer (Plan 24): generated types match the committed OpenAPI schema, the layer type-checks strictly,
+# and its tests pass. The backend's tests/test_openapi_snapshot.py checks the schema itself against the API.
+name: frontend
+
+on:
+  pull_request:
+    paths: ["frontend/**", "backend/app/**"]
+  push:
+    branches: [main]
+    paths: ["frontend/**", "backend/app/**"]
+
+jobs:
+  api-layer:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Generated API types match openapi.json
+        run: npm run check:api
+      - name: The API layer type-checks
+        run: npm run type-check:api
+      - name: Tests
+        run: npm test

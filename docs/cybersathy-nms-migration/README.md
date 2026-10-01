@@ -85,7 +85,7 @@ Status legend: `Not started`, `Partial`, `Done`. Live status is kept in [STATUS]
 | 21 | [SNMP Trap Service](21-snmp-trap-service.md) | 6 | 12, 20 | Partial |
 | 22 | [Realtime WebSocket](22-realtime-websocket.md) | 6 | 4, 12 | Done |
 | 23 | [Dashboard Structure](23-dashboard-structure.md) | 7 | 4, 10, 20 | Not started |
-| 24 | [Frontend API Layer](24-frontend-api-layer.md) | 3 (grows) | 3 | Not started |
+| 24 | [Frontend API Layer](24-frontend-api-layer.md) | 3 (grows) | 3 | Partial |
 | 25 | [Pinia Migration](25-pinia-migration.md) | 3 (grows) | 24, 3 | Not started |
 | 26 | [Dangerous Action Safety](26-dangerous-action-safety.md) | 7 | 4, 36 | Not started |
 | 27 | [Topology and Links](27-topology-links.md) | 7 | 10 | Not started |

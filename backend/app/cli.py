@@ -11,6 +11,7 @@
   crypto generate-key          print a new encryption key
   crypto status                count stored secrets per encryption key id (never prints a secret)
   crypto reencrypt [--apply]   move every stored secret onto the active key (default is a dry run)
+  openapi [--write]            print (or write to frontend/src/api/openapi.json) the API's OpenAPI schema
 """
 from __future__ import annotations
 
@@ -267,6 +268,32 @@ async def _crypto_reencrypt(apply: bool) -> int:
     return 0
 
 
+OPENAPI_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "src", "api", "openapi.json")
+
+
+def openapi_text() -> str:
+    """The API's OpenAPI schema, serialized deterministically so the committed copy diffs cleanly. The frontend's
+    TypeScript types are generated from that copy (Plan 24), and tests fail when it is out of date."""
+    import json
+
+    from app.main import app
+
+    return json.dumps(app.openapi(), indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+
+
+def _openapi(write: bool) -> int:
+    text = openapi_text()
+    if not write:
+        sys.stdout.write(text)
+        return 0
+    path = os.path.normpath(OPENAPI_PATH)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(text)
+    print(f"wrote {path}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     sub = parser.add_subparsers(dest="group", required=True)
@@ -301,6 +328,9 @@ def main(argv: list[str] | None = None) -> int:
     reenc = crypto.add_parser("reencrypt")
     reenc.add_argument("--apply", action="store_true", help="write the re-encrypted values (default is a dry run)")
 
+    openapi = sub.add_parser("openapi")
+    openapi.add_argument("--write", action="store_true", help="write frontend/src/api/openapi.json")
+
     args = parser.parse_args(argv)
     if args.group == "db":
         if args.command == "upgrade":
@@ -318,6 +348,8 @@ def main(argv: list[str] | None = None) -> int:
         return asyncio.run(_devices_import(args.file, args.apply))
     if args.group == "sessions":
         return asyncio.run(_sessions_cleanup())
+    if args.group == "openapi":
+        return _openapi(args.write)
     if args.group == "crypto":
         if args.command == "status":
             return asyncio.run(_crypto_status())

@@ -1,0 +1,7 @@
+{
+  "//": "Type-checks the typed API layer (Plan 24) on its own and strictly. The whole-project check (`npm run type-check`) currently fails on legacy pages missing from git (see docs/cybersathy-nms-migration/STATUS.md, R-09).",
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "composite": false, "strict": true, "noEmit": true, "types": ["node", "vite/client"] },
+  "include": ["env.d.ts", "src/api/**/*.ts"],
+  "files": []
+}
