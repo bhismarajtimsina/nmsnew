@@ -274,4 +274,22 @@ Tests:
 - 76 frontend tests in total.
 - Not checked in a browser (R-09).
 
+### Device models page on the typed client (2026-10-01)
+
+`src/views/devices/deviceModels.ts` gives the models page one row shape over either API.
+
+**Legacy build: unchanged.** Same call, same default-pollers column, the same edit link, and pushed WebSocket records
+are still merged in place.
+
+**New login** (`/api/v1/device-models`, `device_models.view`):
+
+- The catalogue is generated from the legacy model configuration and the vendor registry (Plans 5 to 8), and the API
+  offers it read-only. So no row is editable and there is no edit link.
+- The page shows each model's vendor and how discovery recognises it (sysObjectID matcher and/or sysDescr pattern)
+  instead of legacy's default pollers.
+- No live updates: the catalogue only changes when it is regenerated and re-seeded.
+
+Tests: 6 vitest tests (both mappings, the detection wording, and the page wiring). 4 mutations checked, all caught.
+82 frontend tests in total. Not checked in a browser (R-09).
+
 Still not done in this plan: the remaining pages on the typed client.

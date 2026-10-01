@@ -5,23 +5,13 @@ import { DataService } from '@/config/dataService/dataService';
 import { Main } from '../styled';
 import { wsClient } from '@/services/wsClient';
 import { mergeById, removeById } from '@/utility/listMerge';
-
-interface ModelRow {
-  id: number;
-  key: string;
-  name: string;
-  type: string;
-  vendor: string;
-  icon: string | null;
-  // Object mapping poller name -> its default interval in seconds, not a
-  // plain string array — confirmed against the real API (this list used to
-  // read it as an array and check `.length`, which is always undefined on
-  // a plain object, so every row silently showed "—" even when real poller
-  // data was there).
-  pollers: Record<string, number> | null;
-}
+import { api } from '@/api/client';
+import { authBackend } from '@/auth/session';
+import { fromLegacyModel, loadLegacyModels, loadNewModels, type ModelRow } from './deviceModels';
 
 const router = useRouter();
+// With the new login the page reads the new, read-only catalogue (src/views/devices/deviceModels.ts); legacy is unchanged.
+const newApi = authBackend() === 'cybersathy';
 const loading = ref(true);
 const rows = ref<ModelRow[]>([]);
 const filters = reactive({ key: '', name: '', type: '' });
@@ -29,8 +19,7 @@ const filters = reactive({ key: '', name: '', type: '' });
 async function load() {
   loading.value = true;
   try {
-    const { data } = await DataService.get('/device-model');
-    rows.value = data.data || [];
+    rows.value = newApi ? await loadNewModels(api) : await loadLegacyModels((path) => DataService.get(path));
   } finally {
     loading.value = false;
   }
@@ -40,9 +29,11 @@ onMounted(load);
 // Real-time: device_models table changed anywhere — refresh without a manual reload.
 // Pushed record's fields (id/key/name/type/vendor/icon/pollers) match this
 // row's shape directly — merge instead of a full reload.
-const unsubAdded = wsClient.subscribe('event:storage:device_models:added', (msg) => mergeById(rows, msg.data));
-const unsubUpdated = wsClient.subscribe('event:storage:device_models:updated', (msg) => mergeById(rows, msg.data));
-const unsubDeleted = wsClient.subscribe('event:storage:device_models:deleted', (msg) => removeById(rows, msg.data.id));
+// The new catalogue only changes when it is regenerated and re-seeded, so the new login has nothing to subscribe to.
+const noop = () => {};
+const unsubAdded = newApi ? noop : wsClient.subscribe('event:storage:device_models:added', (msg) => mergeById(rows, fromLegacyModel(msg.data)));
+const unsubUpdated = newApi ? noop : wsClient.subscribe('event:storage:device_models:updated', (msg) => mergeById(rows, fromLegacyModel(msg.data)));
+const unsubDeleted = newApi ? noop : wsClient.subscribe('event:storage:device_models:deleted', (msg) => removeById(rows, msg.data.id));
 onBeforeUnmount(() => {
   unsubAdded();
   unsubUpdated();
@@ -59,6 +50,7 @@ const filteredRows = computed(() =>
 );
 
 function goEdit(row: ModelRow) {
+  if (!row.editable) return;
   router.push({ name: 'device-model-edit', params: { id: row.id } });
 }
 </script>
@@ -81,7 +73,11 @@ function goEdit(row: ModelRow) {
             </a-table-column>
             <a-table-column title="Name" data-index="name" />
             <a-table-column title="Type" data-index="type" :width="110" />
-            <a-table-column title="Default pollers" :width="220">
+            <a-table-column v-if="newApi" title="Vendor" data-index="vendor" :width="110" />
+            <a-table-column v-if="newApi" title="Detected by">
+              <template #default="{ record }"><code v-if="record.detection" class="model-detection">{{ record.detection }}</code><span v-else>—</span></template>
+            </a-table-column>
+            <a-table-column v-if="!newApi" title="Default pollers" :width="220">
               <template #default="{ record }">
                 <ul v-if="record.pollers && Object.keys(record.pollers).length" class="model-pollers">
                   <li v-for="(seconds, name) in record.pollers" :key="name">{{ name }} <em>({{ seconds }}s)</em></li>
@@ -89,7 +85,7 @@ function goEdit(row: ModelRow) {
                 <span v-else>—</span>
               </template>
             </a-table-column>
-            <a-table-column title="" :width="90">
+            <a-table-column v-if="!newApi" title="" :width="90">
               <template #default="{ record }">
                 <a @click="goEdit(record)" title="Edit"><unicon name="edit"></unicon></a>
               </template>
@@ -107,6 +103,10 @@ function goEdit(row: ModelRow) {
   gap: 16px;
   padding: 16px 16px 16px 0;
   flex-wrap: wrap;
+}
+.model-detection {
+  font-size: 12px;
+  word-break: break-all;
 }
 .model-pollers {
   margin: 0;
