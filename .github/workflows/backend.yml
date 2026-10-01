@@ -1,5 +1,3 @@
-# NOTE: GitHub only reads workflows at the root of the repository. This repository is currently rooted above `nms/`
-# (see docs/cybersathy-nms-migration/35-repo-hygiene-and-secrets.md). Move this file to the real repository root when that is fixed.
 name: backend
 
 on:

@@ -28,4 +28,4 @@ datasources:
       maxIdleConnsAuto: true
       connMaxLifetime: 14400
     secureJsonData:
-      password: superpassword
+      password: $DATABASE_PASSWD

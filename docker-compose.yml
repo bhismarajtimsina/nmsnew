@@ -223,6 +223,8 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      # Read by provisioning/datasources/datasource.yml ($DATABASE_PASSWD) instead of a password committed to git.
+      - DATABASE_PASSWD=${DATABASE_PASSWD}
       - GF_USERS_ALLOW_SIGN_UP=false
     expose:
       - 3000

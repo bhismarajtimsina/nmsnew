@@ -66,3 +66,17 @@ Rotation completed and verified, `.gitignore` in place, tracked files removed, s
 
 ## Rollback
 Restoring the tracked files is a `git revert`, but rotated secrets are not restored. Keep the previous values in the secret store during the rotation window, not in git.
+
+## Implementation notes (2026-10-01): tracked-secret scanner
+
+`tools/secret_scan.py`, run in CI on every push and pull request (`.github/workflows/secrets.yml`) and by
+`tests/test_secret_scan.py`. File rules refuse names that must never be committed (`.env` files, `.encrypt_passwd`,
+private keys, database data directories and dumps, credential stores). Content rules find private-key blocks,
+well-known token formats, and non-placeholder `NAME=value` secrets in config-shaped files. It never prints a secret.
+Exceptions go in `.secret-scan-allow`, each with a reason, optionally narrowed to one variable.
+
+Running it with `--rev origin/main` reports 255 findings in 242 files: the public leak recorded as **R-06** in
+STATUS.md. It also found that the production database password has been hard-coded in `.env-example` and in
+Grafana's datasource provisioning since the first commit. On this branch those are replaced: a placeholder in
+`.env-example`, and `$DATABASE_PASSWD` in the datasource, with `docker-compose.yml` passing that variable to Grafana.
+**Still open for this plan:** rotation, history purge, the full `.gitignore`, and the backup folders (R-03).
