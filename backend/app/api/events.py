@@ -12,6 +12,7 @@ from app.core.audit import write_audit
 from app.core.config import settings
 from app.core.database import get_conn
 from app.core.security import CurrentUser, require
+from app.notifications.pipeline import queue_for_event
 from app.repositories import events as repo
 
 router = APIRouter(prefix=settings.api_prefix, tags=["events"])
@@ -35,9 +36,11 @@ async def alertmanager_webhook(
 ) -> dict[str, Any]:
     """Alertmanager's own webhook_config points here. Meant for a service API token scoped to events.ingest only —
     never a user session — so a leaked credential here can create and resolve alarms and nothing else."""
-    summary = await process_webhook(conn, payload, worker_started_at=_STARTED_AT)
+    summary = await process_webhook(
+        conn, payload, worker_started_at=_STARTED_AT, flap_window_seconds=settings.event_flap_window_seconds
+    )
     return {
-        "created": summary.created, "duplicate": summary.duplicate, "resolved": summary.resolved,
+        "created": summary.created, "duplicate": summary.duplicate, "reopened": summary.reopened, "resolved": summary.resolved,
         "resolved_skipped_grace": summary.resolved_skipped_grace, "resolved_not_found": summary.resolved_not_found,
         "errors": summary.errors,
     }
@@ -85,6 +88,8 @@ async def resolve_event(
                 raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Already resolved")
             await write_audit(conn, action="event.resolved", actor_user_id=user.id, resource_type="event", resource_id=eid,
                               ip=user.client_ip, user_agent=request.headers.get("user-agent"))
+            # Legacy's Controller.php fires `event:resolved` for a manual resolve too, so contacts hear about it.
+            await queue_for_event(conn, eid)
     except repo.NotVisible as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from exc
     return {"status": "resolved"}

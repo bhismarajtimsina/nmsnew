@@ -9,6 +9,14 @@ Kept faithful to that logic:
     duplicate notification, not a new event, and is skipped
   * a `resolved` notification during a short grace period after this worker started is skipped — Alertmanager itself
     can still be catching up on restart, and closing events on stale information is worse than a short delay
+  * every event created or resolved is handed to the notification pipeline in the same transaction, as legacy's
+    `event:created` / `event:resolved` observers hand it to `EventGenerator`
+
+Not in legacy (Plan 20's flapping suppression): a `firing` alert whose last event was resolved by Alertmanager
+within `flap_window_seconds` reopens that event rather than inserting a new one, so a flapping interface is one event
+with a `flap_count`, not one per flap. Once an event has flapped, its next resolved notification is held for the same
+window, and canceled if it reopens again first (see `requeue_after_reopen`). An event an operator resolved by hand is
+never reopened: re-firing after that is a new event, exactly as in legacy.
 
 No device is contacted: Alertmanager already did the polling (via the exporters), and this only relays its verdict.
 """
@@ -21,7 +29,10 @@ from typing import Any
 
 import asyncpg
 
+from app.notifications.pipeline import queue_for_event, requeue_after_reopen
+
 RESOLVED_GRACE_PERIOD_SECONDS = 300
+DEFAULT_FLAP_WINDOW_SECONDS = 900
 DEFAULT_SEVERITY = "critical"
 
 
@@ -29,6 +40,7 @@ DEFAULT_SEVERITY = "critical"
 class IngestSummary:
     created: int = 0
     duplicate: int = 0
+    reopened: int = 0
     resolved: int = 0
     resolved_skipped_grace: int = 0
     resolved_not_found: int = 0
@@ -55,7 +67,21 @@ async def _is_open(conn: asyncpg.Connection, name: str, dedup_key: str) -> bool:
     )
 
 
-async def process_alert(conn: asyncpg.Connection, alert: dict[str, Any], *, worker_uptime_seconds: float, summary: IngestSummary) -> None:
+async def _recently_autoresolved(conn: asyncpg.Connection, name: str, dedup_key: str, window_seconds: int) -> asyncpg.Record | None:
+    if window_seconds <= 0:
+        return None
+    return await conn.fetchrow(
+        "select id from events where name = $1 and dedup_key = $2 and resolved_at is not null "
+        "and resolved_by_user_id is null and resolved_at > now() - make_interval(secs => $3) "
+        "order by resolved_at desc limit 1",
+        name, dedup_key, window_seconds,
+    )
+
+
+async def process_alert(
+    conn: asyncpg.Connection, alert: dict[str, Any], *, worker_uptime_seconds: float, summary: IngestSummary,
+    flap_window_seconds: int = DEFAULT_FLAP_WINDOW_SECONDS,
+) -> None:
     labels = dict(alert.get("labels") or {})
     name = labels.pop("alertname", None)
     if not name:
@@ -74,28 +100,50 @@ async def process_alert(conn: asyncpg.Connection, alert: dict[str, Any], *, work
         if await _is_open(conn, name, fingerprint):
             summary.duplicate += 1
             return
-        device_id = await resolve_device(conn, labels)
-        await conn.execute(
-            "insert into events (name, dedup_key, labels, description, severity, device_id) values ($1, $2, $3::jsonb, $4, $5, $6::uuid)",
-            name, fingerprint, json.dumps(labels), (alert.get("annotations") or {}).get("description"), severity, device_id,
-        )
+        async with conn.transaction():
+            recent = await _recently_autoresolved(conn, name, fingerprint, flap_window_seconds)
+            if recent is not None:
+                await conn.execute(
+                    "update events set resolved_at = null, is_autoresolved = null, flap_count = flap_count + 1, "
+                    "last_reopened_at = now() where id = $1::uuid",
+                    recent["id"],
+                )
+                await requeue_after_reopen(conn, str(recent["id"]))
+                summary.reopened += 1
+                return
+            device_id = await resolve_device(conn, labels)
+            event_id = await conn.fetchval(
+                "insert into events (name, dedup_key, labels, description, severity, device_id) "
+                "values ($1, $2, $3::jsonb, $4, $5, $6::uuid) returning id",
+                name, fingerprint, json.dumps(labels), (alert.get("annotations") or {}).get("description"), severity, device_id,
+            )
+            await queue_for_event(conn, str(event_id))
         summary.created += 1
     else:
         if worker_uptime_seconds < RESOLVED_GRACE_PERIOD_SECONDS:
             summary.resolved_skipped_grace += 1
             return
-        status = await conn.execute(
-            "update events set resolved_at = now() where name = $1 and dedup_key = $2 and resolved_at is null", name, fingerprint
-        )
-        if status.endswith(" 0"):
+        async with conn.transaction():
+            rows = await conn.fetch(
+                "update events set resolved_at = now() where name = $1 and dedup_key = $2 and resolved_at is null "
+                "returning id, flap_count",
+                name, fingerprint,
+            )
+            for row in rows:
+                hold = flap_window_seconds if row["flap_count"] > 0 else 0
+                await queue_for_event(conn, str(row["id"]), resolved_hold_seconds=hold)
+        if not rows:
             summary.resolved_not_found += 1
         else:
             summary.resolved += 1
 
 
-async def process_webhook(conn: asyncpg.Connection, payload: dict[str, Any], *, worker_started_at: float) -> IngestSummary:
+async def process_webhook(
+    conn: asyncpg.Connection, payload: dict[str, Any], *, worker_started_at: float,
+    flap_window_seconds: int = DEFAULT_FLAP_WINDOW_SECONDS,
+) -> IngestSummary:
     summary = IngestSummary()
     uptime = time.monotonic() - worker_started_at
     for alert in payload.get("alerts") or []:
-        await process_alert(conn, alert, worker_uptime_seconds=uptime, summary=summary)
+        await process_alert(conn, alert, worker_uptime_seconds=uptime, summary=summary, flap_window_seconds=flap_window_seconds)
     return summary

@@ -1220,6 +1220,12 @@
           "nullable": true,
           "type": "uuid"
         },
+        "flap_count": {
+          "default": "0",
+          "length": null,
+          "nullable": false,
+          "type": "int4"
+        },
         "id": {
           "default": "gen_random_uuid()",
           "length": null,
@@ -1237,6 +1243,12 @@
           "length": null,
           "nullable": false,
           "type": "jsonb"
+        },
+        "last_reopened_at": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "timestamptz"
         },
         "legacy_id": {
           "default": null,
@@ -1276,6 +1288,7 @@
         }
       },
       "constraints": {
+        "ck_events_flap_count": "CHECK ((flap_count >= 0))",
         "ck_events_severity": "CHECK (((severity)::text = ANY ((ARRAY['info'::character varying, 'warning'::character varying, 'critical'::character varying])::text[])))",
         "events_device_id_fkey": "FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE SET NULL",
         "events_pkey": "PRIMARY KEY (id, occurred_at)",

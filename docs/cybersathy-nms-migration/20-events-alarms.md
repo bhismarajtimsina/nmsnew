@@ -98,3 +98,50 @@ Two real defects found and fixed before anything shipped:
 - `app/repositories/events.py` passed `scope_all` as a bind parameter that never appeared in the SQL text on the
   unrestricted-user branch (`visible = "true"`), which asyncpg cannot type (`IndeterminateDatatypeError`). Fixed
   to `"($2::boolean or true)"` in all three affected queries.
+
+## Implementation notes (2026-10-01): events reach notifications, and flapping suppression
+
+**Found missing while starting this work: nothing passed events to the notification pipeline.** Plan 29 built
+`queue_for_event`, but no code called it, so no event (from Alertmanager or resolved by hand) would ever have queued a
+notification. Legacy does this through observers: `EventProcessor::createEvent` / `resolveEvent` and the manual resolve in
+`Controller.php` fire `event:created` / `event:resolved`, and `Notifications/Controllers/EventListener.php` hands each
+one to `EventGenerator`. Ported: `app/alerting/ingest.py` now queues notifications for every event it creates or
+resolves, and `PUT /events/{id}/resolve` does the same, each in the same transaction as the event change.
+
+**Flapping suppression (new; legacy has none).** Legacy inserts a fresh `c_events` row on every firing. Its only
+damping is the Prometheus rule's `for:` duration and a per-event `delay_before_send` (60 seconds for
+`pinger_host_down`). It has no maintenance windows either: operators used Alertmanager silences, and
+`SyncActiveAlertsCommand` even asks Alertmanager for silenced alerts. Built:
+
+- Migration `20261001_0018`: `events.flap_count` and `events.last_reopened_at`.
+- A `firing` alert whose most recent event with the same name and fingerprint was **resolved by Alertmanager** within
+  `EVENT_FLAP_WINDOW_SECONDS` (default 900; 0 turns it off) reopens that event instead of inserting a new one. An
+  event an operator resolved by hand is never reopened; re-firing after that is a new event, as in legacy.
+- Notifications follow the rule *suppress only messages that would contradict each other; never leave anyone
+  believing a live alarm is over* (`app/notifications/pipeline.py`, `requeue_after_reopen`):
+  - on reopen, every queued and unsent resolved notification for the event is canceled;
+  - a contact who was already told "resolved", or whose alert was canceled or failed, gets a fresh alert; a contact
+    whose alert is sent or still pending gets nothing more;
+  - once an event has flapped, its next resolved notification is held for the flap window, so a recovery has to last
+    that long before anyone hears about it. A non-flapping event's resolved notification keeps legacy's timing.
+
+Measured with the real sender and a fake channel: 30 fast flaps produce **one event and two delivered messages**
+(the alert, then one resolved after the flapping stops), where legacy would produce 30 events and 60 messages.
+Even the first resolved is not sent mid-storm: legacy's own rule pairs it 10 seconds after its alert, and the alarm
+reopens inside that.
+
+Tests: 14 in `test_event_flapping.py`, including this plan's acceptance check "a flapping interface produces one
+alarm, not hundreds" (100 flaps, one event, `flap_count` 99). 11 mutations checked, 10 caught. The survivor, removing
+the `window <= 0` short-circuit, is equivalent: with a zero window the query cannot match anything anyway, so the
+guard only saves a query.
+
+Still missing:
+- **Maintenance windows.** Proposed approach: as in legacy, create them as Alertmanager silences through its API
+  (silenced alerts send no webhook, so no event and no notification are created), with the window list, scope
+  checks and audit in this system. Not started.
+- **`sync-active-alerts` is not ported.** Legacy's `SyncActiveAlertsCommand` resolves events that stay open because
+  Alertmanager restarted and never sent "resolved". It needs a scheduled job that reads Alertmanager's
+  `/api/v2/alerts` (Alertmanager, not a device).
+- **Events for disabled devices.** Legacy's `createEvent` skips an event whose device is disabled. The new `devices`
+  table has only `polling_enabled`, not legacy's `enabled`, so this is not ported until it is decided which flag
+  maps to which (Plan 9).

@@ -9,7 +9,7 @@ reaches only users whose role holds `notifications.send_global`.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import asyncpg
 
@@ -73,10 +73,16 @@ async def eligible_contacts(conn: asyncpg.Connection, device_id: str | None) -> 
     ]
 
 
-async def queue_for_event(conn: asyncpg.Connection, event_id: str, *, now: datetime | None = None) -> int:
+async def queue_for_event(
+    conn: asyncpg.Connection, event_id: str, *, now: datetime | None = None, resolved_hold_seconds: int = 0
+) -> int:
     """Reads the event, its config and its eligible contacts, and queues one `notifications` row per draft
     `build_drafts` produces. Returns how many were queued. A no-op (0) if the event does not exist or its name has
-    no notification config at all - matching `EventGenerator`'s own "not configured for sending, ignoring" path."""
+    no notification config at all - matching `EventGenerator`'s own "not configured for sending, ignoring" path.
+
+    `resolved_hold_seconds` holds back a resolved notification for an event that has already flapped: if the alarm
+    fires again within that time, `requeue_after_reopen` cancels the held notification and nobody is told about a
+    recovery that did not last. 0 (the default, and legacy's only behavior) sends it on the usual schedule."""
     now = now or datetime.now(timezone.utc)
     event = await conn.fetchrow("select id, name, severity, device_id, resolved_at from events where id = $1::uuid", event_id)
     if event is None:
@@ -104,10 +110,58 @@ async def queue_for_event(conn: asyncpg.Connection, event_id: str, *, now: datet
                 event_id, draft.contact_id,
             )
             send_at = resolved_send_at(now, previous["send_at"] if previous else None)
+            if resolved_hold_seconds > 0:
+                send_at = max(send_at, now + timedelta(seconds=resolved_hold_seconds))
         await conn.execute(
             "insert into notifications (send_at, type, contact_id, event_id, previous_notification_id) "
             "values ($1, $2, $3::uuid, $4::uuid, $5::uuid)",
             send_at, draft.type, draft.contact_id, event_id, previous["id"] if previous else None,
+        )
+        created += 1
+    return created
+
+
+async def requeue_after_reopen(conn: asyncpg.Connection, event_id: str, *, now: datetime | None = None) -> int:
+    """Called when a resolved event is reopened (flapping suppression, Plan 20). Two steps:
+
+    1. Every resolved notification for the event still waiting to be sent is canceled: the recovery did not last,
+       so nobody should hear about it.
+    2. Every eligible contact who now believes the alarm is over - their latest live notification for this event is
+       a resolved one that went out, or an alert that was canceled or failed, or they have none - is queued a fresh
+       alert on the event's usual delay. A contact whose alert is sent or still pending already knows it is open
+       and gets nothing more.
+
+    So suppression only ever removes messages that would have contradicted each other; it never leaves anyone
+    thinking a live alarm is resolved. Returns how many alerts were queued."""
+    now = now or datetime.now(timezone.utc)
+    await conn.execute(
+        "update notifications set status = 'canceled', meta = meta || $2::jsonb "
+        "where event_id = $1::uuid and type = 'resolved' and status = 'queued'",
+        event_id, '{"canceled_reason": "event reopened before the resolved notification was sent"}',
+    )
+    event = await conn.fetchrow("select id, name, severity, device_id from events where id = $1::uuid", event_id)
+    if event is None:
+        return 0
+    cfg = await get_event_config(conn, event["name"])
+    if cfg is None:
+        return 0
+    device_id = str(event["device_id"]) if event["device_id"] else None
+    drafts = build_drafts(
+        event_name=event["name"], severity=event["severity"], device_id=device_id,
+        resolved=False, cfg=cfg, contacts=await eligible_contacts(conn, device_id), now=now,
+    )
+    created = 0
+    for draft in drafts:
+        latest = await conn.fetchrow(
+            "select type, status from notifications where event_id = $1::uuid and contact_id = $2::uuid "
+            "and not (type = 'resolved' and status = 'canceled') order by created_at desc limit 1",
+            event_id, draft.contact_id,
+        )
+        if latest is not None and latest["type"] == "alert" and latest["status"] in ("queued", "in_process", "sent"):
+            continue
+        await conn.execute(
+            "insert into notifications (send_at, type, contact_id, event_id) values ($1, 'alert', $2::uuid, $3::uuid)",
+            draft.send_at, draft.contact_id, event_id,
         )
         created += 1
     return created

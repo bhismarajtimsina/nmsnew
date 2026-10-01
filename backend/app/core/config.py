@@ -77,6 +77,9 @@ class Settings:
     trap_global_burst: float
     trap_max_in_flight: int
 
+    # Flapping suppression for events. See docs/cybersathy-nms-migration/20-events-alarms.md.
+    event_flap_window_seconds: int
+
     # ICMP pinger. See docs/cybersathy-nms-migration/12-worker-services.md and own-components.md §3.1.
     pinger_cycle_seconds: int
     pinger_count: int
@@ -170,6 +173,9 @@ def load_settings() -> Settings:
         trap_global_burst=float(os.getenv("TRAP_GLOBAL_BURST", "5000")),
         # Matches legacy's 500-packet queue (.trap-listener.yml, script_handler.queue_size).
         trap_max_in_flight=int(os.getenv("TRAP_MAX_IN_FLIGHT", "500")),
+        # An alarm that fires again within this many seconds of Alertmanager resolving it reopens the same event.
+        # 0 turns flapping suppression off (legacy behavior: a new event per firing).
+        event_flap_window_seconds=int(os.getenv("EVENT_FLAP_WINDOW_SECONDS", "900")),
         pinger_cycle_seconds=int(os.getenv("PINGER_CYCLE_SECONDS", "30")),
         pinger_count=int(os.getenv("PINGER_COUNT", "3")),
         pinger_timeout_seconds=float(os.getenv("PINGER_TIMEOUT_SECONDS", "1.0")),

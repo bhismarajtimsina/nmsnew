@@ -15,7 +15,8 @@ EVENT_VISIBLE = f"(d.id is not null and {DEVICE_VISIBLE})"
 
 EVENT_COLUMNS = """
     e.id, e.occurred_at, e.name, e.dedup_key, e.labels, e.description, e.severity, e.device_id,
-    d.name as device_name, host(d.management_ip) as device_ip, e.resolved_at, e.resolved_by_user_id
+    d.name as device_name, host(d.management_ip) as device_ip, e.resolved_at, e.resolved_by_user_id,
+    e.flap_count, e.last_reopened_at
 """
 
 

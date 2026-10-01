@@ -195,3 +195,9 @@ non-root).
 (too-high) cap, the test's own blocked sends never got released before the assertion failed, which then hung
 `pool.close()` forever on their still-checked-out connections instead of failing cleanly - fixed by always releasing
 them before awaiting the task, regardless of whether the assertion passes. 39 notification tests in total.
+
+## Note (2026-10-01)
+
+Events now actually reach this pipeline: until this date nothing called `queue_for_event`. Alertmanager-created and
+resolved events and manual resolves now queue notifications. `requeue_after_reopen` handles an event reopened by
+flapping suppression. See [20-events-alarms.md](20-events-alarms.md#implementation-notes-2026-10-01-events-reach-notifications-and-flapping-suppression).
