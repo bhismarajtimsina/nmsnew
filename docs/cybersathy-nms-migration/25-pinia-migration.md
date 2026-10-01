@@ -292,4 +292,27 @@ are still merged in place.
 Tests: 6 vitest tests (both mappings, the detection wording, and the page wiring). 4 mutations checked, all caught.
 82 frontend tests in total. Not checked in a browser (R-09).
 
+### Access profiles page for the new login (2026-10-01)
+
+The two systems' profiles are different things.
+
+- **Legacy:** a community plus CLI login, password and console connection settings.
+- **New:** SNMP only (v1, v2c or v3), with secrets the API never returns. It only reports whether each secret is set.
+
+So the new login gets its own page, `DeviceAccessNewPage.vue`, chosen by the router like the device detail page. The
+legacy build keeps its page unchanged. The rules live in `src/views/devices/accessProfiles.ts`:
+
+- A stored secret is never shown. Editing starts with every secret field blank, and a blank secret means "keep the
+  stored one". Only secrets actually typed are sent, and an edit that changes nothing sends nothing.
+- Only the fields for the profile's own version are sent. A v3 profile is never sent a community, and a v2c profile
+  is never sent v3 fields.
+- The SNMP version cannot be changed after creation (the API does not accept it). The form says so.
+- The form is checked before sending (required fields, the API's 8-character minimum for a typed v3 secret).
+- The API's own reasons are shown: a duplicate name, a profile still used by N devices, or encryption not configured.
+- Secret inputs are masked and marked `autocomplete="new-password"`, and the typed values are cleared from the form
+  after every save attempt.
+
+Tests: 13 vitest tests, including a check that the page masks and clears the secret inputs. 7 mutations checked, all
+caught. 95 frontend tests in total. Not checked in a browser (R-09).
+
 Still not done in this plan: the remaining pages on the typed client.

@@ -116,7 +116,9 @@ const wcaRouteDefs: WcaRoute[] = [
     name: 'device-access',
     title: 'Access management',
     apiPaths: ['GET/POST/PUT/DELETE /device-access'],
-    component: () => import('@/views/devices/DeviceAccessPage.vue'),
+    // The new login gets the SNMP-only profiles page with write-only secrets (Plan 25); legacy keeps its own page.
+    component: () =>
+      authBackend() === 'cybersathy' ? import('@/views/devices/DeviceAccessNewPage.vue') : import('@/views/devices/DeviceAccessPage.vue'),
   },
   {
     path: 'management/device-group',
