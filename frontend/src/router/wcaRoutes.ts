@@ -307,14 +307,18 @@ const wcaRouteDefs: WcaRoute[] = [
     name: 'users',
     title: 'Users',
     apiPaths: ['GET/DELETE /user', 'GET /user/{id}'],
-    component: () => import('@/views/users/UsersListPage.vue'),
+    // The new login gets users on the new API, edited in place (Plan 25); legacy keeps its list and form pages.
+    component: () =>
+      authBackend() === 'cybersathy' ? import('@/views/users/UsersNewPage.vue') : import('@/views/users/UsersListPage.vue'),
   },
   {
     path: 'management/user/new',
     name: 'users-create',
     title: 'Add new user',
     apiPaths: ['POST /user', 'GET /user-role', 'GET /device-group', 'GET /public/defaults'],
-    component: () => import('@/views/users/UserFormPage.vue'),
+    // Under the new login users are edited in place on the list page, so the legacy form is never served.
+    component: () =>
+      authBackend() === 'cybersathy' ? import('@/views/users/UsersNewPage.vue') : import('@/views/users/UserFormPage.vue'),
   },
   {
     path: 'management/user/:id',
@@ -328,7 +332,9 @@ const wcaRouteDefs: WcaRoute[] = [
       'DELETE /user-session-close/{id}',
       'PUT /user/{id}/generate-auth-key',
     ],
-    component: () => import('@/views/users/UserFormPage.vue'),
+    // Under the new login users are edited in place on the list page, so the legacy form is never served.
+    component: () =>
+      authBackend() === 'cybersathy' ? import('@/views/users/UsersNewPage.vue') : import('@/views/users/UserFormPage.vue'),
   },
   {
     path: 'management/user-role',

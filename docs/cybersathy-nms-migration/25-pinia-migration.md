@@ -315,4 +315,32 @@ legacy build keeps its page unchanged. The rules live in `src/views/devices/acce
 Tests: 13 vitest tests, including a check that the page masks and clears the secret inputs. 7 mutations checked, all
 caught. 95 frontend tests in total. Not checked in a browser (R-09).
 
+### Users page for the new login (2026-10-01)
+
+The new API's user model differs from legacy's:
+
+- There is no delete. Accounts are disabled, which keeps their audit trail.
+- A user's role comes back by name.
+- A server-generated password is returned once, on creation or reset.
+- Resetting a password and resetting two-factor sign-in are separate actions.
+
+So the new login gets `UsersNewPage.vue`, which lists users and edits them in place. The router serves it for the
+users list and for both legacy form routes (`users-create`, `users-edit`), so the legacy form is never shown under
+the new login. The legacy build is unchanged. The rules live in `src/views/users/usersApi.ts`:
+
+- The form maps the role name to its id using `/api/v1/access/roles`. Without `roles.view` the role list is empty and
+  "Add user" is disabled.
+- Edits send only what changed. An unchanged edit sends nothing, and a cleared email is sent as `null`.
+- The login is checked against the API's own pattern before sending, and it cannot be changed after creation.
+- A generated password appears once, in a dialog that must be acknowledged, and is then dropped from memory.
+- Change controls are shown only to holders of `users.manage`.
+- The server's refusals are shown as they come: granting a stronger role than your own, demoting or disabling the
+  last Super Admin, disabling yourself. Password-rule problems are spelled out.
+
+Roles stay read-only under the new login. The new API has a fixed set of seven seeded roles and no endpoint to
+change them, so the roles pages are not moved yet.
+
+Tests: 11 vitest tests. 8 mutations checked, all caught. 106 frontend tests in total. Not checked in a browser
+(R-09).
+
 Still not done in this plan: the remaining pages on the typed client.

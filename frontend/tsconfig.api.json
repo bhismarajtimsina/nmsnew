@@ -2,6 +2,6 @@
   "//": "Type-checks the typed API layer (Plan 24) on its own and strictly. The whole-project check (`npm run type-check`) currently fails on legacy pages missing from git (see docs/cybersathy-nms-migration/STATUS.md, R-09).",
   "extends": "./tsconfig.json",
   "compilerOptions": { "composite": false, "strict": true, "noEmit": true, "types": ["node", "vite/client"] },
-  "include": ["env.d.ts", "src/api/**/*.ts", "src/stores/**/*.ts", "src/config/config.ts", "src/realtime/**/*.ts", "src/router/guard*.ts", "src/auth/menu*.ts", "src/views/devices/deviceList*.ts", "src/views/devices/deviceDetail*.ts", "src/views/devices/deviceGroups*.ts", "src/views/devices/deviceModels*.ts", "src/views/devices/accessProfiles*.ts", "src/test-setup.ts", "vitest.config.ts"],
+  "include": ["env.d.ts", "src/api/**/*.ts", "src/stores/**/*.ts", "src/config/config.ts", "src/realtime/**/*.ts", "src/router/guard*.ts", "src/auth/menu*.ts", "src/views/devices/deviceList*.ts", "src/views/devices/deviceDetail*.ts", "src/views/devices/deviceGroups*.ts", "src/views/devices/deviceModels*.ts", "src/views/devices/accessProfiles*.ts", "src/views/users/usersApi*.ts", "src/test-setup.ts", "vitest.config.ts"],
   "files": []
 }
