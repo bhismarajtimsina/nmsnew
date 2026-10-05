@@ -1024,6 +1024,83 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/macros": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Macro */
+        get: operations["list_macro_api_v1_macros_get"];
+        put?: never;
+        /** Create Macro */
+        post: operations["create_macro_api_v1_macros_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/macros/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Draft Macro
+         * @description Render an unsaved template, as its editor sees it before saving. Never touches a device.
+         */
+        post: operations["preview_draft_macro_api_v1_macros_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/macros/{macro_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Macro */
+        get: operations["get_macro_api_v1_macros__macro_id__get"];
+        /** Update Macro */
+        put: operations["update_macro_api_v1_macros__macro_id__put"];
+        post?: never;
+        /** Delete Macro */
+        delete: operations["delete_macro_api_v1_macros__macro_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/macros/{macro_id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Macro
+         * @description Render a saved template against sample variables. Never touches a device.
+         */
+        post: operations["preview_macro_api_v1_macros__macro_id__preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/maintenance-windows": {
         parameters: {
             query?: never;
@@ -1142,6 +1219,83 @@ export interface paths {
         get: operations["get_oid_profile_api_v1_oid_profiles__profile_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/onu-registration-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Onu Registration */
+        get: operations["list_onu_registration_api_v1_onu_registration_templates_get"];
+        put?: never;
+        /** Create Onu Registration */
+        post: operations["create_onu_registration_api_v1_onu_registration_templates_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/onu-registration-templates/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Draft Onu Registration
+         * @description Render an unsaved template, as its editor sees it before saving. Never touches a device.
+         */
+        post: operations["preview_draft_onu_registration_api_v1_onu_registration_templates_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/onu-registration-templates/{macro_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Onu Registration */
+        get: operations["get_onu_registration_api_v1_onu_registration_templates__macro_id__get"];
+        /** Update Onu Registration */
+        put: operations["update_onu_registration_api_v1_onu_registration_templates__macro_id__put"];
+        post?: never;
+        /** Delete Onu Registration */
+        delete: operations["delete_onu_registration_api_v1_onu_registration_templates__macro_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/onu-registration-templates/{macro_id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Onu Registration
+         * @description Render a saved template against sample variables. Never touches a device.
+         */
+        post: operations["preview_onu_registration_api_v1_onu_registration_templates__macro_id__preview_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2399,6 +2553,143 @@ export interface components {
              */
             token_type: string;
             user?: components["schemas"]["AuthUser"] | null;
+        };
+        /** MacroDraftPreviewIn */
+        MacroDraftPreviewIn: {
+            /** Parameters */
+            parameters?: components["schemas"]["MacroParameter"][];
+            /** Params */
+            params?: {
+                [key: string]: string;
+            };
+            /** Template */
+            template: string;
+            /** Variables */
+            variables?: {
+                [key: string]: unknown;
+            };
+        };
+        /** MacroIn */
+        MacroIn: {
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * Display Output
+             * @default none
+             * @enum {string}
+             */
+            display_output: "none" | "all" | "last";
+            /** Model Keys */
+            model_keys?: string[];
+            /** Name */
+            name: string;
+            /** Parameters */
+            parameters?: components["schemas"]["MacroParameter"][];
+            /** Template */
+            template: string;
+        };
+        /** MacroList */
+        MacroList: {
+            /** Items */
+            items: components["schemas"]["MacroOut"][];
+        };
+        /** MacroOut */
+        MacroOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Description */
+            description: string;
+            /**
+             * Display Output
+             * @enum {string}
+             */
+            display_output: "none" | "all" | "last";
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "macro" | "onu_registration";
+            /** Model Keys */
+            model_keys: string[];
+            /** Name */
+            name: string;
+            /** Parameters */
+            parameters: components["schemas"]["MacroParameter"][];
+            /** Template */
+            template: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Version */
+            version: number;
+        };
+        /** MacroParameter */
+        MacroParameter: {
+            /** Key */
+            key: string;
+            /** Pattern */
+            pattern?: string | null;
+            /** Source */
+            source?: string | null;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "select_predefined" | "select_from_variable" | "input_string";
+            /** Variants */
+            variants?: string[] | null;
+        };
+        /** MacroPreviewIn */
+        MacroPreviewIn: {
+            /** Params */
+            params?: {
+                [key: string]: string;
+            };
+            /** Variables */
+            variables?: {
+                [key: string]: unknown;
+            };
+        };
+        /** MacroPreviewOut */
+        MacroPreviewOut: {
+            /** Aborted */
+            aborted: string | null;
+            /** Commands */
+            commands: string[];
+        };
+        /** MacroUpdate */
+        MacroUpdate: {
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * Display Output
+             * @default none
+             * @enum {string}
+             */
+            display_output: "none" | "all" | "last";
+            /** Model Keys */
+            model_keys?: string[];
+            /** Name */
+            name: string;
+            /** Parameters */
+            parameters?: components["schemas"]["MacroParameter"][];
+            /** Template */
+            template: string;
+            /** Version */
+            version: number;
         };
         /** MaintenanceCanceled */
         MaintenanceCanceled: {
@@ -5793,6 +6084,245 @@ export interface operations {
             };
         };
     };
+    list_macro_api_v1_macros_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MacroList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_macro_api_v1_macros_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MacroIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MacroOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_draft_macro_api_v1_macros_preview_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MacroDraftPreviewIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MacroPreviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_macro_api_v1_macros__macro_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                macro_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MacroOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_macro_api_v1_macros__macro_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                macro_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MacroUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MacroOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_macro_api_v1_macros__macro_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                macro_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_macro_api_v1_macros__macro_id__preview_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                macro_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MacroPreviewIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MacroPreviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_windows_api_v1_maintenance_windows_get: {
         parameters: {
             query?: {
@@ -6049,6 +6579,245 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OidProfileDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_onu_registration_api_v1_onu_registration_templates_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MacroList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_onu_registration_api_v1_onu_registration_templates_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MacroIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MacroOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_draft_onu_registration_api_v1_onu_registration_templates_preview_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MacroDraftPreviewIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MacroPreviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_onu_registration_api_v1_onu_registration_templates__macro_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                macro_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MacroOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_onu_registration_api_v1_onu_registration_templates__macro_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                macro_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MacroUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MacroOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_onu_registration_api_v1_onu_registration_templates__macro_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                macro_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_onu_registration_api_v1_onu_registration_templates__macro_id__preview_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                macro_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MacroPreviewIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MacroPreviewOut"];
                 };
             };
             /** @description Validation Error */

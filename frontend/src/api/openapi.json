@@ -2790,6 +2790,364 @@
         "title": "LoginResponse",
         "type": "object"
       },
+      "MacroDraftPreviewIn": {
+        "additionalProperties": false,
+        "properties": {
+          "parameters": {
+            "items": {
+              "$ref": "#/components/schemas/MacroParameter"
+            },
+            "maxItems": 40,
+            "title": "Parameters",
+            "type": "array"
+          },
+          "params": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Params",
+            "type": "object"
+          },
+          "template": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Template",
+            "type": "string"
+          },
+          "variables": {
+            "additionalProperties": true,
+            "title": "Variables",
+            "type": "object"
+          }
+        },
+        "required": [
+          "template"
+        ],
+        "title": "MacroDraftPreviewIn",
+        "type": "object"
+      },
+      "MacroIn": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Description",
+            "type": "string"
+          },
+          "display_output": {
+            "default": "none",
+            "enum": [
+              "none",
+              "all",
+              "last"
+            ],
+            "title": "Display Output",
+            "type": "string"
+          },
+          "model_keys": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 200,
+            "title": "Model Keys",
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "parameters": {
+            "items": {
+              "$ref": "#/components/schemas/MacroParameter"
+            },
+            "maxItems": 40,
+            "title": "Parameters",
+            "type": "array"
+          },
+          "template": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Template",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "template"
+        ],
+        "title": "MacroIn",
+        "type": "object"
+      },
+      "MacroList": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MacroOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "MacroList",
+        "type": "object"
+      },
+      "MacroOut": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "display_output": {
+            "enum": [
+              "none",
+              "all",
+              "last"
+            ],
+            "title": "Display Output",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "macro",
+              "onu_registration"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "model_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Model Keys",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "parameters": {
+            "items": {
+              "$ref": "#/components/schemas/MacroParameter"
+            },
+            "title": "Parameters",
+            "type": "array"
+          },
+          "template": {
+            "title": "Template",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "name",
+          "description",
+          "template",
+          "parameters",
+          "display_output",
+          "model_keys",
+          "version",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "MacroOut",
+        "type": "object"
+      },
+      "MacroParameter": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "pattern": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pattern"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "type": {
+            "enum": [
+              "select_predefined",
+              "select_from_variable",
+              "input_string"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "variants": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variants"
+          }
+        },
+        "required": [
+          "key",
+          "type"
+        ],
+        "title": "MacroParameter",
+        "type": "object"
+      },
+      "MacroPreviewIn": {
+        "additionalProperties": false,
+        "properties": {
+          "params": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Params",
+            "type": "object"
+          },
+          "variables": {
+            "additionalProperties": true,
+            "title": "Variables",
+            "type": "object"
+          }
+        },
+        "title": "MacroPreviewIn",
+        "type": "object"
+      },
+      "MacroPreviewOut": {
+        "additionalProperties": false,
+        "properties": {
+          "aborted": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aborted"
+          },
+          "commands": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Commands",
+            "type": "array"
+          }
+        },
+        "required": [
+          "commands",
+          "aborted"
+        ],
+        "title": "MacroPreviewOut",
+        "type": "object"
+      },
+      "MacroUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Description",
+            "type": "string"
+          },
+          "display_output": {
+            "default": "none",
+            "enum": [
+              "none",
+              "all",
+              "last"
+            ],
+            "title": "Display Output",
+            "type": "string"
+          },
+          "model_keys": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 200,
+            "title": "Model Keys",
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "parameters": {
+            "items": {
+              "$ref": "#/components/schemas/MacroParameter"
+            },
+            "maxItems": 40,
+            "title": "Parameters",
+            "type": "array"
+          },
+          "template": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Template",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "template",
+          "version"
+        ],
+        "title": "MacroUpdate",
+        "type": "object"
+      },
       "MaintenanceCanceled": {
         "additionalProperties": false,
         "properties": {
@@ -10703,6 +11061,418 @@
         ]
       }
     },
+    "/api/v1/macros": {
+      "get": {
+        "operationId": "list_macro_api_v1_macros_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MacroList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Macro",
+        "tags": [
+          "macros"
+        ]
+      },
+      "post": {
+        "operationId": "create_macro_api_v1_macros_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MacroIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MacroOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Macro",
+        "tags": [
+          "macros"
+        ]
+      }
+    },
+    "/api/v1/macros/preview": {
+      "post": {
+        "description": "Render an unsaved template, as its editor sees it before saving. Never touches a device.",
+        "operationId": "preview_draft_macro_api_v1_macros_preview_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MacroDraftPreviewIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MacroPreviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Draft Macro",
+        "tags": [
+          "macros"
+        ]
+      }
+    },
+    "/api/v1/macros/{macro_id}": {
+      "delete": {
+        "operationId": "delete_macro_api_v1_macros__macro_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "macro_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Macro Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Macro",
+        "tags": [
+          "macros"
+        ]
+      },
+      "get": {
+        "operationId": "get_macro_api_v1_macros__macro_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "macro_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Macro Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MacroOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Macro",
+        "tags": [
+          "macros"
+        ]
+      },
+      "put": {
+        "operationId": "update_macro_api_v1_macros__macro_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "macro_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Macro Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MacroUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MacroOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Macro",
+        "tags": [
+          "macros"
+        ]
+      }
+    },
+    "/api/v1/macros/{macro_id}/preview": {
+      "post": {
+        "description": "Render a saved template against sample variables. Never touches a device.",
+        "operationId": "preview_macro_api_v1_macros__macro_id__preview_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "macro_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Macro Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MacroPreviewIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MacroPreviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Macro",
+        "tags": [
+          "macros"
+        ]
+      }
+    },
     "/api/v1/maintenance-windows": {
       "get": {
         "operationId": "list_windows_api_v1_maintenance_windows_get",
@@ -11235,6 +12005,418 @@
         "summary": "Get Oid Profile",
         "tags": [
           "registries"
+        ]
+      }
+    },
+    "/api/v1/onu-registration-templates": {
+      "get": {
+        "operationId": "list_onu_registration_api_v1_onu_registration_templates_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MacroList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Onu Registration",
+        "tags": [
+          "onu-registration"
+        ]
+      },
+      "post": {
+        "operationId": "create_onu_registration_api_v1_onu_registration_templates_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MacroIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MacroOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Onu Registration",
+        "tags": [
+          "onu-registration"
+        ]
+      }
+    },
+    "/api/v1/onu-registration-templates/preview": {
+      "post": {
+        "description": "Render an unsaved template, as its editor sees it before saving. Never touches a device.",
+        "operationId": "preview_draft_onu_registration_api_v1_onu_registration_templates_preview_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MacroDraftPreviewIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MacroPreviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Draft Onu Registration",
+        "tags": [
+          "onu-registration"
+        ]
+      }
+    },
+    "/api/v1/onu-registration-templates/{macro_id}": {
+      "delete": {
+        "operationId": "delete_onu_registration_api_v1_onu_registration_templates__macro_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "macro_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Macro Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Onu Registration",
+        "tags": [
+          "onu-registration"
+        ]
+      },
+      "get": {
+        "operationId": "get_onu_registration_api_v1_onu_registration_templates__macro_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "macro_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Macro Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MacroOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Onu Registration",
+        "tags": [
+          "onu-registration"
+        ]
+      },
+      "put": {
+        "operationId": "update_onu_registration_api_v1_onu_registration_templates__macro_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "macro_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Macro Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MacroUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MacroOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Onu Registration",
+        "tags": [
+          "onu-registration"
+        ]
+      }
+    },
+    "/api/v1/onu-registration-templates/{macro_id}/preview": {
+      "post": {
+        "description": "Render a saved template against sample variables. Never touches a device.",
+        "operationId": "preview_onu_registration_api_v1_onu_registration_templates__macro_id__preview_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "macro_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Macro Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MacroPreviewIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MacroPreviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Onu Registration",
+        "tags": [
+          "onu-registration"
         ]
       }
     },

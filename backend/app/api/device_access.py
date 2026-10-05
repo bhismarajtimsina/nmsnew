@@ -152,7 +152,7 @@ async def update_profile(
         after = await repo.get_profile(conn, pid)
         await write_audit(conn, action="access_profile.updated", actor_user_id=user.id, resource_type="access_profile", resource_id=pid,
                           ip=user.client_ip, user_agent=request.headers.get("user-agent"), before=_safe_view(before), after=_safe_view(after),
-                          metadata={"secrets_rotated": sorted(k for k in changes if k in repo.SECRET_FIELDS)})
+                          metadata={"rotated_fields": sorted(k for k in changes if k in repo.SECRET_FIELDS)})  # names only, never values
     return after
 
 

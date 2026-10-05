@@ -6,7 +6,10 @@ from typing import Any
 
 import asyncpg
 
-_SENSITIVE = re.compile(r"(^|_)(password|passwd|secret|token|community|auth_key|api_key|private_key|totp|pin|hash|code)(_|$)|_enc$")
+# Singular and plural forms: a list of credentials under `tokens` or `communities` is as secret as one under `token`.
+_SENSITIVE = re.compile(
+    r"(^|_)(passwords?|passwd|secrets?|tokens?|community|communities|auth_keys?|api_keys?|private_keys?|totp|pins?|hash(es)?|codes?)(_|$)|_enc$"
+)
 
 
 def is_sensitive_key(key: str) -> bool:

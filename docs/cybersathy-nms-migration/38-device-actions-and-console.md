@@ -108,11 +108,40 @@ needed stronger tests, which were added; one redundant step was removed).
 
 Still to do:
 
-- macro and registration-template storage, editing (`macros.edit`, audited) and a preview endpoint that never touches
-  a device;
 - SNMP SET support in the transport, still refused by the disabled transport;
 - the queued request flow (`actions.jobs`, worker executes);
 - the first drivers, each with a fake transport and a recorded transcript;
 - diagnostics, the console gateway and sensor devices.
 
 Not verified against a device.
+
+### Macro and registration-template storage (2026-10-05)
+
+Built: migration `20261005_0022` (table `macros`, one table for both kinds), `app/repositories/macros.py`, and
+`app/api/macros.py`.
+
+**Routes.** `/api/v1/macros` (view `macros.execute`, edit `macros.edit`) and `/api/v1/onu-registration-templates`
+(view `onus.registration.preview`, edit `onus.registration.configure`). Each offers list, read, create, update,
+delete, preview of a saved template, and preview of an unsaved draft.
+
+**Saving.**
+
+- Every template and parameter declaration goes through the template engine when saved. A template that doesn't
+  parse, uses `include`, `import` or `extends`, or declares a pattern that doesn't compile is refused with the reason.
+- Names are unique within a kind.
+- A save carries the version it was based on. If someone else saved first, it is refused with 409, so no edit is lost
+  silently.
+- Create, update and delete are audited with the template before and after.
+
+**Previews** render against sample variables the caller supplies and never touch a device.
+
+- Parameters are validated exactly as for a real run, so `5 ; reboot` or a newline is refused in a preview too.
+- A template's own `<exception>` line comes back as `aborted` with its message.
+- Secrets in the sample data are dropped before rendering.
+
+Running a template against a device is not here. It will go through Plan 26's confirmation flow once the queued
+executor exists.
+
+Tests: 18 (`tests/test_macros_api.py`). 16 mutations checked: 15 caught, and 1 was a redundant check, which was removed.
+
+Found while testing previews: the shared secret filter (also used by the audit log) matched `token` but not `tokens`, `password` but not `passwords`, `community` but not `communities`, so a list of credentials under a plural key passed through. It now covers plurals (`tests/test_audit.py`). The access-profile audit key `secrets_rotated`, which holds field names only, became `rotated_fields` so the wider filter does not hide it.

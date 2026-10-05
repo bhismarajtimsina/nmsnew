@@ -43,3 +43,13 @@ async def test_timestamps_and_other_non_json_values_are_stored_as_text(db):
 
     await write_audit(db, action="test.time", after={"when": datetime.datetime(2026, 9, 29, 12, 0)})
     assert "2026-09-29" in await db.fetchval("select after::text from audit_logs where action = 'test.time'")
+
+
+def test_plural_keys_holding_several_secrets_are_redacted_too():
+    """Found 2026-10-05: `tokens`, `passwords` and `communities` used to pass through unredacted."""
+    payload = {"tokens": ["a", "b"], "passwords": ["x"], "snmp_communities": ["public"], "api_keys": ["k"],
+               "recovery_codes": ["1"], "secrets": {"x": 1}, "hashes": ["h"], "pins": ["0000"],
+               "tokenizer": "kept", "pinned": True, "codec": "kept", "description": "kept"}
+    clean = redact(payload)
+    assert all(clean[k] == "[redacted]" for k in ("tokens", "passwords", "snmp_communities", "api_keys", "recovery_codes", "secrets", "hashes", "pins"))
+    assert clean["tokenizer"] == "kept" and clean["pinned"] is True and clean["codec"] == "kept" and clean["description"] == "kept"

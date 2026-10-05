@@ -1802,6 +1802,104 @@
       },
       "triggers": {}
     },
+    "macros": {
+      "columns": {
+        "created_at": {
+          "default": "now()",
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        "created_by_user_id": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "uuid"
+        },
+        "description": {
+          "default": "''::text",
+          "length": null,
+          "nullable": false,
+          "type": "text"
+        },
+        "display_output": {
+          "default": "'none'::character varying",
+          "length": 8,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "id": {
+          "default": "gen_random_uuid()",
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "kind": {
+          "default": null,
+          "length": 24,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "model_keys": {
+          "default": "'{}'::text[]",
+          "length": null,
+          "nullable": false,
+          "type": "_text"
+        },
+        "name": {
+          "default": null,
+          "length": 200,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "parameters": {
+          "default": "'[]'::jsonb",
+          "length": null,
+          "nullable": false,
+          "type": "jsonb"
+        },
+        "template": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "text"
+        },
+        "updated_at": {
+          "default": "now()",
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        "updated_by_user_id": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "uuid"
+        },
+        "version": {
+          "default": "1",
+          "length": null,
+          "nullable": false,
+          "type": "int4"
+        }
+      },
+      "constraints": {
+        "ck_macros_display_output": "CHECK (((display_output)::text = ANY ((ARRAY['none'::character varying, 'all'::character varying, 'last'::character varying])::text[])))",
+        "ck_macros_kind": "CHECK (((kind)::text = ANY ((ARRAY['macro'::character varying, 'onu_registration'::character varying])::text[])))",
+        "ck_macros_name": "CHECK (((length((name)::text) >= 1) AND (length((name)::text) <= 200)))",
+        "ck_macros_parameters": "CHECK (((jsonb_typeof(parameters) = 'array'::text) AND (jsonb_array_length(parameters) <= 40)))",
+        "ck_macros_template_size": "CHECK (((length(template) >= 1) AND (length(template) <= 20000)))",
+        "macros_created_by_user_id_fkey": "FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL",
+        "macros_pkey": "PRIMARY KEY (id)",
+        "macros_updated_by_user_id_fkey": "FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL",
+        "uq_macros_kind_name": "UNIQUE (kind, name)"
+      },
+      "indexes": {
+        "macros_pkey": "CREATE UNIQUE INDEX macros_pkey ON public.macros USING btree (id)",
+        "uq_macros_kind_name": "CREATE UNIQUE INDEX uq_macros_kind_name ON public.macros USING btree (kind, name)"
+      },
+      "triggers": {}
+    },
     "maintenance_windows": {
       "columns": {
         "canceled_at": {

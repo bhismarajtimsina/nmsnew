@@ -767,3 +767,59 @@ class ActionExecuted(Strict):
     action: str
     confirmation_id: str
     results: list[ActionTargetResult]
+
+
+# --- Macros and ONU-registration templates (Plan 38) ---
+
+class MacroParameter(Strict):
+    key: str
+    type: Literal["select_predefined", "select_from_variable", "input_string"]
+    variants: list[str] | None = None
+    source: str | None = None
+    pattern: str | None = None
+
+
+class MacroIn(Strict):
+    name: str = Field(min_length=1, max_length=200)
+    description: str = Field(default="", max_length=2000)
+    template: str = Field(min_length=1, max_length=20000)
+    parameters: list[MacroParameter] = Field(default_factory=list, max_length=40)
+    display_output: Literal["none", "all", "last"] = "none"
+    model_keys: list[str] = Field(default_factory=list, max_length=200)
+
+
+class MacroUpdate(MacroIn):
+    version: int = Field(ge=1)
+
+
+class MacroOut(Strict):
+    id: str
+    kind: Literal["macro", "onu_registration"]
+    name: str
+    description: str
+    template: str
+    parameters: list[MacroParameter]
+    display_output: Literal["none", "all", "last"]
+    model_keys: list[str]
+    version: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class MacroList(Strict):
+    items: list[MacroOut]
+
+
+class MacroPreviewIn(Strict):
+    params: dict[str, str] = Field(default_factory=dict)
+    variables: dict[str, Any] = Field(default_factory=dict)
+
+
+class MacroDraftPreviewIn(MacroPreviewIn):
+    template: str = Field(min_length=1, max_length=20000)
+    parameters: list[MacroParameter] = Field(default_factory=list, max_length=40)
+
+
+class MacroPreviewOut(Strict):
+    commands: list[str]
+    aborted: str | None
