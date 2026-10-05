@@ -9,6 +9,10 @@ import asyncpg
 _SENSITIVE = re.compile(r"(^|_)(password|passwd|secret|token|community|auth_key|api_key|private_key|totp|pin|hash|code)(_|$)|_enc$")
 
 
+def is_sensitive_key(key: str) -> bool:
+    return bool(_SENSITIVE.search(str(key).lower()))
+
+
 def redact(value: Any) -> Any:
     """Copy of `value` with every sensitive-looking field replaced. Applied to everything written to the audit log."""
     if isinstance(value, dict):

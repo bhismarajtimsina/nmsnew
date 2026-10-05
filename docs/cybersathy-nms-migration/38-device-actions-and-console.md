@@ -1,6 +1,6 @@
 # Plan 38: Device Actions and Console
 
-> **Phase:** 7 · **Depends on:** 4, 11, 12, 26, 36 · **Status:** Not started · **Owns:** implementation behind Plan 26's safety layer
+> **Phase:** 7 · **Depends on:** 4, 11, 12, 26, 36 · **Status:** Partial (template engine built; executors, transport writes, macros storage, diagnostics and console to do) · **Owns:** implementation behind Plan 26's safety layer
 
 ## Goal
 Implement every device-changing or device-probing action, macro, registration template and console session in the new system, all through the shared safety layer.
@@ -67,3 +67,52 @@ All catalogue entries implemented with driver tests; safety-layer checks pass; h
 
 ## Rollback
 Actions stay served by the legacy system until this plan reaches Done. After cutover, the action endpoints can be disabled by a single setting while reads continue.
+
+## Implementation notes (2026-10-05)
+
+**Built: step 4's template engine** (`app/actions/templates.py`), the part every macro and ONU-registration template
+goes through. Nothing in it reaches a device.
+
+Legacy defects found while porting (R-10, read from origin/main's `MacrosGateway.php`):
+
+- **Templates render unsandboxed.** Legacy uses a plain Twig 3.10.3 `Environment` with no sandbox extension, so a
+  macro editor writes template code that runs inside the NMS server. How far that reaches was not tried.
+- **Parameters can inject commands.** Text parameters are checked with an unanchored `preg_match("/{regex}/")`, and
+  an empty pattern accepts anything. A value such as `10 ; reboot`, or one with a newline, passes; the newline becomes
+  an extra console command once the template is sent line by line.
+
+**Rendering:**
+
+- Jinja2's immutable sandbox, with undefined variables as errors.
+- No loader. `include`, `import`, `from` and `extends` are refused when the template is checked.
+- No globals except a `range` capped at 4096. String, list and power operators are capped before anything large is
+  built.
+- Caps on template size (20,000 characters), output (64,000 characters) and commands (500).
+- Variables are copied down to plain data first, and keys that look like secrets are dropped, so nothing callable
+  and no credential reaches a template.
+- Legacy's `<exception "message">` line is kept: it lets a template refuse to run.
+
+**Parameters:**
+
+- Declarations are checked when a template is saved: known types, valid keys, non-empty variant lists, patterns that
+  compile.
+- At run time every declared parameter must be given and nothing else.
+- Text must match its pattern in full; a text parameter with no pattern gets a conservative default instead of
+  "anything".
+- Selections must come from their list, including a list taken from device data.
+- No value may contain a control character, so neither a newline from device data nor one let through by a
+  permissive pattern can add a command.
+
+Tests: 58 (`tests/test_action_templates.py`), including 29 hostile templates. 24 mutations checked, all caught (two
+needed stronger tests, which were added; one redundant step was removed).
+
+Still to do:
+
+- macro and registration-template storage, editing (`macros.edit`, audited) and a preview endpoint that never touches
+  a device;
+- SNMP SET support in the transport, still refused by the disabled transport;
+- the queued request flow (`actions.jobs`, worker executes);
+- the first drivers, each with a fake transport and a recorded transcript;
+- diagnostics, the console gateway and sensor devices.
+
+Not verified against a device.
