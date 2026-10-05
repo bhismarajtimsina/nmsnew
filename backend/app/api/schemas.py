@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Strict(BaseModel):
@@ -717,3 +717,53 @@ class UserActivity(Strict):
 
 class UserActivityWidget(Strict):
     items: list[UserActivity]
+
+
+# --- Dangerous actions (Plan 26) ---
+
+class ActionSpecOut(Strict):
+    key: str
+    title: str
+    target_kind: Literal["device", "interface", "onu"]
+    max_targets: int
+    params: dict[str, list[str] | None]
+    available: bool
+
+
+class ActionList(Strict):
+    items: list[ActionSpecOut]
+
+
+class ActionPrepareIn(Strict):
+    targets: list[dict[str, str]] = Field(min_length=1, max_length=500)
+    params: dict[str, str] = Field(default_factory=dict)
+
+
+class ActionExecuteIn(ActionPrepareIn):
+    token: str = Field(min_length=20, max_length=200)
+
+
+class ActionSummary(Strict):
+    action: str
+    title: str
+    targets: list[dict[str, str | None]]
+    count: int
+    params: dict[str, str]
+
+
+class ActionPrepared(Strict):
+    token: str
+    expires_at: datetime
+    summary: ActionSummary
+
+
+class ActionTargetResult(Strict):
+    target: dict[str, str]
+    status: Literal["succeeded", "failed", "refused"]
+    error: str | None
+
+
+class ActionExecuted(Strict):
+    action: str
+    confirmation_id: str
+    results: list[ActionTargetResult]

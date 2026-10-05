@@ -133,6 +133,172 @@
     }
   ],
   "tables": {
+    "action_confirmations": {
+      "columns": {
+        "action": {
+          "default": null,
+          "length": 80,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "created_at": {
+          "default": "now()",
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        "expires_at": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        "id": {
+          "default": "gen_random_uuid()",
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "params_digest": {
+          "default": null,
+          "length": 64,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "summary": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "jsonb"
+        },
+        "target_count": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "int4"
+        },
+        "targets": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "jsonb"
+        },
+        "token_hash": {
+          "default": null,
+          "length": 64,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "used_at": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "timestamptz"
+        },
+        "user_id": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        }
+      },
+      "constraints": {
+        "action_confirmations_pkey": "PRIMARY KEY (id)",
+        "action_confirmations_token_hash_key": "UNIQUE (token_hash)",
+        "action_confirmations_user_id_fkey": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE",
+        "ck_action_confirmations_lifetime": "CHECK (((expires_at > created_at) AND ((expires_at - created_at) <= '00:10:00'::interval)))",
+        "ck_action_confirmations_targets": "CHECK ((((target_count >= 1) AND (target_count <= 500)) AND (jsonb_array_length(targets) = target_count)))"
+      },
+      "indexes": {
+        "action_confirmations_pkey": "CREATE UNIQUE INDEX action_confirmations_pkey ON public.action_confirmations USING btree (id)",
+        "action_confirmations_token_hash_key": "CREATE UNIQUE INDEX action_confirmations_token_hash_key ON public.action_confirmations USING btree (token_hash)",
+        "ix_action_confirmations_user_id": "CREATE INDEX ix_action_confirmations_user_id ON public.action_confirmations USING btree (user_id)"
+      },
+      "triggers": {}
+    },
+    "action_results": {
+      "columns": {
+        "action": {
+          "default": null,
+          "length": 80,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "after": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "jsonb"
+        },
+        "before": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "jsonb"
+        },
+        "confirmation_id": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "error": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "text"
+        },
+        "finished_at": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "timestamptz"
+        },
+        "id": {
+          "default": "gen_random_uuid()",
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "started_at": {
+          "default": "now()",
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        "status": {
+          "default": null,
+          "length": 16,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "target": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "jsonb"
+        },
+        "user_id": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "uuid"
+        }
+      },
+      "constraints": {
+        "action_results_confirmation_id_fkey": "FOREIGN KEY (confirmation_id) REFERENCES action_confirmations(id) ON DELETE CASCADE",
+        "action_results_pkey": "PRIMARY KEY (id)",
+        "action_results_user_id_fkey": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL",
+        "ck_action_results_failure_says_why": "CHECK ((((status)::text = 'succeeded'::text) OR (error IS NOT NULL)))",
+        "ck_action_results_status": "CHECK (((status)::text = ANY ((ARRAY['succeeded'::character varying, 'failed'::character varying, 'refused'::character varying])::text[])))"
+      },
+      "indexes": {
+        "action_results_pkey": "CREATE UNIQUE INDEX action_results_pkey ON public.action_results USING btree (id)",
+        "ix_action_results_confirmation_id": "CREATE INDEX ix_action_results_confirmation_id ON public.action_results USING btree (confirmation_id)",
+        "ix_action_results_started_at": "CREATE INDEX ix_action_results_started_at ON public.action_results USING btree (started_at)"
+      },
+      "triggers": {}
+    },
     "alarm_rules": {
       "columns": {
         "alert_name": {

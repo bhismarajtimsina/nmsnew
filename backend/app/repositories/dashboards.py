@@ -13,11 +13,6 @@ from app.repositories.events import EVENT_VISIBLE
 from app.repositories.scope import DEVICE_VISIBLE, GRANTED_GROUPS_CTE, INTERFACE_VISIBLE
 
 
-def _event_visible(user: CurrentUser) -> str:
-    # As the events list does: a role that sees everything also sees events with no device (system events).
-    return "($2::boolean or true)" if user.scope_all else EVENT_VISIBLE
-
-
 def _device_ref(r: asyncpg.Record) -> dict[str, Any]:
     return {"id": str(r["device_id"]), "name": r["device_name"], "ip": r["device_ip"]}
 
@@ -34,20 +29,23 @@ async def device_status(conn: asyncpg.Connection, user: CurrentUser) -> dict[str
 
 
 async def events_by_severity(conn: asyncpg.Connection, user: CurrentUser) -> list[dict[str, Any]]:
+    # As the events list does: a role that sees everything also sees events with no device (system events).
+    visible = "($2::boolean or true)" if user.scope_all else EVENT_VISIBLE
     rows = await conn.fetch(
         f"""{GRANTED_GROUPS_CTE}
         select e.severity, count(*) as count from events e left join devices d on d.id = e.device_id
-        where {_event_visible(user)} and e.resolved_at is null group by e.severity order by count(*) desc, e.severity""",
+        where {visible} and e.resolved_at is null group by e.severity order by count(*) desc, e.severity""",
         user.id, user.scope_all,
     )
     return [dict(r) for r in rows]
 
 
 async def events_by_name(conn: asyncpg.Connection, user: CurrentUser, limit: int) -> list[dict[str, Any]]:
+    visible = "($2::boolean or true)" if user.scope_all else EVENT_VISIBLE
     rows = await conn.fetch(
         f"""{GRANTED_GROUPS_CTE}
         select e.name, count(*) as count from events e left join devices d on d.id = e.device_id
-        where {_event_visible(user)} and e.resolved_at is null group by e.name order by count(*) desc, e.name limit $3""",
+        where {visible} and e.resolved_at is null group by e.name order by count(*) desc, e.name limit $3""",
         user.id, user.scope_all, limit,
     )
     return [dict(r) for r in rows]

@@ -73,6 +73,61 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Actions */
+        get: operations["list_actions_api_v1_actions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/actions/{action}/execute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Execute Action */
+        post: operations["execute_action_api_v1_actions__action__execute_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/actions/{action}/prepare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Prepare Action
+         * @description The dry run: every target listed, nothing sent to a device. Returns a confirmation valid for one execute, by this
+         *     user, for exactly these targets and parameters, for two minutes.
+         */
+        post: operations["prepare_action_api_v1_actions__action__prepare_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/alarm-rules": {
         parameters: {
             query?: never;
@@ -1517,6 +1572,106 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /** ActionExecuteIn */
+        ActionExecuteIn: {
+            /** Params */
+            params?: {
+                [key: string]: string;
+            };
+            /** Targets */
+            targets: {
+                [key: string]: string;
+            }[];
+            /** Token */
+            token: string;
+        };
+        /** ActionExecuted */
+        ActionExecuted: {
+            /** Action */
+            action: string;
+            /** Confirmation Id */
+            confirmation_id: string;
+            /** Results */
+            results: components["schemas"]["ActionTargetResult"][];
+        };
+        /** ActionList */
+        ActionList: {
+            /** Items */
+            items: components["schemas"]["ActionSpecOut"][];
+        };
+        /** ActionPrepareIn */
+        ActionPrepareIn: {
+            /** Params */
+            params?: {
+                [key: string]: string;
+            };
+            /** Targets */
+            targets: {
+                [key: string]: string;
+            }[];
+        };
+        /** ActionPrepared */
+        ActionPrepared: {
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            summary: components["schemas"]["ActionSummary"];
+            /** Token */
+            token: string;
+        };
+        /** ActionSpecOut */
+        ActionSpecOut: {
+            /** Available */
+            available: boolean;
+            /** Key */
+            key: string;
+            /** Max Targets */
+            max_targets: number;
+            /** Params */
+            params: {
+                [key: string]: string[] | null;
+            };
+            /**
+             * Target Kind
+             * @enum {string}
+             */
+            target_kind: "device" | "interface" | "onu";
+            /** Title */
+            title: string;
+        };
+        /** ActionSummary */
+        ActionSummary: {
+            /** Action */
+            action: string;
+            /** Count */
+            count: number;
+            /** Params */
+            params: {
+                [key: string]: string;
+            };
+            /** Targets */
+            targets: {
+                [key: string]: string | null;
+            }[];
+            /** Title */
+            title: string;
+        };
+        /** ActionTargetResult */
+        ActionTargetResult: {
+            /** Error */
+            error: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "succeeded" | "failed" | "refused";
+            /** Target */
+            target: {
+                [key: string]: string;
+            };
         };
         /** AlarmRuleOut */
         AlarmRuleOut: {
@@ -3445,6 +3600,111 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ScopeAssignment"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_actions_api_v1_actions_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    execute_action_api_v1_actions__action__execute_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                action: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActionExecuteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionExecuted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    prepare_action_api_v1_actions__action__prepare_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                action: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActionPrepareIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionPrepared"];
                 };
             };
             /** @description Validation Error */
