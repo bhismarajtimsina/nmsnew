@@ -132,3 +132,23 @@ async def test_credentials_cannot_be_stored_when_encryption_is_not_configured(ap
     response = await app_client.post("/api/v1/device-access-profiles", headers=headers, json={"name": "p", "snmp_version": "v2c", "snmp_community": "c"})
     assert response.status_code == 503 and "encryption is not configured" in response.json()["detail"]
     assert await db.fetchval("select count(*) from device_access_profiles") == 0
+
+
+async def test_a_write_community_is_stored_encrypted_never_returned_and_refused_on_v3(app_client, db):
+    headers = await admin(app_client, db)
+    made = await app_client.post("/api/v1/device-access-profiles", headers=headers,
+                                 json={"name": "rw", "snmp_version": "v2c", "snmp_community": "ro", "snmp_write_community": "rw-secret-1"})
+    assert made.status_code in (200, 201), made.text
+    assert made.json()["has_write_community"] is True and "rw-secret-1" not in made.text
+    stored = await db.fetchval("select snmp_write_community_enc from device_access_profiles where name = 'rw'")
+    assert stored and "rw-secret-1" not in stored
+    plain = await app_client.post("/api/v1/device-access-profiles", headers=headers, json={"name": "ro", "snmp_version": "v2c", "snmp_community": "ro"})
+    assert plain.json()["has_write_community"] is False
+    rotated = await app_client.patch(f"/api/v1/device-access-profiles/{plain.json()['id']}", headers=headers, json={"snmp_write_community": "rw-2"})
+    assert rotated.json()["has_write_community"] is True and "rw-2" not in rotated.text
+    v3 = await app_client.post("/api/v1/device-access-profiles", headers=headers, json={**V3, "name": "v3rw", "snmp_write_community": "x"})
+    assert v3.status_code == 422
+    v3ok = (await app_client.post("/api/v1/device-access-profiles", headers=headers, json={**V3, "name": "v3ok"})).json()
+    assert (await app_client.patch(f"/api/v1/device-access-profiles/{v3ok['id']}", headers=headers, json={"snmp_write_community": "x"})).status_code == 422
+    audit = await db.fetch("select before::text b, after::text a, metadata::text m from audit_logs where action like 'access_profile.%'")
+    assert not any("rw-secret-1" in (r["b"] or "") + (r["a"] or "") + r["m"] or "rw-2" in (r["b"] or "") + (r["a"] or "") + r["m"] for r in audit)

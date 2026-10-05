@@ -752,6 +752,12 @@
           "nullable": false,
           "type": "varchar"
         },
+        "snmp_write_community_enc": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "text"
+        },
         "timeout_ms": {
           "default": "2000",
           "length": null,
@@ -770,6 +776,7 @@
         "ck_access_profiles_retries": "CHECK (((retries >= 0) AND (retries <= 3)))",
         "ck_access_profiles_timeout": "CHECK (((timeout_ms >= 200) AND (timeout_ms <= 10000)))",
         "ck_access_profiles_version": "CHECK (((snmp_version)::text = ANY ((ARRAY['v1'::character varying, 'v2c'::character varying, 'v3'::character varying])::text[])))",
+        "ck_access_profiles_write_community_version": "CHECK (((snmp_write_community_enc IS NULL) OR ((snmp_version)::text = ANY ((ARRAY['v1'::character varying, 'v2c'::character varying])::text[]))))",
         "device_access_profiles_name_key": "UNIQUE (name)",
         "device_access_profiles_pkey": "PRIMARY KEY (id)",
         "uq_device_access_profiles_legacy_id": "UNIQUE (legacy_id)"

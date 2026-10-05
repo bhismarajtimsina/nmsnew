@@ -29,24 +29,26 @@ async def resolve_device_by_source(conn: asyncpg.Connection, source_ip: str) -> 
     return str(row) if row is not None else None
 
 
-def community_matches(trap_community: str, configured_community: str | None) -> bool:
-    """Ported from `TrapService\\Controllers\\Controller::handleTrap`'s own check - there, a trap is accepted when
-    its community equals either the device's public *or* private community. This schema keeps a single community per
-    access profile (D-13: read-only access is all polling ever needed), not legacy's public/private pair, so the
-    comparison collapses to one equality. A profile with no community configured (a v3 profile, or none at all)
-    matches nothing - the same as legacy comparing against two nulls neither of which a real string ever equals."""
-    return configured_community is not None and trap_community == configured_community
+def community_matches(trap_community: str, *configured: str | None) -> bool:
+    """Ported from `TrapService\\Controllers\\Controller::handleTrap`'s own check: a trap is accepted when its community
+    equals either the device's public *or* private community. The access profile holds both again since Plan 38 added
+    the write community (legacy's `private_community`), so both are compared. A profile with neither configured (a v3
+    profile, or none at all) matches nothing, the same as legacy comparing against two nulls."""
+    return any(trap_community == value for value in configured)  # a None (not configured) never equals a string
 
 
-async def _configured_community(conn: asyncpg.Connection, device_id: str, enc: EncryptionService) -> str | None:
+async def _configured_communities(conn: asyncpg.Connection, device_id: str, enc: EncryptionService) -> tuple[str | None, str | None]:
     row = await conn.fetchrow(
-        "select p.id, p.snmp_community_enc from devices d join device_access_profiles p on p.id = d.access_profile_id "
-        "where d.id = $1::uuid",
+        "select p.id, p.snmp_community_enc, p.snmp_write_community_enc from devices d "
+        "join device_access_profiles p on p.id = d.access_profile_id where d.id = $1::uuid",
         device_id,
     )
-    if row is None or row["snmp_community_enc"] is None:
-        return None
-    return enc.decrypt(row["snmp_community_enc"], aad(str(row["id"]), "snmp_community"))
+    if row is None:
+        return None, None
+    pid = str(row["id"])
+    public = enc.decrypt(row["snmp_community_enc"], aad(pid, "snmp_community")) if row["snmp_community_enc"] else None
+    private = enc.decrypt(row["snmp_write_community_enc"], aad(pid, "snmp_write_community")) if row["snmp_write_community_enc"] else None
+    return public, private
 
 
 async def record_trap(
@@ -69,8 +71,8 @@ async def record_trap(
 
     if check_community:
         assert enc is not None, "check_community requires an EncryptionService"
-        configured = await _configured_community(conn, device_id, enc)
-        if not community_matches(decoded.community, configured):
+        public, private = await _configured_communities(conn, device_id, enc)
+        if not community_matches(decoded.community, public, private):
             return TrapOutcome(accepted=True, known=False, device_id=device_id, community_ok=False)
 
     profile = await conn.fetchrow("select id, vendor, name from trap_profiles where oid = $1", decoded.trap_oid)

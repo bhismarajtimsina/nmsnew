@@ -105,6 +105,16 @@ async def get_device(conn: asyncpg.Connection, user: CurrentUser, device_id: str
     )
 
 
+async def action_target(conn: asyncpg.Connection, user: CurrentUser, device_id: str) -> asyncpg.Record | None:
+    """What a device action needs to reach a device it is allowed to touch: address and access profile. Scoped like
+    every other device read; None when the device is not visible."""
+    return await conn.fetchrow(
+        f"{GRANTED_GROUPS_CTE} select d.id, d.name, host(d.management_ip) as management_ip, d.access_profile_id "
+        f"from devices d where d.id = $3::uuid and {DEVICE_VISIBLE}",
+        user.id, user.scope_all, device_id,
+    )
+
+
 def as_dict(row: asyncpg.Record) -> dict[str, Any]:
     return {key: (str(value) if key in {"id", "group_id", "model_id"} and value is not None else value) for key, value in dict(row).items()}
 

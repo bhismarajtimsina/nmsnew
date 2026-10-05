@@ -32,6 +32,8 @@ class ProfileCreate(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     snmp_version: Literal["v1", "v2c", "v3"]
     snmp_community: SecretStr | None = Field(default=None, max_length=128)
+    # Optional: only device actions use it. Legacy's `private_community`.
+    snmp_write_community: SecretStr | None = Field(default=None, min_length=1, max_length=128)
     snmp_v3_username: str | None = Field(default=None, min_length=1, max_length=120)
     snmp_v3_auth_protocol: AUTH_PROTOCOLS | None = None
     snmp_v3_auth_secret: SecretStr | None = Field(default=None, min_length=8, max_length=256)
@@ -46,6 +48,8 @@ class ProfileCreate(BaseModel):
             if self.snmp_community is None or not self.snmp_community.get_secret_value().strip():
                 raise ValueError("a community is required for SNMP v1 and v2c")
         else:
+            if self.snmp_write_community is not None:
+                raise ValueError("an SNMP v3 profile writes with its own user, not a write community")
             missing = [f for f in ("snmp_v3_username", "snmp_v3_auth_protocol", "snmp_v3_auth_secret", "snmp_v3_priv_protocol", "snmp_v3_priv_secret")
                        if getattr(self, f) is None]
             if missing:
@@ -58,6 +62,7 @@ class ProfileUpdate(BaseModel):
     timeout_ms: int | None = Field(default=None, ge=200, le=10000)
     retries: int | None = Field(default=None, ge=0, le=3)
     snmp_community: SecretStr | None = Field(default=None, min_length=1, max_length=128)
+    snmp_write_community: SecretStr | None = Field(default=None, min_length=1, max_length=128)
     snmp_v3_username: str | None = Field(default=None, min_length=1, max_length=120)
     snmp_v3_auth_protocol: AUTH_PROTOCOLS | None = None
     snmp_v3_auth_secret: SecretStr | None = Field(default=None, min_length=8, max_length=256)
@@ -83,7 +88,7 @@ def _uuid(value: str) -> str:
 def _safe_view(profile: dict[str, Any]) -> dict[str, Any]:
     """What may be written to the audit log: shape and settings, never a secret or even its length."""
     keys = ("name", "snmp_version", "timeout_ms", "retries", "snmp_v3_username", "snmp_v3_auth_protocol", "snmp_v3_priv_protocol",
-            "has_community", "has_auth_secret", "has_priv_secret")
+            "has_community", "has_write_community", "has_auth_secret", "has_priv_secret")
     return {k: profile.get(k) for k in keys}
 
 
@@ -140,7 +145,7 @@ async def update_profile(
     changes = _plain(payload, exclude_unset=True, exclude_none=True)
     if before["snmp_version"] != "v3" and any(k.startswith("snmp_v3_") for k in changes):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="This profile is not SNMP v3")
-    if before["snmp_version"] == "v3" and "snmp_community" in changes:
+    if before["snmp_version"] == "v3" and ("snmp_community" in changes or "snmp_write_community" in changes):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="An SNMP v3 profile has no community")
     if "name" in changes and changes["name"] != before["name"] and await conn.fetchval(
         "select exists(select 1 from device_access_profiles where name = $1)", changes["name"]

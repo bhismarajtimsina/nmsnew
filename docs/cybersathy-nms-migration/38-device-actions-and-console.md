@@ -108,9 +108,8 @@ needed stronger tests, which were added; one redundant step was removed).
 
 Still to do:
 
-- SNMP SET support in the transport, still refused by the disabled transport;
 - the queued request flow (`actions.jobs`, worker executes);
-- the first drivers, each with a fake transport and a recorded transcript;
+- more drivers, each with a fake transport and a scripted exchange;
 - diagnostics, the console gateway and sensor devices.
 
 Not verified against a device.
@@ -145,3 +144,52 @@ executor exists.
 Tests: 18 (`tests/test_macros_api.py`). 16 mutations checked: 15 caught, and 1 was a redundant check, which was removed.
 
 Found while testing previews: the shared secret filter (also used by the audit log) matched `token` but not `tokens`, `password` but not `passwords`, `community` but not `communities`, so a list of credentials under a plural key passed through. It now covers plurals (`tests/test_audit.py`). The access-profile audit key `secrets_rotated`, which holds field names only, became `rotated_fields` so the wider filter does not hide it.
+
+### Writing to devices: transport, write credentials and the first driver (2026-10-05)
+
+**A separate write community.** Legacy keeps two communities per access profile: `public_community` (read) and
+`private_community` (write). The new schema had only the read one, so migration `20261005_0023` adds an encrypted,
+optional `snmp_write_community`.
+
+- It is accepted on create and update, never returned (`has_write_community` says whether one is set), and covered by
+  key rotation.
+- It is refused on SNMPv3 profiles, which write with their own user.
+- The frontend's access-profile page has the field, masked and never autofilled.
+- Polling never decrypts it; only the action driver does.
+- The trap community check now accepts either community, as legacy's `handleTrap` does.
+
+**Bounded SNMP SET** (`BoundedTransport.set`). Refused before anything is sent when:
+
+- there are no values, or more than 4;
+- an OID is not numeric;
+- an integer isn't a 32-bit integer, or text is longer than 255 characters or has a control character;
+- a v1/v2c target has no write community.
+
+The request carries the write community only, never the read one, and a write is never retried automatically. The
+production `DisabledTransport` refuses every SET.
+
+**First driver: `switch.port.set_admin_state`** (`app/actions/drivers.py`), on RFC 1213 `ifAdminStatus`. Its test
+re-derives the OID from `RFC1213-MIB.my` and checks it is read-write with up(1), down(2), testing(3). The driver:
+
+1. resolves the interface and device through the scoped repositories;
+2. refuses when the profile has no write community;
+3. reads the current state, and if it is already as asked, writes nothing;
+4. writes, reads back, and fails if the device reports anything else.
+
+Device errors are scrubbed of credentials. The previous state is recorded in `before` as the undo hint. The reads use
+the write credentials too, so this path never needs the read community.
+
+**Not reachable yet, on purpose.** The driver is not registered with the action layer, and a test checks that. The
+queued flow that will register it (worker kind `actions`) is the next step.
+
+**Open safety question, before this driver is registered:** disabling the port a switch is managed through cuts the
+NMS off from it. Nothing in the data model marks a device's management or uplink port yet, so the driver can't refuse
+that case. It needs a rule, for example an operator-set "protected" mark on uplink interfaces, before the action is
+enabled.
+
+Tests: 20 (`tests/test_action_drivers.py`), plus write-community cases in `tests/test_access_profiles.py` and
+`tests/test_trap_ingest.py`, and a frontend test. The exchanges are scripted, not recorded from a device. A
+"no ifIndex" check was removed as unreachable: `interfaces.if_index` is `NOT NULL`. 20 mutations checked: 19 caught,
+and 1 exposed a redundant guard in the trap check, which was removed.
+
+Not verified against a device.

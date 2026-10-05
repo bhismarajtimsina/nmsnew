@@ -288,6 +288,7 @@ class AccessProfileOut(Strict):
     snmp_v3_auth_protocol: str | None
     snmp_v3_priv_protocol: str | None
     has_community: bool
+    has_write_community: bool
     has_auth_secret: bool
     has_priv_secret: bool
     legacy_id: int | None

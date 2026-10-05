@@ -25,6 +25,8 @@ export interface ProfileForm {
   timeout_ms: number;
   retries: number;
   community: string;
+  /** Optional; used only by device actions (legacy's private community). Never returned by the API. */
+  write_community: string;
   v3_username: string;
   v3_auth_protocol: AuthProtocol | '';
   v3_auth_secret: string;
@@ -39,6 +41,7 @@ export function emptyForm(): ProfileForm {
     timeout_ms: 2000,
     retries: 1,
     community: '',
+    write_community: '',
     v3_username: '',
     v3_auth_protocol: 'SHA',
     v3_auth_secret: '',
@@ -93,7 +96,11 @@ export function createBody(form: ProfileForm): CreateBody {
     timeout_ms: form.timeout_ms,
     retries: form.retries,
   };
-  if (form.snmp_version !== 'v3') return { ...base, snmp_community: form.community };
+  if (form.snmp_version !== 'v3') {
+    return form.write_community
+      ? { ...base, snmp_community: form.community, snmp_write_community: form.write_community }
+      : { ...base, snmp_community: form.community };
+  }
   return {
     ...base,
     snmp_v3_username: form.v3_username.trim(),
@@ -118,8 +125,9 @@ export function updateBody(form: ProfileForm, before: Profile): UpdateBody {
       body.snmp_v3_priv_protocol = form.v3_priv_protocol;
     if (form.v3_auth_secret) body.snmp_v3_auth_secret = form.v3_auth_secret;
     if (form.v3_priv_secret) body.snmp_v3_priv_secret = form.v3_priv_secret;
-  } else if (form.community) {
-    body.snmp_community = form.community;
+  } else {
+    if (form.community) body.snmp_community = form.community;
+    if (form.write_community) body.snmp_write_community = form.write_community;
   }
   return body;
 }

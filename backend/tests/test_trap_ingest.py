@@ -80,3 +80,23 @@ async def test_check_community_on_accepts_the_real_community(db):
     outcome = await record_trap(db, "10.60.0.7", decoded, enc=EncryptionService.from_settings(), check_community=True)
     assert outcome.accepted is True and outcome.community_ok is True
     assert await db.fetchval("select count(*) from trap_history where device_id = $1::uuid", device) == 1
+
+
+def test_either_the_read_or_the_write_community_matches_like_legacy():
+    assert community_matches("private", "public", "private") is True
+    assert community_matches("public", "public", None) is True
+    assert community_matches("other", "public", "private") is False
+    assert community_matches("public", None, None) is False
+
+
+async def test_check_community_on_accepts_the_write_community_too(db):
+    from app.repositories.access_profiles import aad
+
+    enc = EncryptionService.from_settings()
+    profile = await make_access_profile(db)
+    await db.execute("update device_access_profiles set snmp_write_community_enc = $2 where id = $1::uuid",
+                     profile, enc.encrypt("rw-secret", aad(str(profile), "snmp_write_community")))
+    await db.execute("insert into devices (name, management_ip, device_type, access_profile_id) values ('sw1', '10.60.0.8', 'switch', $1::uuid)", profile)
+    decoded = DecodedTrap(version="v2c", community="rw-secret", trap_oid="1.3.6.1.6.3.1.1.5.3", varbinds={})
+    outcome = await record_trap(db, "10.60.0.8", decoded, enc=enc, check_community=True)
+    assert outcome.community_ok is True and await db.fetchval("select count(*) from trap_history") == 1

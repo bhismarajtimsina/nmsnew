@@ -17,6 +17,7 @@ Stack and principles: see [00-overview](00-overview.md#target-architecture).
 - Preserve old IDs where practical.
 - Validate counts and samples.
 - Order: reference data, users and roles, device groups, models, access profiles, devices, interfaces, OLT/PON/ONU, events, links, history.
+- Access profiles: legacy `public_community` maps to `snmp_community` and legacy `private_community` to `snmp_write_community` (added 2026-10-05, Plan 38), both encrypted on import with the profile's own context. Without the second, no device action can write after cutover.
 - Keep `legacy_id`; support **dry-run**, idempotent re-run and a **delta import** for the cutover window.
 - Re-encrypt credentials: decrypt with the legacy key, encrypt with the new key, verify by count and a test decrypt, never log plaintext.
 - Import users with their legacy password hash scheme; import long-lived keys as `api_tokens` hashed at import.

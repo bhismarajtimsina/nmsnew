@@ -1703,6 +1703,8 @@ export interface components {
             has_community: boolean;
             /** Has Priv Secret */
             has_priv_secret: boolean;
+            /** Has Write Community */
+            has_write_community: boolean;
             /** Id */
             id: string;
             /** Legacy Id */
@@ -3109,6 +3111,8 @@ export interface components {
              * @enum {string}
              */
             snmp_version: "v1" | "v2c" | "v3";
+            /** Snmp Write Community */
+            snmp_write_community?: string | null;
             /**
              * Timeout Ms
              * @default 2000
@@ -3133,6 +3137,8 @@ export interface components {
             snmp_v3_priv_secret?: string | null;
             /** Snmp V3 Username */
             snmp_v3_username?: string | null;
+            /** Snmp Write Community */
+            snmp_write_community?: string | null;
             /** Timeout Ms */
             timeout_ms?: number | null;
         };

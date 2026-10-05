@@ -77,7 +77,7 @@ async function submit() {
   } finally {
     saving.value = false;
     // Typed secrets are not kept in memory once the dialog is done with them.
-    Object.assign(form, { community: '', v3_auth_secret: '', v3_priv_secret: '' });
+    Object.assign(form, { community: '', write_community: '', v3_auth_secret: '', v3_priv_secret: '' });
   }
 }
 
@@ -128,7 +128,7 @@ const set = (yes: boolean) => (yes ? 'set' : 'not set');
                   user {{ record.snmp_v3_username }} · {{ record.snmp_v3_auth_protocol }}/{{ record.snmp_v3_priv_protocol }} · auth secret
                   {{ set(record.has_auth_secret) }}, privacy secret {{ set(record.has_priv_secret) }}
                 </span>
-                <span v-else>community {{ set(record.has_community) }}</span>
+                <span v-else>community {{ set(record.has_community) }}, write community {{ set(record.has_write_community) }}</span>
               </template>
             </a-table-column>
             <a-table-column title="Timeout / retries" :width="140">
@@ -159,6 +159,12 @@ const set = (yes: boolean) => (yes ? 'set' : 'not set');
         <template v-if="form.snmp_version !== 'v3'">
           <a-form-item label="Community" :extra="editing ? 'Leave blank to keep the stored community.' : undefined">
             <a-input-password v-model:value="form.community" autocomplete="new-password" />
+          </a-form-item>
+          <a-form-item
+            label="Write community (optional)"
+            :extra="editing ? 'Leave blank to keep the stored one. Used only by device actions.' : 'Used only by device actions. Polling never uses it.'"
+          >
+            <a-input-password v-model:value="form.write_community" autocomplete="new-password" />
           </a-form-item>
         </template>
         <template v-else>
