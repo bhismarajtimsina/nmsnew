@@ -217,6 +217,30 @@ async def set_interface_tags(
     return {"tags": tags}
 
 
+class ProtectionSet(BaseModel):
+    protected: bool
+
+
+@router.put("/interfaces/{interface_id}/protection", response_model=schemas.ProtectionOut)
+async def set_interface_protection(
+    interface_id: str,
+    payload: ProtectionSet,
+    request: Request,
+    user: Annotated[CurrentUser, Depends(require("interfaces.manage"))],
+    conn: Annotated[asyncpg.Connection, Depends(get_conn)],
+) -> dict[str, bool]:
+    """Protect an interface (typically the uplink a switch is managed through) so no device action can shut it down."""
+    iid = _uuid_or_404(interface_id)
+    async with conn.transaction():
+        previous = await interface_repo.set_protected(conn, user, iid, payload.protected)
+        if previous is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+        await write_audit(conn, action="interface.protection_set", actor_user_id=user.id, resource_type="interface", resource_id=iid,
+                          ip=user.client_ip, user_agent=request.headers.get("user-agent"),
+                          before={"protected": previous}, after={"protected": payload.protected})
+    return {"protected": payload.protected}
+
+
 DeviceType = Literal["switch", "olt", "router", "sensor", "other"]
 
 

@@ -136,3 +136,20 @@ async def handle_poll(ctx: Context, message: Message, sink: Sink | None = None) 
         raise Permanent("message names no profile")
     # A skip (busy, breaker open, switched off) is recorded by the engine and is not an error to retry.
     await poll_device(ctx, device_id, profile, sink)
+
+
+async def handle_action(ctx: Context, message: Message) -> None:
+    """Run one confirmed dangerous action (Plan 38). Every rule is re-checked inside `run_confirmation`: the kill switch,
+    the requester's current permission and scope, and each target's visibility. Results already finished are never
+    run again, so a redelivered message is harmless."""
+    from app.actions.safety import run_confirmation
+
+    confirmation_id = message.fields.get("confirmation_id", "")
+    try:
+        uuid.UUID(confirmation_id)
+    except ValueError as exc:
+        raise Permanent("message has no valid confirmation_id") from exc
+    if ctx.enc is None:
+        raise Permanent("credential encryption is not configured")
+    async with ctx.pool.acquire() as conn:
+        await run_confirmation(conn, ctx.transport, ctx.enc, confirmation_id)

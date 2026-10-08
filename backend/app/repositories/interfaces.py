@@ -10,7 +10,7 @@ from app.repositories.scope import GRANTED_GROUPS_CTE, INTERFACE_VISIBLE
 
 INTERFACE_COLUMNS = """
     i.id, i.device_id, d.name as device_name, i.parent_interface_id, i.if_index, i.name, i.alias, i.if_type,
-    i.admin_status, i.oper_status, i.speed_bps, i.mac_address::text as mac_address, i.legacy_id, i.created_at, i.updated_at
+    i.admin_status, i.oper_status, i.speed_bps, i.mac_address::text as mac_address, i.legacy_id, i.protected, i.created_at, i.updated_at
 """
 
 
@@ -46,6 +46,25 @@ async def get_interface(conn: asyncpg.Connection, user: CurrentUser, interface_i
             where i.id = $3::uuid and {INTERFACE_VISIBLE}""",
         user.id, user.scope_all, interface_id,
     )
+
+
+async def action_target(conn: asyncpg.Connection, user: CurrentUser, interface_id: str) -> asyncpg.Record | None:
+    """What a device action needs about an interface it is allowed to touch, including whether an operator protected it."""
+    return await conn.fetchrow(
+        f"""{GRANTED_GROUPS_CTE} select i.id, i.device_id, i.name, i.if_index, i.protected from interfaces i
+            join devices d on d.id = i.device_id where i.id = $3::uuid and {INTERFACE_VISIBLE}""",
+        user.id, user.scope_all, interface_id,
+    )
+
+
+async def set_protected(conn: asyncpg.Connection, user: CurrentUser, interface_id: str, protected: bool) -> bool | None:
+    """Set the operator's protection mark. Returns the previous value, or None when the interface is not visible."""
+    row = await get_interface(conn, user, interface_id)
+    if row is None:
+        return None
+    previous = await conn.fetchval("select protected from interfaces where id = $1::uuid", interface_id)
+    await conn.execute("update interfaces set protected = $2 where id = $1::uuid", interface_id, protected)
+    return previous
 
 
 def as_dict(row: asyncpg.Record) -> dict[str, Any]:

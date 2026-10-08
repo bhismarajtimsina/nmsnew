@@ -238,6 +238,7 @@ class InterfaceOut(Strict):
     speed_bps: int | None
     mac_address: str | None
     legacy_id: int | None
+    protected: bool
     created_at: datetime
     updated_at: datetime
 
@@ -760,7 +761,7 @@ class ActionPrepared(Strict):
 
 class ActionTargetResult(Strict):
     target: dict[str, str]
-    status: Literal["succeeded", "failed", "refused"]
+    status: Literal["queued", "running", "succeeded", "failed", "refused"]
     error: str | None
 
 
@@ -824,3 +825,7 @@ class MacroDraftPreviewIn(MacroPreviewIn):
 class MacroPreviewOut(Strict):
     commands: list[str]
     aborted: str | None
+
+
+class ProtectionOut(Strict):
+    protected: bool

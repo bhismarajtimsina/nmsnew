@@ -1,9 +1,9 @@
 """Drivers behind the dangerous-action layer (Plan 38): what each action actually does on a device.
 
 A driver is built for a worker's transport (`port_admin_executor(transport, enc)`) and has the executor signature
-app/actions/safety.py expects. Drivers run in a worker, never in the API process, and only after Plan 26's confirmation
-flow. Nothing registers them yet: the queued flow that will (worker kind `actions`) is the next step, so in this build
-no request can reach a driver.
+app/actions/safety.py expects. Drivers run in a worker (kind `actions`), never in the API process, and only after Plan
+26's confirmation flow. DRIVERS lists the ones that exist; none runs unless DEVICE_ACTIONS_ENABLED is set, and a worker
+on the disabled transport consumes no jobs.
 
 Every OID a driver writes is re-derived from a MIB in the repository by its test, with the object's ACCESS checked
 writable and its values checked against the MIB's own enumeration, because legacy action names are known to be wrong
@@ -16,7 +16,7 @@ from typing import Any, Awaitable, Callable
 
 import asyncpg
 
-from app.actions.safety import ActionFailed, Outcome
+from app.actions.base import ActionFailed, Outcome
 from app.core.crypto import EncryptionService
 from app.core.security import CurrentUser
 from app.polling.engine import scrub
@@ -50,9 +50,13 @@ def port_admin_executor(transport: SnmpTransport, enc: EncryptionService) -> Cal
     """`switch.port.set_admin_state`: set one interface's ifAdminStatus to up or down, then read it back."""
 
     async def run(conn: asyncpg.Connection, user: CurrentUser, target: dict[str, Any], params: dict[str, str]) -> Outcome:
-        interface = await interface_repo.get_interface(conn, user, target["interface_id"])
+        interface = await interface_repo.action_target(conn, user, target["interface_id"])
         if interface is None:
             raise ActionFailed("the interface is not visible")
+        if interface["protected"] and params["state"] == "down":
+            # An operator marked this port (typically the uplink the switch is managed through): shutting it down
+            # would cut the NMS off from the device. Checked before anything is sent.
+            raise ActionFailed("this interface is protected; an operator must remove the protection before it can be shut down")
         device = await device_repo.action_target(conn, user, str(interface["device_id"]))
         if device is None or device["management_ip"] is None or device["access_profile_id"] is None:
             raise ActionFailed("the device has no management address or access profile")
@@ -92,3 +96,9 @@ def port_admin_executor(transport: SnmpTransport, enc: EncryptionService) -> Cal
                        after={**context, "admin_status": state(after), "changed": True})
 
     return run
+
+
+# action key -> driver factory. The only registry: prepare refuses an action that is not here.
+DRIVERS: dict[str, Callable[[SnmpTransport, EncryptionService], Callable[..., Awaitable[Outcome]]]] = {
+    "switch.port.set_admin_state": port_admin_executor,
+}

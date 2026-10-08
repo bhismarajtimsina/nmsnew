@@ -376,6 +376,8 @@
           },
           "status": {
             "enum": [
+              "queued",
+              "running",
               "succeeded",
               "failed",
               "refused"
@@ -2484,6 +2486,10 @@
             ],
             "title": "Parent Interface Id"
           },
+          "protected": {
+            "title": "Protected",
+            "type": "boolean"
+          },
           "speed_bps": {
             "anyOf": [
               {
@@ -2515,6 +2521,7 @@
           "speed_bps",
           "mac_address",
           "legacy_id",
+          "protected",
           "created_at",
           "updated_at"
         ],
@@ -4765,6 +4772,33 @@
           }
         },
         "title": "ProfileUpdate",
+        "type": "object"
+      },
+      "ProtectionOut": {
+        "additionalProperties": false,
+        "properties": {
+          "protected": {
+            "title": "Protected",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "protected"
+        ],
+        "title": "ProtectionOut",
+        "type": "object"
+      },
+      "ProtectionSet": {
+        "properties": {
+          "protected": {
+            "title": "Protected",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "protected"
+        ],
+        "title": "ProtectionSet",
         "type": "object"
       },
       "ReadyOut": {
@@ -7076,8 +7110,69 @@
         ]
       }
     },
+    "/api/v1/actions/results/{confirmation_id}": {
+      "get": {
+        "description": "The results of an action this user requested; 404 for anyone else's.",
+        "operationId": "action_results_api_v1_actions_results__confirmation_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "confirmation_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Confirmation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionExecuted"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Action Results",
+        "tags": [
+          "actions"
+        ]
+      }
+    },
     "/api/v1/actions/{action}/execute": {
       "post": {
+        "description": "Consume the confirmation, queue one result per target, and hand the work to a worker. Returns at once with the\nresults `queued`; GET /actions/results/{confirmation_id} shows them progress.",
         "operationId": "execute_action_api_v1_actions__action__execute_post",
         "parameters": [
           {
@@ -11023,6 +11118,75 @@
           }
         },
         "summary": "Get Interface Marks",
+        "tags": [
+          "devices"
+        ]
+      }
+    },
+    "/api/v1/interfaces/{interface_id}/protection": {
+      "put": {
+        "description": "Protect an interface (typically the uplink a switch is managed through) so no device action can shut it down.",
+        "operationId": "set_interface_protection_api_v1_interfaces__interface_id__protection_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "interface_id",
+            "required": true,
+            "schema": {
+              "title": "Interface Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProtectionSet"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtectionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Interface Protection",
         "tags": [
           "devices"
         ]

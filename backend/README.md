@@ -23,7 +23,7 @@ docker compose --env-file cybersathy.env -f docker-compose.cybersathy.yml logs c
 
 ## Workers
 
-`python -m app.workers run --kinds dispatcher,discovery,poller` runs in the `cybersathy-worker` container. It needs `JOB_SIGNING_KEY`. `SNMP_TRANSPORT` is `disabled` and is the only value this build accepts: no real transport exists yet (decision D-17), so the worker heartbeats and dispatches jobs but consumes none and never opens a session to a device. `python -m app.workers health` is its container health check.
+`python -m app.workers run --kinds actions,dispatcher,discovery,poller,scheduler` runs in the `cybersathy-worker` container. It needs `JOB_SIGNING_KEY`. `SNMP_TRANSPORT` is `disabled` and is the only value this build accepts: no real transport exists yet (decision D-17), so the worker heartbeats and dispatches jobs but consumes none and never opens a session to a device. `python -m app.workers health` is its container health check. Device-changing actions are also off unless `DEVICE_ACTIONS_ENABLED` is `true` (the compose file sets `false`).
 
 ## Admin commands
 

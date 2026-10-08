@@ -103,9 +103,10 @@ Every action also needs the global `dangerous_actions.execute` gate.
 entry with before/after context, secrets redacted. The dry run is audited too. The database itself caps a
 confirmation's lifetime at 10 minutes and its batch at 500 targets, and requires a reason on every failure.
 
-**Nothing can run yet, on purpose.** The actions themselves are Plan 38's. No executor is registered in this build,
-so `prepare` answers 501 for every action and nothing can reach a device through this layer. `GET /api/v1/actions`
-lists what the caller may run, with `available: false` for now.
+**Nothing runs unless switched on.** Since 2026-10-08 (Plan 38) execution is queued for a worker, which re-checks
+permission, scope and the kill switch with fresh data. Device actions are off unless `DEVICE_ACTIONS_ENABLED` is set,
+and only actions with a registered driver can be prepared (one so far: port up/down). `GET /api/v1/actions` reports
+`available` per action.
 
 Tests: 22 (`tests/test_action_safety.py`), with a fake executor registered only inside the tests. 21 mutations checked, all caught (two needed new tests, which were added).
 

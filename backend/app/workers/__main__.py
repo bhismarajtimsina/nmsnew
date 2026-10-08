@@ -1,4 +1,4 @@
-"""python -m app.workers run --kinds discovery,poller,dispatcher   |   python -m app.workers health"""
+"""python -m app.workers run --kinds actions,discovery,poller,dispatcher   |   python -m app.workers health"""
 from __future__ import annotations
 
 import argparse
@@ -67,7 +67,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(prog="python -m app.workers")
     sub = parser.add_subparsers(dest="command", required=True)
     runner = sub.add_parser("run")
-    runner.add_argument("--kinds", default=os.getenv("WORKER_KINDS", "dispatcher,discovery,poller,scheduler"))
+    runner.add_argument("--kinds", default=os.getenv("WORKER_KINDS", "actions,dispatcher,discovery,poller,scheduler"))
     sub.add_parser("health")
     args = parser.parse_args()
     if args.command == "health":

@@ -157,7 +157,20 @@ async def test_with_the_disabled_transport_the_action_fails_and_nothing_is_sent(
         await port_admin_executor(DisabledTransport(), enc)(db, ADMIN, {"interface_id": port}, {"state": "down"})
 
 
-def test_no_driver_is_registered_with_the_action_layer_yet():
-    from app.actions import safety
+def test_the_port_driver_is_the_only_one_registered_and_actions_are_off_by_default():
+    from app.actions.drivers import DRIVERS
+    from app.core.config import settings
 
-    assert safety.EXECUTORS == {}
+    assert set(DRIVERS) == {"switch.port.set_admin_state"} and settings.device_actions_enabled is False
+
+
+async def test_a_protected_interface_is_never_shut_down_but_can_be_brought_up(db):
+    enc, port = await switch(db)
+    await db.execute("update interfaces set protected = true where id = $1::uuid", port)
+    fake = FakeTransport()
+    fake.script_get(ADDRESS, {oid(): 2})
+    with pytest.raises(ActionFailed, match="protected"):
+        await port_admin_executor(fake, enc)(db, ADMIN, {"interface_id": port}, {"state": "down"})
+    assert fake.calls == []  # refused before anything was sent
+    outcome = await port_admin_executor(fake, enc)(db, ADMIN, {"interface_id": port}, {"state": "up"})
+    assert outcome.after["admin_status"] == "up" and outcome.after["changed"] is True

@@ -108,7 +108,6 @@ needed stronger tests, which were added; one redundant step was removed).
 
 Still to do:
 
-- the queued request flow (`actions.jobs`, worker executes);
 - more drivers, each with a fake transport and a scripted exchange;
 - diagnostics, the console gateway and sensor devices.
 
@@ -179,13 +178,8 @@ re-derives the OID from `RFC1213-MIB.my` and checks it is read-write with up(1),
 Device errors are scrubbed of credentials. The previous state is recorded in `before` as the undo hint. The reads use
 the write credentials too, so this path never needs the read community.
 
-**Not reachable yet, on purpose.** The driver is not registered with the action layer, and a test checks that. The
-queued flow that will register it (worker kind `actions`) is the next step.
-
-**Open safety question, before this driver is registered:** disabling the port a switch is managed through cuts the
-NMS off from it. Nothing in the data model marks a device's management or uplink port yet, so the driver can't refuse
-that case. It needs a rule, for example an operator-set "protected" mark on uplink interfaces, before the action is
-enabled.
+**Not reachable at first, on purpose.** The driver was registered only once the queued flow and the protected-port
+rule below existed (2026-10-08).
 
 Tests: 20 (`tests/test_action_drivers.py`), plus write-community cases in `tests/test_access_profiles.py` and
 `tests/test_trap_ingest.py`, and a frontend test. The exchanges are scripted, not recorded from a device. A
@@ -193,3 +187,45 @@ Tests: 20 (`tests/test_action_drivers.py`), plus write-community cases in `tests
 and 1 exposed a redundant guard in the trap check, which was removed.
 
 Not verified against a device.
+
+### The queued flow, protected ports and the kill switch (2026-10-08)
+
+Built: migration `20261008_0024`, the `actions` worker kind (`app/workers/runner.py`, `handle_action`), and the
+queued execution in `app/actions/safety.py`.
+
+**Actions are requests, not calls.**
+
+1. `POST /actions/{action}/execute` consumes the confirmation and records one `queued` result per target. The API
+   then publishes a signed job on `actions.jobs` and returns at once. The API process never talks to a device. If the
+   job can't be published, the queued results are marked failed, nothing is sent, and the confirmation stays spent.
+2. A worker of kind `actions` claims each queued result atomically (`for update skip locked`), so a redelivered job
+   never runs a target twice. A worker on the disabled transport consumes no jobs at all.
+3. Before running each target, the worker rebuilds the requester from the database and checks again, with fresh
+   data: that device actions are still switched on, that the account is still active, that its role still has the
+   permission and the gate, and that the target is still in scope. Any failure records the target as `refused` with
+   the reason.
+4. Each result goes `queued` → `running` → `succeeded`, `failed` or `refused`, with before/after context (secrets
+   redacted) and an audit entry. The database requires a finish time exactly when a result is final.
+5. `GET /actions/results/{confirmation_id}` shows progress to the requester only; anyone else gets 404.
+
+**Kill switch.** `DEVICE_ACTIONS_ENABLED` is off by default. While it is off, `prepare` answers 503, and a job
+queued before it was turned off is refused when it runs.
+
+**Protected interfaces.** `interfaces.protected`, set with `PUT /interfaces/{id}/protection` (`interfaces.manage`,
+scoped, audited with the previous value), marks a port no action may shut down: typically the uplink a switch is
+managed through. The port driver refuses to set a protected interface down before anything is sent; bringing it up is
+allowed. The interface API now returns `protected`.
+
+**Registered:** `switch.port.set_admin_state`, the only driver so far. Every other action answers 501. The driver can
+reach a device only when all of these hold: DEVICE_ACTIONS_ENABLED is on; a real SNMP transport is configured
+(decision D-17, still open: the build ships the disabled one); and a write community is set on the device's access
+profile.
+
+Tests: 13 in `tests/test_action_queue.py`, 1 new in `tests/test_action_drivers.py`, and the 23 Plan 26 tests now run
+through the queue.
+
+17 mutations checked, all caught (one needed a new test: only an `actions` worker may consume action jobs). The deployed worker and the CLI default now include the `actions` kind; the compose file sets `DEVICE_ACTIONS_ENABLED: "false"` explicitly.
+
+Still to do: a stop-on-first-failure option for bulk requests, a realtime notice when results arrive, the frontend
+confirmation modal and results view, the protect toggle in the interface UI, more drivers, diagnostics and the
+console gateway.

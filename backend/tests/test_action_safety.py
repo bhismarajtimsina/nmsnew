@@ -1,14 +1,26 @@
-"""The dangerous-action safety layer (Plan 26). A fake executor stands in for Plan 38's real ones; no device is
-contacted, and with no executor registered nothing can be prepared at all."""
+"""The dangerous-action safety layer (Plan 26) with Plan 38's queued execution. Fake drivers stand in for the real
+ones and the worker step runs with the fake transport; no device is contacted. With the kill switch off (the default)
+nothing can be prepared at all."""
 import json
 
 import pytest
 
+from app.actions import drivers as drivers_module
 from app.actions import safety
 from app.actions.catalogue import ACTIONS
+from app.core.config import settings
+from app.core.crypto import EncryptionService
+from app.polling.fake import FakeTransport
 from tests.helpers import bearer, make_device, make_group, make_interface, make_user
 
 A = "/api/v1/actions"
+_DB: dict = {}
+
+
+@pytest.fixture(autouse=True)
+def _remember_db(db):
+    """The worker step in `execute` runs on the same test database as the requests."""
+    _DB["conn"] = db
 
 
 @pytest.fixture
@@ -21,8 +33,8 @@ def executor(monkeypatch):
             raise safety.ActionFailed("ONU did not answer")
         return safety.Outcome(before={"state": "online", "community": "secret-public"}, after={"state": "rebooting"})
 
-    for key in ACTIONS:
-        monkeypatch.setitem(safety.EXECUTORS, key, fake)
+    monkeypatch.setattr(settings, "device_actions_enabled", True)
+    monkeypatch.setattr(drivers_module, "DRIVERS", {key: (lambda transport, enc: fake) for key in ACTIONS})
     return calls
 
 
@@ -39,11 +51,20 @@ async def prepare(app_client, headers, action, targets, params=None, expect=200)
     return response.json()
 
 
-async def execute(app_client, headers, action, token, targets, params=None, expect=200):
+async def execute(app_client, headers, action, token, targets, params=None, expect=200, run=True, db=None):
+    """Confirm, then (by default) run the worker step and return the final results, as a caller polling
+    GET /actions/results would see them once the worker is done."""
     response = await app_client.post(f"{A}/{action}/execute", headers=headers,
                                      json={"token": token, "targets": targets, "params": params or {}})
     assert response.status_code == expect, response.text
-    return response.json()
+    body = response.json()
+    if expect != 200 or not run:
+        return body
+    assert all(r["status"] == "queued" for r in body["results"])
+    await safety.run_confirmation(db or _DB["conn"], FakeTransport(), EncryptionService.from_settings(), body["confirmation_id"])
+    final = await app_client.get(f"{A}/results/{body['confirmation_id']}", headers=headers)
+    assert final.status_code == 200, final.text
+    return final.json()
 
 
 async def setup(app_client, db, role="ISP Admin"):
@@ -56,10 +77,19 @@ async def setup(app_client, db, role="ISP Admin"):
 
 # --- the dry run ---
 
-async def test_nothing_can_be_prepared_while_no_executor_is_registered(app_client, db):
+async def test_nothing_can_be_prepared_while_device_actions_are_switched_off(app_client, db):
+    assert settings.device_actions_enabled is False  # the default
+    _, headers, _, olt, _ = await setup(app_client, db)
+    body = await prepare(app_client, headers, "onu.reboot", [{"device_id": olt, "onu": "HWTC1234"}], expect=503)
+    assert "switched off" in body["detail"]
+    assert await db.fetchval("select count(*) from action_confirmations") == 0
+
+
+async def test_an_action_without_a_driver_cannot_be_prepared_even_when_switched_on(app_client, db, monkeypatch):
+    monkeypatch.setattr(settings, "device_actions_enabled", True)
     _, headers, _, olt, _ = await setup(app_client, db)
     body = await prepare(app_client, headers, "onu.reboot", [{"device_id": olt, "onu": "HWTC1234"}], expect=501)
-    assert "Plan 38" in body["detail"]
+    assert "Plan 38" in body["detail"] and "onu.reboot" not in drivers_module.DRIVERS
     assert await db.fetchval("select count(*) from action_confirmations") == 0
 
 

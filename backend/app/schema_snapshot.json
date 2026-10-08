@@ -289,8 +289,9 @@
         "action_results_confirmation_id_fkey": "FOREIGN KEY (confirmation_id) REFERENCES action_confirmations(id) ON DELETE CASCADE",
         "action_results_pkey": "PRIMARY KEY (id)",
         "action_results_user_id_fkey": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL",
-        "ck_action_results_failure_says_why": "CHECK ((((status)::text = 'succeeded'::text) OR (error IS NOT NULL)))",
-        "ck_action_results_status": "CHECK (((status)::text = ANY ((ARRAY['succeeded'::character varying, 'failed'::character varying, 'refused'::character varying])::text[])))"
+        "ck_action_results_failure_says_why": "CHECK ((((status)::text = ANY ((ARRAY['queued'::character varying, 'running'::character varying, 'succeeded'::character varying])::text[])) OR (error IS NOT NULL)))",
+        "ck_action_results_finished": "CHECK ((((status)::text = ANY ((ARRAY['queued'::character varying, 'running'::character varying])::text[])) = (finished_at IS NULL)))",
+        "ck_action_results_status": "CHECK (((status)::text = ANY ((ARRAY['queued'::character varying, 'running'::character varying, 'succeeded'::character varying, 'failed'::character varying, 'refused'::character varying])::text[])))"
       },
       "indexes": {
         "action_results_pkey": "CREATE UNIQUE INDEX action_results_pkey ON public.action_results USING btree (id)",
@@ -1728,6 +1729,12 @@
           "length": null,
           "nullable": true,
           "type": "uuid"
+        },
+        "protected": {
+          "default": "false",
+          "length": null,
+          "nullable": false,
+          "type": "bool"
         },
         "speed_bps": {
           "default": null,

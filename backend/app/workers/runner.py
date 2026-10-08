@@ -18,7 +18,8 @@ logger = logging.getLogger("cybersathy.worker")
 
 DISCOVERY_STREAM = "discovery.jobs"
 POLL_STREAM = "polling.jobs"
-KINDS = {"discovery", "poller", "dispatcher", "scheduler"}
+ACTION_STREAM = "actions.jobs"
+KINDS = {"discovery", "poller", "dispatcher", "scheduler", "actions"}
 
 
 class Worker:
@@ -46,6 +47,8 @@ class Worker:
             found.append((DISCOVERY_STREAM, lambda m: handlers.handle_discovery(self.ctx, m)))
         if "poller" in self.kinds:
             found.append((POLL_STREAM, lambda m: handlers.handle_poll(self.ctx, m, self.sink)))
+        if "actions" in self.kinds:
+            found.append((ACTION_STREAM, lambda m: handlers.handle_action(self.ctx, m)))
         return found
 
     def status(self) -> str:

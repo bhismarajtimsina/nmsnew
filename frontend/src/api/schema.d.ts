@@ -90,6 +90,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/actions/results/{confirmation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Action Results
+         * @description The results of an action this user requested; 404 for anyone else's.
+         */
+        get: operations["action_results_api_v1_actions_results__confirmation_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/actions/{action}/execute": {
         parameters: {
             query?: never;
@@ -99,7 +119,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Execute Action */
+        /**
+         * Execute Action
+         * @description Consume the confirmation, queue one result per target, and hand the work to a worker. Returns at once with the
+         *     results `queued`; GET /actions/results/{confirmation_id} shows them progress.
+         */
         post: operations["execute_action_api_v1_actions__action__execute_post"];
         delete?: never;
         options?: never;
@@ -1007,6 +1031,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/interfaces/{interface_id}/protection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Interface Protection
+         * @description Protect an interface (typically the uplink a switch is managed through) so no device action can shut it down.
+         */
+        put: operations["set_interface_protection_api_v1_interfaces__interface_id__protection_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/interfaces/{interface_id}/tags": {
         parameters: {
             query?: never;
@@ -1823,7 +1867,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "succeeded" | "failed" | "refused";
+            status: "queued" | "running" | "succeeded" | "failed" | "refused";
             /** Target */
             target: {
                 [key: string]: string;
@@ -2468,6 +2512,8 @@ export interface components {
             oper_status: string;
             /** Parent Interface Id */
             parent_interface_id: string | null;
+            /** Protected */
+            protected: boolean;
             /** Speed Bps */
             speed_bps: number | null;
             /**
@@ -3141,6 +3187,16 @@ export interface components {
             snmp_write_community?: string | null;
             /** Timeout Ms */
             timeout_ms?: number | null;
+        };
+        /** ProtectionOut */
+        ProtectionOut: {
+            /** Protected */
+            protected: boolean;
+        };
+        /** ProtectionSet */
+        ProtectionSet: {
+            /** Protected */
+            protected: boolean;
         };
         /** ReadyOut */
         ReadyOut: {
@@ -3928,6 +3984,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActionList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    action_results_api_v1_actions_results__confirmation_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                confirmation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionExecuted"];
                 };
             };
             /** @description Validation Error */
@@ -6040,6 +6129,43 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InterfaceMarks"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_interface_protection_api_v1_interfaces__interface_id__protection_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                interface_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProtectionSet"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProtectionOut"];
                 };
             };
             /** @description Validation Error */
