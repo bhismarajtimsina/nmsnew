@@ -1,6 +1,6 @@
 # Plan 38: Device Actions and Console
 
-> **Phase:** 7 · **Depends on:** 4, 11, 12, 26, 36 · **Status:** Partial (template engine built; executors, transport writes, macros storage, diagnostics and console to do) · **Owns:** implementation behind Plan 26's safety layer
+> **Phase:** 7 · **Depends on:** 4, 11, 12, 26, 36 · **Status:** Partial (template engine, macro storage, safety flow, two MIB-checked drivers, ICMP diagnostics and the console gateway backend built; SSH/telnet transport, CLI credentials, browser terminal, more drivers and sensor devices to do) · **Owns:** implementation behind Plan 26's safety layer
 
 ## Goal
 Implement every device-changing or device-probing action, macro, registration template and console session in the new system, all through the shared safety layer.
@@ -368,5 +368,75 @@ frontend, all caught on the first run.
 
 No packet was sent while building this; the tests use a scripted prober. Not verified against a device.
 
-Still to do: more drivers (OIDs from MIBs only; the BDCOM ONU actions wait on D-31), the console gateway and sensor
-devices.
+### Console gateway, backend half (2026-10-10)
+
+**Legacy, for comparison.** `BaseOpenConsole` runs under ttyd.
+- It logs in automatically with the device's stored CLI login and password, or prompts for them in the terminal.
+- It kills a session after 1800 s.
+- It records history with the user and device.
+
+**Request** (API, `app/console/broker.py`). `POST /api/v1/console/sessions` with `{device_id, auto_auth}` needs
+`console.open` and a device inside the caller's scope.
+- **Switch:** `CONSOLE_ENABLED` is off by default; while it is off, the API issues nothing (503).
+- **Limits:** 2 live sessions per device and 3 per user. Requests for one device are serialised with an advisory
+  lock, so two at once cannot both slip under the limit.
+  - Expired tickets do not count, and are marked `expired`.
+  - An `open` session older than the time limit plus a minute does not count either: its gateway died without
+    closing it, and it must not lock the device forever.
+- **Ticket:** single use, valid for 30 seconds, shown once and stored hashed. It is kept out of the audit log and out
+  of nginx's access log.
+- **`auto_auth`:** needs `console.open_auto_auth`, and even then answers 501. Device CLI credentials are not stored
+  in this build; access profiles hold SNMP secrets only.
+
+**Gateway** (`app/console/gateway.py`, `python -m app.console`, compose service `cybersathy-console`). A separate
+process, so the API never opens a device shell. nginx proxies the exact path `/console/ws` to it.
+- **On connect:** the ticket is spent in one statement outside any transaction. The requester is loaded again with
+  fresh data and `console.open` and the device's scope are re-checked; a refusal closes the session with the reason.
+- **Then:** the shell is opened at the device's address from the database. A banner names the device, the session
+  and the user, and says the session is recorded.
+- **Default shell factory:** refuses every connection. No interactive (SSH or telnet) transport is part of this build,
+  so a session today ends with "not opened" before anything reaches a device.
+- **Audit:** `console.requested`, `console.opened`, `console.closed` (with the reason).
+
+**Relay** (`app/console/session.py`). Pure asyncio over two small interfaces, so it is tested without a socket.
+- Every chunk is recorded in order in `console_history`. Output longer than the 64 KiB column limit is split.
+- A session ends on the first of: the user leaving, the device closing, 10 minutes without input, or 30 minutes in
+  total (legacy's limit).
+- The gateway records the end before it tells the user. A test found the end record being lost when the user's side
+  left first.
+
+**Redaction** (`app/console/redact.py`). The redactor watches the output.
+- When the current line is a password-style prompt, every keystroke is withheld from the transcript until Enter,
+  and one `[input hidden]` marker is written instead. The keystrokes still reach the device.
+- Prompts recognised: password, passwd, passphrase, passcode, secret, PIN, "пароль", "user@host's password", and
+  "password for ...". A prompt split across chunks still counts.
+- A device that echoes `*` keeps the input hidden. Hiding ends as soon as the device prints anything else on the line.
+
+**Reading transcripts.** `GET /api/v1/console/sessions` and `GET /api/v1/console/sessions/{id}/history` (paged by
+`after_seq`) need `console.logs.view`, scoped by the session's device.
+
+**Database** (migration `0026`). Check constraints keep the session states consistent: `open` exactly when opened and
+not closed, `closed` exactly when closed. The ticket lifetime is at most 2 minutes, and a transcript chunk at most
+64 KiB.
+
+Tests: 32 in `tests/test_console.py` (redaction, relay, tickets, limits, scope, transcripts) and 6 in
+`tests/test_console_gateway.py` (real WebSocket handshakes through Starlette's TestClient, with a scripted shell). The
+gateway tests were run five times in a row to rule out the timing race above.
+
+Mutation checks: 29, all caught. The first run let three through; each was closed with a new test:
+- the idle timer resetting on input;
+- the per-user limit on its own;
+- an expired ticket on another device.
+
+**Not built yet:**
+- an interactive SSH or telnet transport;
+- encrypted CLI credentials for automatic login;
+- the xterm.js terminal in the browser (the package is not yet a dependency);
+- a sweep that closes sessions a crashed gateway left `open` (they already stop counting against the limits).
+
+Each open session holds one database connection for its lifetime.
+
+Nothing here has been run against a device.
+
+Still to do: more drivers (OIDs from MIBs only; the BDCOM ONU actions wait on D-31), the rest of the console (transport,
+CLI credentials, browser terminal) and sensor devices.

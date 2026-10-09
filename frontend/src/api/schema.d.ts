@@ -374,6 +374,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/console/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Console Sessions */
+        get: operations["list_console_sessions_api_v1_console_sessions_get"];
+        put?: never;
+        /**
+         * Request Console
+         * @description A single-use ticket, valid for 30 seconds, that the console gateway redeems at `gateway_path?ticket=...`. The
+         *     ticket is shown once and stored hashed.
+         */
+        post: operations["request_console_api_v1_console_sessions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/console/sessions/{session_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Console History
+         * @description A session's transcript, in order, a page at a time. Input typed at password prompts was never stored.
+         */
+        get: operations["console_history_api_v1_console_sessions__session_id__history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/dashboards": {
         parameters: {
             query?: never;
@@ -2004,6 +2046,89 @@ export interface components {
             name: string;
             /** Numeric Oid */
             numeric_oid: string;
+        };
+        /** ConsoleChunk */
+        ConsoleChunk: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Data */
+            data: string;
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "in" | "out";
+            /** Seq */
+            seq: number;
+        };
+        /** ConsoleHistory */
+        ConsoleHistory: {
+            /** Chunks */
+            chunks: components["schemas"]["ConsoleChunk"][];
+            session: components["schemas"]["ConsoleSessionOut"];
+        };
+        /** ConsoleRequest */
+        ConsoleRequest: {
+            /**
+             * Auto Auth
+             * @default false
+             */
+            auto_auth: boolean;
+            /** Device Id */
+            device_id: string;
+        };
+        /** ConsoleSessionList */
+        ConsoleSessionList: {
+            /** Items */
+            items: components["schemas"]["ConsoleSessionOut"][];
+        };
+        /** ConsoleSessionOut */
+        ConsoleSessionOut: {
+            /** Auto Auth */
+            auto_auth: boolean;
+            /** Close Reason */
+            close_reason: string | null;
+            /** Closed At */
+            closed_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Device Id */
+            device_id: string | null;
+            /** Device Name */
+            device_name: string;
+            /** Id */
+            id: string;
+            /** Opened At */
+            opened_at: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "open" | "closed" | "expired";
+            /** User Id */
+            user_id: string | null;
+            /** Username */
+            username: string | null;
+        };
+        /** ConsoleTicket */
+        ConsoleTicket: {
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Gateway Path */
+            gateway_path: string;
+            /** Session Id */
+            session_id: string;
+            /** Ticket */
+            ticket: string;
         };
         /** CountByName */
         CountByName: {
@@ -4642,6 +4767,111 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CapabilityOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_console_sessions_api_v1_console_sessions_get: {
+        parameters: {
+            query?: {
+                device_id?: string | null;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsoleSessionList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    request_console_api_v1_console_sessions_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsoleRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsoleTicket"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    console_history_api_v1_console_sessions__session_id__history_get: {
+        parameters: {
+            query?: {
+                after_seq?: number;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsoleHistory"];
                 };
             };
             /** @description Validation Error */

@@ -855,3 +855,47 @@ class DiagnosticOut(Strict):
     status: Literal["queued", "succeeded", "failed", "refused"]
     result: PingSummary | None = None
     error: str | None = None
+
+
+# --- Console (Plan 38) ---
+
+class ConsoleRequest(Strict):
+    device_id: str = Field(pattern=r"^[0-9a-fA-F-]{36}$")
+    auto_auth: bool = False
+
+
+class ConsoleTicket(Strict):
+    session_id: str
+    ticket: str
+    expires_at: datetime
+    gateway_path: str
+
+
+class ConsoleSessionOut(Strict):
+    id: str
+    user_id: str | None
+    username: str | None
+    device_id: str | None
+    device_name: str
+    auto_auth: bool
+    status: Literal["pending", "open", "closed", "expired"]
+    created_at: datetime
+    opened_at: datetime | None
+    closed_at: datetime | None
+    close_reason: str | None
+
+
+class ConsoleSessionList(Strict):
+    items: list[ConsoleSessionOut]
+
+
+class ConsoleChunk(Strict):
+    seq: int
+    direction: Literal["in", "out"]
+    data: str
+    at: datetime
+
+
+class ConsoleHistory(Strict):
+    session: ConsoleSessionOut
+    chunks: list[ConsoleChunk]

@@ -619,6 +619,157 @@
       },
       "triggers": {}
     },
+    "console_history": {
+      "columns": {
+        "at": {
+          "default": "now()",
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        "data": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "text"
+        },
+        "direction": {
+          "default": null,
+          "length": 3,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "id": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "int8"
+        },
+        "seq": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "int4"
+        },
+        "session_id": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        }
+      },
+      "constraints": {
+        "ck_console_history_chunk": "CHECK ((length(data) <= 65536))",
+        "ck_console_history_direction": "CHECK (((direction)::text = ANY ((ARRAY['in'::character varying, 'out'::character varying])::text[])))",
+        "console_history_pkey": "PRIMARY KEY (id)",
+        "console_history_session_id_fkey": "FOREIGN KEY (session_id) REFERENCES console_sessions(id) ON DELETE CASCADE",
+        "uq_console_history_seq": "UNIQUE (session_id, seq)"
+      },
+      "indexes": {
+        "console_history_pkey": "CREATE UNIQUE INDEX console_history_pkey ON public.console_history USING btree (id)",
+        "uq_console_history_seq": "CREATE UNIQUE INDEX uq_console_history_seq ON public.console_history USING btree (session_id, seq)"
+      },
+      "triggers": {}
+    },
+    "console_sessions": {
+      "columns": {
+        "auto_auth": {
+          "default": "false",
+          "length": null,
+          "nullable": false,
+          "type": "bool"
+        },
+        "client_ip": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "inet"
+        },
+        "close_reason": {
+          "default": null,
+          "length": 120,
+          "nullable": true,
+          "type": "varchar"
+        },
+        "closed_at": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "timestamptz"
+        },
+        "created_at": {
+          "default": "now()",
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        "device_id": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "uuid"
+        },
+        "device_name": {
+          "default": null,
+          "length": 255,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "id": {
+          "default": "gen_random_uuid()",
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "opened_at": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "timestamptz"
+        },
+        "status": {
+          "default": "'pending'::character varying",
+          "length": 16,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "ticket_expires_at": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        "ticket_hash": {
+          "default": null,
+          "length": 64,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "user_id": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "uuid"
+        }
+      },
+      "constraints": {
+        "ck_console_sessions_closed": "CHECK ((((status)::text = 'closed'::text) = (closed_at IS NOT NULL)))",
+        "ck_console_sessions_open": "CHECK ((((status)::text = 'open'::text) = ((opened_at IS NOT NULL) AND (closed_at IS NULL))))",
+        "ck_console_sessions_status": "CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'open'::character varying, 'closed'::character varying, 'expired'::character varying])::text[])))",
+        "ck_console_sessions_ticket_lifetime": "CHECK (((ticket_expires_at > created_at) AND ((ticket_expires_at - created_at) <= '00:02:00'::interval)))",
+        "console_sessions_device_id_fkey": "FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE SET NULL",
+        "console_sessions_pkey": "PRIMARY KEY (id)",
+        "console_sessions_ticket_hash_key": "UNIQUE (ticket_hash)",
+        "console_sessions_user_id_fkey": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL"
+      },
+      "indexes": {
+        "console_sessions_pkey": "CREATE UNIQUE INDEX console_sessions_pkey ON public.console_sessions USING btree (id)",
+        "console_sessions_ticket_hash_key": "CREATE UNIQUE INDEX console_sessions_ticket_hash_key ON public.console_sessions USING btree (ticket_hash)",
+        "ix_console_sessions_device_status": "CREATE INDEX ix_console_sessions_device_status ON public.console_sessions USING btree (device_id, status)",
+        "ix_console_sessions_user_status": "CREATE INDEX ix_console_sessions_user_status ON public.console_sessions USING btree (user_id, status)"
+      },
+      "triggers": {}
+    },
     "dead_letter_jobs": {
       "columns": {
         "created_at": {

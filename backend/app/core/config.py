@@ -75,6 +75,12 @@ class Settings:
     device_actions_enabled: bool
     # On-demand diagnostics (Plan 38): ICMP ping of a device's management address. Off unless explicitly turned on.
     diagnostics_enabled: bool
+    # Console gateway (Plan 38). Off unless explicitly turned on; limits per device and per user, timeouts in seconds.
+    console_enabled: bool
+    console_max_per_device: int
+    console_max_per_user: int
+    console_idle_seconds: int
+    console_max_seconds: int
     trap_source_rate: float
     trap_source_burst: float
     trap_global_rate: float
@@ -172,6 +178,12 @@ def load_settings() -> Settings:
         trap_check_community=_bool("TRAP_CHECK_COMMUNITY", False),
         device_actions_enabled=_bool("DEVICE_ACTIONS_ENABLED", False),
         diagnostics_enabled=_bool("DIAGNOSTICS_ENABLED", False),
+        console_enabled=_bool("CONSOLE_ENABLED", False),
+        console_max_per_device=int(os.getenv("CONSOLE_MAX_PER_DEVICE", "2")),
+        console_max_per_user=int(os.getenv("CONSOLE_MAX_PER_USER", "3")),
+        console_idle_seconds=int(os.getenv("CONSOLE_IDLE_SECONDS", "600")),
+        # Legacy kills a console after 1800 s (BaseOpenConsole::spawnTimeoutKiller).
+        console_max_seconds=int(os.getenv("CONSOLE_MAX_SECONDS", "1800")),
         # Flood protection (risk K-15). Traps per second, refilled continuously, with a burst allowance on top: an OLT
         # reporting a PON-wide LOS legitimately sends one trap per ONU at once, so the per-source burst is generous.
         # Not yet tuned against real trap volumes - revisit once the receiver runs in observe mode.

@@ -38,6 +38,9 @@ x-api-env: &api-env
   DEVICE_ACTIONS_ENABLED: "false"
   # On-demand diagnostics (Plan 38): ICMP ping of an in-scope device's management address. Off: the API refuses.
   DIAGNOSTICS_ENABLED: "false"
+  # Console gateway (Plan 38). Off: the API issues no tickets and the gateway refuses every connection. Even when on,
+  # this build has no interactive transport, so a session is closed with "not opened" before anything reaches a device.
+  CONSOLE_ENABLED: "false"
   MANAGEMENT_NETWORKS: ${CYBERSATHY_MANAGEMENT_NETWORKS:-}
   ENCRYPTION_KEYS: ${CYBERSATHY_ENCRYPTION_KEYS:-}
   ENCRYPTION_ACTIVE_KEY_ID: ${CYBERSATHY_ENCRYPTION_ACTIVE_KEY_ID:-}
@@ -178,6 +181,38 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-m", "app.traps", "health"]
+      interval: 20s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging: *logging
+    networks:
+      - cybersathy-network
+
+  # Console gateway (app/console): a separate process, so the API never opens a device shell. One WebSocket,
+  # /console/ws?ticket=..., redeeming single-use tickets the API issues. Not published on the host: the web front end
+  # proxies /console/ws to it.
+  cybersathy-console:
+    build: *api-build
+    image: cybersathy-nms-api:local
+    container_name: cybersathy-console
+    restart: unless-stopped
+    command: ["python", "-m", "app.console"]
+    environment: *api-env
+    depends_on:
+      cybersathy-init:
+        condition: service_completed_successfully
+      cybersathy-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8010/console/health', timeout=5)"]
       interval: 20s
       timeout: 10s
       start_period: 30s
