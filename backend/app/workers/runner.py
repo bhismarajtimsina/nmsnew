@@ -12,6 +12,7 @@ from app.polling.engine import Context, Sink
 from app.polling.transport import DisabledTransport
 from app.workers import handlers, heartbeat
 from app.scheduling.scheduler import Scheduler
+from app.diagnostics.ping import DIAG_STREAM, DisabledProber, Prober
 from app.workers.queue import JobQueue, Message, Permanent, RetryLater, Skipped, verify
 
 logger = logging.getLogger("cybersathy.worker")
@@ -19,15 +20,17 @@ logger = logging.getLogger("cybersathy.worker")
 DISCOVERY_STREAM = "discovery.jobs"
 POLL_STREAM = "polling.jobs"
 ACTION_STREAM = "actions.jobs"
-KINDS = {"discovery", "poller", "dispatcher", "scheduler", "actions"}
+KINDS = {"discovery", "poller", "dispatcher", "scheduler", "actions", "diagnostics"}
 
 
 class Worker:
-    def __init__(self, ctx: Context, kinds: set[str], *, worker_id: str | None = None, sink: Sink | None = None) -> None:
+    def __init__(self, ctx: Context, kinds: set[str], *, worker_id: str | None = None, sink: Sink | None = None,
+                 prober: Prober | None = None) -> None:
         unknown = kinds - KINDS
         if unknown:
             raise ValueError(f"unknown worker kind(s): {', '.join(sorted(unknown))}")
         self.ctx, self.kinds, self.sink = ctx, kinds, sink
+        self.prober: Prober = prober or DisabledProber()
         self.worker_id = worker_id or f"{socket.gethostname()}-{'+'.join(sorted(kinds))}"
         self.queue = JobQueue(ctx.redis, ctx.cfg.job_signing_key, max_deliveries=ctx.cfg.worker_max_deliveries, retry_base_ms=ctx.cfg.worker_retry_base_ms)
         self.scheduler = Scheduler(ctx.pool, self.queue, ctx.cfg) if "scheduler" in kinds else None
@@ -39,8 +42,16 @@ class Worker:
     def transport_enabled(self) -> bool:
         return not isinstance(self.ctx.transport, DisabledTransport)
 
+    @property
+    def diagnostics_enabled(self) -> bool:
+        return not isinstance(self.prober, DisabledProber)
+
     def streams(self) -> list[tuple[str, Callable[[Message], Awaitable[None]]]]:
         found: list[tuple[str, Callable[[Message], Awaitable[None]]]] = []
+        # Diagnostics use ICMP, not SNMP, so they have their own switch; the same rule holds: never consume a job that
+        # could only fail.
+        if "diagnostics" in self.kinds and self.diagnostics_enabled:
+            found.append((DIAG_STREAM, lambda m: handlers.handle_diagnostic(self.ctx, m, self.prober)))
         if not self.transport_enabled:
             return found  # never consume a job we could only fail: nothing may leave the process without a transport
         if "discovery" in self.kinds:
@@ -54,7 +65,10 @@ class Worker:
     def status(self) -> str:
         if self.kinds <= {"dispatcher", "scheduler"}:
             return "running"
-        return "running" if self.transport_enabled else "idle: SNMP transport is disabled, no jobs are consumed"
+        if self.streams():
+            return "running"
+        # worker_heartbeats.status is varchar(60): keep this short.
+        return "idle: SNMP disabled, diagnostics off; consuming nothing"
 
     async def process(self, message: Message, handler: Callable[[Message], Awaitable[None]]) -> str:
         key = self.ctx.cfg.job_signing_key

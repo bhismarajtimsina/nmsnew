@@ -60,7 +60,7 @@ Legacy access control is a set of **route-regex rules**: each key in a `rules.ym
 | Console | `external_apps_console_with_auto_auth` | console | 1 | `console.open_auto_auth` | yes | Plan 38; injects device credentials |
 | Console | `external_apps_console_view_logs` | console | 2 | `console.logs.view` |  | Plan 38 |
 | Diagnostic | `diag_arp_ping` | diag | 1 | `diagnostics.arp_ping` |  | Live device probe, rate-limited |
-| Diagnostic | `diag_icmp_ping` | diag | 1 | `diagnostics.icmp_ping` |  | Live probe, rate-limited |
+| Diagnostic | `diag_icmp_ping` | diag | 1 | `diagnostics.icmp_ping` |  | Live probe, rate-limited. Legacy `rules.yml` maps this key to the `/arp-ping` route, so in legacy it grants ARP ping, not ICMP; the new key grants only the ICMP ping (Plan 38) |
 | Diagnostic | `diag_traceroute` | diag | 1 | `diagnostics.traceroute` |  | Live probe, rate-limited |
 | Diagnostic | `diag_interface` | diag | 2 | `diagnostics.interface` |  | Shared by Diagnostic, MikBill, NoDeny, TrapService |
 | Events | `events_show` | events | 1 | `events.view` |  |  |

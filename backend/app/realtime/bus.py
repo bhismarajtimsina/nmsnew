@@ -54,6 +54,18 @@ async def notify_action_finished(redis: Redis, confirmation_id: str) -> None:
         logger.warning("could not publish %s (%s)", ACTIONS_FINISHED, confirmation_id, exc_info=True)
 
 
+DIAGNOSTICS_FINISHED = "diagnostics.finished"
+
+
+async def notify_diagnostic_finished(redis: Redis, request_id: str) -> None:
+    """Tells the requester's page its diagnostic has a result. Only the request id, for the same reason as
+    `notify_action_finished`: the result itself is answered to the requester alone. Never raises."""
+    try:
+        await publish(redis, DIAGNOSTICS_FINISHED, {"request_id": request_id})
+    except Exception:  # noqa: BLE001 - Redis being down must not fail a probe that already ran
+        logger.warning("could not publish %s (%s)", DIAGNOSTICS_FINISHED, request_id, exc_info=True)
+
+
 async def run_subscriber(redis: Redis, manager: ConnectionManager, *, stop: asyncio.Event) -> None:
     """Runs until `stop` is set. One of these runs per process alongside its WebSocket connections - started at
     application startup, not per connection."""

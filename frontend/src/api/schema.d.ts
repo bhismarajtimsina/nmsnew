@@ -844,6 +844,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/diagnostics/ping": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request Ping
+         * @description Queue a ping of the device's management address. The address is read by the worker from the database; the
+         *     request names a device, never an address.
+         */
+        post: operations["request_ping_api_v1_diagnostics_ping_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/diagnostics/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Diagnostic Result
+         * @description A request's status and result, for the user who asked; 404 for anyone else, and once it has expired.
+         */
+        get: operations["diagnostic_result_api_v1_diagnostics__request_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/events": {
         parameters: {
             query?: never;
@@ -2258,6 +2299,21 @@ export interface components {
             /** Vendor Slug */
             vendor_slug?: string | null;
         };
+        /** DiagnosticOut */
+        DiagnosticOut: {
+            /** Device Id */
+            device_id: string;
+            /** Error */
+            error?: string | null;
+            /** Request Id */
+            request_id: string;
+            result?: components["schemas"]["PingSummary"] | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "succeeded" | "failed" | "refused";
+        };
         /** DiscoveryJobOut */
         DiscoveryJobOut: {
             /** Error */
@@ -3031,6 +3087,31 @@ export interface components {
             id: string;
             /** Is Dangerous */
             is_dangerous: boolean;
+        };
+        /** PingRequest */
+        PingRequest: {
+            /**
+             * Count
+             * @default 4
+             */
+            count: number;
+            /** Device Id */
+            device_id: string;
+        };
+        /** PingSummary */
+        PingSummary: {
+            /** Avg Ms */
+            avg_ms: number | null;
+            /** Loss Percent */
+            loss_percent: number;
+            /** Max Ms */
+            max_ms: number | null;
+            /** Min Ms */
+            min_ms: number | null;
+            /** Received */
+            received: number;
+            /** Sent */
+            sent: number;
         };
         /** PollHistory */
         PollHistory: {
@@ -5775,6 +5856,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PollHistory"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    request_ping_api_v1_diagnostics_ping_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PingRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiagnosticOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    diagnostic_result_api_v1_diagnostics__request_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiagnosticOut"];
                 };
             };
             /** @description Validation Error */

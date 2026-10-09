@@ -155,3 +155,47 @@ async def handle_action(ctx: Context, message: Message) -> None:
     async with ctx.pool.acquire() as conn:
         await run_confirmation(conn, ctx.transport, ctx.enc, confirmation_id)
     await notify_action_finished(ctx.redis, confirmation_id)
+
+
+async def handle_diagnostic(ctx: Context, message: Message, prober: Any) -> None:
+    """Run one on-demand ping (Plan 38, diagnostics). The requester's account, permission and scope are checked again
+    with fresh data, and the address comes from the database, never from the job."""
+    from app.actions.safety import load_actor
+    from app.core.audit import write_audit
+    from app.diagnostics import ping as diag
+    from app.realtime.bus import notify_diagnostic_finished
+    from app.repositories import devices as device_repo
+
+    request_id = message.fields.get("request_id", "")
+    try:
+        uuid.UUID(request_id)
+    except ValueError as exc:
+        raise Permanent("message has no valid request_id") from exc
+    record = await diag.load(ctx.redis, request_id)
+    if record is None:
+        raise Skipped("the request expired before it ran")
+    if record.status != "queued":
+        raise Skipped("already run")  # a redelivered message never probes twice
+    async with ctx.pool.acquire() as conn:
+        actor = await load_actor(conn, record.user_id)
+        device = await device_repo.get_device(conn, actor, record.device_id) if actor is not None else None
+        if actor is None:
+            record.status, record.error = "refused", "the requester's account is no longer active"
+        elif not actor.has_permission("diagnostics.icmp_ping"):
+            record.status, record.error = "refused", "the requester no longer has permission for diagnostics"
+        elif device is None:
+            record.status, record.error = "refused", "the device is no longer inside the requester's scope"
+        else:
+            try:
+                result = await prober.ping(str(device["management_ip"]), count=record.count)
+                record.status, record.result = "succeeded", result.summary()
+            except diag.ProbeDisabled as exc:
+                record.status, record.error = "refused", str(exc)
+            except Exception as exc:  # noqa: BLE001 - a socket or permission error is reported, not retried
+                record.status, record.error = "failed", f"the ping could not be sent ({type(exc).__name__})"
+        await diag.save(ctx.redis, request_id, record)
+        await write_audit(conn, action="diagnostics.ping", actor_user_id=record.user_id, resource_type="device",
+                          resource_id=record.device_id,
+                          metadata={"request_id": request_id, "status": record.status, "count": record.count,
+                                    "result": record.result, "error": record.error})
+    await notify_diagnostic_finished(ctx.redis, request_id)

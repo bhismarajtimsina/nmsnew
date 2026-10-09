@@ -1,4 +1,4 @@
-"""python -m app.workers run --kinds actions,discovery,poller,dispatcher   |   python -m app.workers health"""
+"""python -m app.workers run --kinds actions,diagnostics,discovery,poller,dispatcher   |   python -m app.workers health"""
 from __future__ import annotations
 
 import argparse
@@ -16,6 +16,7 @@ from app.core.logging import configure_logging
 from app.core.redis import create_redis
 from app.polling.engine import Context
 from app.polling.transport import DisabledTransport, SnmpTransport
+from app.diagnostics.ping import build_prober
 from app.workers.runner import KINDS, Worker
 
 
@@ -38,7 +39,8 @@ async def run(kinds: set[str]) -> int:
     except EncryptionNotConfigured:
         enc = None
         log.warning("credential encryption is not configured; jobs that need credentials will fail")
-    worker = Worker(Context(pool, redis, build_transport(), enc, settings), kinds)
+    prober = build_prober(settings.diagnostics_enabled, settings.pinger_privileged)
+    worker = Worker(Context(pool, redis, build_transport(), enc, settings), kinds, prober=prober)
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGTERM, signal.SIGINT):
         loop.add_signal_handler(sig, worker.stop.set)
@@ -67,7 +69,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(prog="python -m app.workers")
     sub = parser.add_subparsers(dest="command", required=True)
     runner = sub.add_parser("run")
-    runner.add_argument("--kinds", default=os.getenv("WORKER_KINDS", "actions,dispatcher,discovery,poller,scheduler"))
+    runner.add_argument("--kinds", default=os.getenv("WORKER_KINDS", "actions,diagnostics,dispatcher,discovery,poller,scheduler"))
     sub.add_parser("health")
     args = parser.parse_args()
     if args.command == "health":

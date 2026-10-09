@@ -1641,6 +1641,57 @@
         "title": "DeviceUpdate",
         "type": "object"
       },
+      "DiagnosticOut": {
+        "additionalProperties": false,
+        "properties": {
+          "device_id": {
+            "title": "Device Id",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "request_id": {
+            "title": "Request Id",
+            "type": "string"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PingSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "succeeded",
+              "failed",
+              "refused"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "device_id",
+          "status"
+        ],
+        "title": "DiagnosticOut",
+        "type": "object"
+      },
       "DiscoveryJobOut": {
         "additionalProperties": false,
         "properties": {
@@ -4107,6 +4158,88 @@
           "is_dangerous"
         ],
         "title": "PermissionItem",
+        "type": "object"
+      },
+      "PingRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "default": 4,
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "device_id": {
+            "pattern": "^[0-9a-fA-F-]{36}$",
+            "title": "Device Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "device_id"
+        ],
+        "title": "PingRequest",
+        "type": "object"
+      },
+      "PingSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "avg_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Ms"
+          },
+          "loss_percent": {
+            "title": "Loss Percent",
+            "type": "number"
+          },
+          "max_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Ms"
+          },
+          "min_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Ms"
+          },
+          "received": {
+            "title": "Received",
+            "type": "integer"
+          },
+          "sent": {
+            "title": "Sent",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sent",
+          "received",
+          "loss_percent",
+          "min_ms",
+          "avg_ms",
+          "max_ms"
+        ],
+        "title": "PingSummary",
         "type": "object"
       },
       "PollHistory": {
@@ -10349,6 +10482,126 @@
         "summary": "Poll History",
         "tags": [
           "polling"
+        ]
+      }
+    },
+    "/api/v1/diagnostics/ping": {
+      "post": {
+        "description": "Queue a ping of the device's management address. The address is read by the worker from the database; the\nrequest names a device, never an address.",
+        "operationId": "request_ping_api_v1_diagnostics_ping_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiagnosticOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Request Ping",
+        "tags": [
+          "diagnostics"
+        ]
+      }
+    },
+    "/api/v1/diagnostics/{request_id}": {
+      "get": {
+        "description": "A request's status and result, for the user who asked; 404 for anyone else, and once it has expired.",
+        "operationId": "diagnostic_result_api_v1_diagnostics__request_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Request Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiagnosticOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Diagnostic Result",
+        "tags": [
+          "diagnostics"
         ]
       }
     },

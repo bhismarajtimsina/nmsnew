@@ -324,5 +324,49 @@ not missing tests.
 
 Not verified against a device.
 
-Still to do: more drivers (OIDs from MIBs only; the BDCOM ONU actions wait on D-31), diagnostics and the console
-gateway.
+### Diagnostics: on-demand ICMP ping (2026-10-09)
+
+**Legacy, for comparison.** The Diagnostic component's ARP ping asks a RouterOS router, through switcher-core, to
+ARP-ping an arbitrary address. Its traceroute route throws "Not realized". Its `diag_icmp_ping` rule points at the
+`/arp-ping` route, so that key actually grants ARP ping.
+
+**Built: ICMP ping of a device's management address.**
+- **Request:** `POST /api/v1/diagnostics/ping` with `{device_id, count}`, `count` 1 to 5. It needs
+  `diagnostics.icmp_ping` and a device inside the caller's scope.
+  - The request names a device, never an address. Extra fields are refused, and the job carries only a request id.
+- **Limits:** 10 a minute per user, and 6 a minute per device across all users, so several operators cannot together
+  flood one device.
+- **Worker:** a new worker kind, `diagnostics`. It re-checks the account, the permission and the scope with fresh data.
+  - It reads the address from the database when it runs, so a changed address is the one pinged.
+  - At most 5 echo requests, 1-second timeout, 0.5 s apart. The limits are enforced in the prober as well, so a
+    forged job cannot ask for more.
+  - A redelivered job never probes twice.
+- **Results:** kept only in Redis for ten minutes, readable by the requester alone
+  (`GET /api/v1/diagnostics/{request_id}`; 404 for anyone else). The audit log keeps the summary:
+  `diagnostics.ping.requested` and `diagnostics.ping`.
+- **Notice:** `diagnostics.finished` carries only the request id, and only `diagnostics.icmp_ping` holders may
+  subscribe.
+- **Off by default.** `DIAGNOSTICS_ENABLED` is off (the compose file says so explicitly).
+  - With it off, the API answers 503 and the worker uses a prober that refuses everything.
+  - The worker consumes the diagnostics stream only with a real prober, independent of the SNMP transport.
+- **Packets:** sent through icmplib, the pinger's library, with the same unprivileged datagram sockets, so the worker
+  needs no added capability.
+- **Device page:** a Ping button for holders of the permission opens a small dialog that follows the result, woken
+  early by the notice.
+
+Two "no management address" checks were removed as dead code: the column is NOT NULL. The full suite caught a real bug in this
+round: the new idle message was longer than `worker_heartbeats.status` (varchar(60)), so an idle worker's every
+heartbeat would have failed. It is shorter now, and a test checks every status fits.
+
+**Not built:**
+- ARP ping and pinging arbitrary addresses through a router. These need the RouterOS API transport, which does not
+  exist yet. Pinging addresses other than a device's own also needs its own scope rule.
+- Traceroute. Legacy never had it.
+
+Tests: 22 backend tests (`tests/test_diagnostics.py`) and 8 frontend tests. Mutation checks: 18 backend and 8
+frontend, all caught on the first run.
+
+No packet was sent while building this; the tests use a scripted prober. Not verified against a device.
+
+Still to do: more drivers (OIDs from MIBs only; the BDCOM ONU actions wait on D-31), the console gateway and sensor
+devices.

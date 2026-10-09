@@ -73,6 +73,8 @@ class Settings:
     trap_check_community: bool
     # Global kill switch for device-changing actions (Plan 26/38). Off unless explicitly turned on.
     device_actions_enabled: bool
+    # On-demand diagnostics (Plan 38): ICMP ping of a device's management address. Off unless explicitly turned on.
+    diagnostics_enabled: bool
     trap_source_rate: float
     trap_source_burst: float
     trap_global_rate: float
@@ -169,6 +171,7 @@ def load_settings() -> Settings:
         # TRAP_SERVICE_CHECK_COMMUNITY in the real .env - off in production, matched here exactly.
         trap_check_community=_bool("TRAP_CHECK_COMMUNITY", False),
         device_actions_enabled=_bool("DEVICE_ACTIONS_ENABLED", False),
+        diagnostics_enabled=_bool("DIAGNOSTICS_ENABLED", False),
         # Flood protection (risk K-15). Traps per second, refilled continuously, with a burst allowance on top: an OLT
         # reporting a PON-wide LOS legitimately sends one trap per ONU at once, so the per-source burst is generous.
         # Not yet tuned against real trap volumes - revisit once the receiver runs in observe mode.

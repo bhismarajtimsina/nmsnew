@@ -9,6 +9,18 @@ import { useRoute, useRouter } from 'vue-router';
 import { api, ApiError } from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import ActionConfirmModal from '@/components/actions/ActionConfirmModal.vue';
+import { useRealtimeStore } from '@/stores/realtime';
+import { wakeableSleep } from '@/components/actions/actions';
+import {
+  describePing,
+  diagnosticError,
+  diagnosticsApi,
+  followPing,
+  isNoticeFor,
+  DIAGNOSTICS_FINISHED,
+  PING_PERMISSION,
+  type Diagnostic,
+} from '@/components/diagnostics/diagnostics';
 import {
   actionError,
   actionsApi,
@@ -118,6 +130,43 @@ async function actionFinished(_executed: Executed) {
   interfaces.value = await loadInterfaces(api, deviceId.value, can);
 }
 
+// Diagnostics: a ping of this device's management address, run by a worker. Results live only briefly on the server.
+const diagnostics = diagnosticsApi(api);
+const canPing = computed(() => can(PING_PERMISSION));
+const pingOpen = ref(false);
+const pinging = ref(false);
+const pingResult = ref<Diagnostic | null>(null);
+const pingError = ref<string | null>(null);
+let pingCancelled = false;
+
+async function runPing() {
+  pingOpen.value = true;
+  pinging.value = true;
+  pingCancelled = false;
+  pingResult.value = null;
+  pingError.value = null;
+  const wake = wakeableSleep();
+  let unsubscribe: () => void = () => {};
+  try {
+    const queued = await diagnostics.ping(deviceId.value);
+    pingResult.value = queued;
+    unsubscribe = useRealtimeStore().subscribe(DIAGNOSTICS_FINISHED, (message) => {
+      if (isNoticeFor(message.data, queued.request_id)) wake.wake();
+    });
+    pingResult.value = await followPing(diagnostics, queued, { sleep: wake.sleep, isCancelled: () => pingCancelled });
+  } catch (error) {
+    pingError.value = diagnosticError(error);
+  } finally {
+    unsubscribe();
+    pinging.value = false;
+  }
+}
+
+function closePing() {
+  pingCancelled = true;
+  pingOpen.value = false;
+}
+
 onMounted(load);
 onMounted(loadActions);
 watch(deviceId, load);
@@ -167,6 +216,9 @@ const severityColor: Record<string, string> = { info: 'blue', warning: 'orange',
         ><unicon name="arrow-left"></unicon> Back</sdButton
       >
       <sdButton type="default" :disabled="loading" @click="load"><unicon name="redo"></unicon> Reload</sdButton>
+      <sdButton v-if="canPing && detail" type="default" :disabled="pinging" @click="runPing"
+        ><unicon name="wifi"></unicon> Ping</sdButton
+      >
       <sdButton v-if="canSaveConfig && detail" type="primary" @click="saveConfig"
         ><unicon name="save"></unicon> Save configuration</sdButton
       >
@@ -315,6 +367,20 @@ const severityColor: Record<string, string> = { info: 'blue', warning: 'orange',
       </sdCards>
     </template>
   </Main>
+  <a-modal
+    :visible="pingOpen"
+    :title="`Ping ${detail?.overview.name ?? ''}`"
+    :footer="null"
+    width="440px"
+    @cancel="closePing"
+  >
+    <a-alert v-if="pingError" type="error" :message="pingError" show-icon />
+    <p v-else-if="pingResult">{{ describePing(pingResult) }}</p>
+    <a-skeleton v-else active :paragraph="{ rows: 1 }" />
+    <p class="ddn-note">
+      Sent from the NMS to {{ detail?.overview.management_ip }}; the result is kept for ten minutes.
+    </p>
+  </a-modal>
   <ActionConfirmModal
     v-if="pending"
     :open="pending !== null"

@@ -36,6 +36,8 @@ x-api-env: &api-env
   SNMP_TRANSPORT: disabled
   # Device-changing actions (Plan 26/38). Off: the API refuses to prepare any, and a queued one is refused when it runs.
   DEVICE_ACTIONS_ENABLED: "false"
+  # On-demand diagnostics (Plan 38): ICMP ping of an in-scope device's management address. Off: the API refuses.
+  DIAGNOSTICS_ENABLED: "false"
   MANAGEMENT_NETWORKS: ${CYBERSATHY_MANAGEMENT_NETWORKS:-}
   ENCRYPTION_KEYS: ${CYBERSATHY_ENCRYPTION_KEYS:-}
   ENCRYPTION_ACTIVE_KEY_ID: ${CYBERSATHY_ENCRYPTION_ACTIVE_KEY_ID:-}
@@ -124,7 +126,7 @@ services:
     image: cybersathy-nms-api:local
     container_name: cybersathy-worker
     restart: unless-stopped
-    command: ["python", "-m", "app.workers", "run", "--kinds", "actions,dispatcher,discovery,poller,scheduler"]
+    command: ["python", "-m", "app.workers", "run", "--kinds", "actions,diagnostics,dispatcher,discovery,poller,scheduler"]
     environment: *api-env
     depends_on:
       cybersathy-init:

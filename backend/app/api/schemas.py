@@ -831,3 +831,27 @@ class MacroPreviewOut(Strict):
 
 class ProtectionOut(Strict):
     protected: bool
+
+
+# --- Diagnostics (Plan 38) ---
+
+class PingRequest(Strict):
+    device_id: str = Field(pattern=r"^[0-9a-fA-F-]{36}$")
+    count: int = Field(default=4, ge=1, le=5)
+
+
+class PingSummary(Strict):
+    sent: int
+    received: int
+    loss_percent: float
+    min_ms: float | None
+    avg_ms: float | None
+    max_ms: float | None
+
+
+class DiagnosticOut(Strict):
+    request_id: str
+    device_id: str
+    status: Literal["queued", "succeeded", "failed", "refused"]
+    result: PingSummary | None = None
+    error: str | None = None
