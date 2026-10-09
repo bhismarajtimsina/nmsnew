@@ -15,6 +15,7 @@ import {
   canRun,
   GATE,
   PORT_ADMIN_ACTION,
+  SAVE_CONFIG_ACTION,
   type ActionSpec,
   type Executed,
   type Params,
@@ -78,6 +79,8 @@ const actions = actionsApi(api);
 const actionSpecs = ref<ActionSpec[]>([]);
 const canPortAdmin = computed(() => canRun(actionSpecs.value, PORT_ADMIN_ACTION, can));
 const canProtect = computed(() => can('interfaces.manage'));
+// Offered whenever the action can run; the driver itself refuses vendors it has no MIB-checked object for, and says so.
+const canSaveConfig = computed(() => canRun(actionSpecs.value, SAVE_CONFIG_ACTION, can));
 const pending = ref<{ action: string; targets: Target[]; params: Params } | null>(null);
 const protecting = ref<string | null>(null);
 const protectError = ref<string | null>(null);
@@ -93,6 +96,10 @@ async function loadActions() {
 
 function setAdminState(row: Interface, state: 'up' | 'down') {
   pending.value = { action: PORT_ADMIN_ACTION, targets: [{ interface_id: row.id }], params: { state } };
+}
+
+function saveConfig() {
+  pending.value = { action: SAVE_CONFIG_ACTION, targets: [{ device_id: deviceId.value }], params: {} };
 }
 
 async function toggleProtection(row: Interface, value: boolean) {
@@ -160,6 +167,9 @@ const severityColor: Record<string, string> = { info: 'blue', warning: 'orange',
         ><unicon name="arrow-left"></unicon> Back</sdButton
       >
       <sdButton type="default" :disabled="loading" @click="load"><unicon name="redo"></unicon> Reload</sdButton>
+      <sdButton v-if="canSaveConfig && detail" type="primary" @click="saveConfig"
+        ><unicon name="save"></unicon> Save configuration</sdButton
+      >
     </template>
   </sdPageHeader>
   <Main>

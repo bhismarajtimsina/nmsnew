@@ -25,6 +25,7 @@ export const ACTIONS_FINISHED = 'actions.finished';
 export const GATE = 'dangerous_actions.execute';
 export const PORT_ADMIN_ACTION = 'switch.port.set_admin_state';
 export const PORT_ADMIN_PERMISSION = 'switches.port.set_admin_state';
+export const SAVE_CONFIG_ACTION = 'switch.save_config';
 
 /** Actions whose effect cannot be undone from the NMS, or that take subscribers offline for minutes. */
 const HIGH_IMPACT = new Set(['switch.reboot', 'onu.reset', 'onu.deregister', 'onu.disable']);

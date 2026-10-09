@@ -302,3 +302,36 @@ async def test_stopping_never_touches_a_target_another_worker_is_running(app_cli
     counts = await safety.run_confirmation(db, FakeTransport(), ENC, body["confirmation_id"])
     assert counts == {"succeeded": 0, "failed": 1, "refused": 0, "skipped": 1}
     assert await statuses(db, body["confirmation_id"]) == ["failed", "running", "skipped"]
+
+
+async def test_the_real_save_driver_runs_through_the_queue_and_refuses_other_vendors(app_client, db, monkeypatch):
+    """No fake driver: the registered BDCOM save driver, the fake transport, and the whole prepare-execute-worker path."""
+    from app.actions.drivers import BDCOM_CONFIG_OPERATION
+    from app.repositories.access_profiles import aad
+    from tests.polling_helpers import make_access_profile
+
+    monkeypatch.setattr(settings, "device_actions_enabled", True)
+    group = await make_group(db, "G")
+    profile = await make_access_profile(db, "rw")
+    await db.execute("update device_access_profiles set snmp_write_community_enc = $2 where id = $1::uuid",
+                     profile, ENC.encrypt("rw-secret-77", aad(str(profile), "snmp_write_community")))
+    devices = {}
+    for name, vendor, ip in [("bd-1", "bdcom", "10.80.0.1"), ("bd-2", "bdcom", "10.80.0.2"), ("hw-1", "huawei", "10.80.0.3")]:
+        devices[name] = await make_device(db, name, group, ip=ip)
+        await db.execute("update devices set access_profile_id = $2::uuid, vendor_id = (select id from vendors where slug = $3) "
+                         "where id = $1::uuid", devices[name], profile, vendor)
+    await make_user(db, "op", "ISP Admin")
+    headers = await bearer(app_client, "op")
+    app_client.cookies.clear()
+    listed = {a["key"]: a["available"] for a in (await app_client.get(A, headers=headers)).json()["items"]}
+    assert listed["switch.save_config"] is True and listed["switch.reboot"] is False
+    targets = [{"device_id": d} for d in devices.values()]
+    token = (await app_client.post(f"{A}/switch.save_config/prepare", headers=headers, json={"targets": targets})).json()["token"]
+    body = (await app_client.post(f"{A}/switch.save_config/execute", headers=headers, json={"token": token, "targets": targets})).json()
+    fake = FakeTransport()
+    counts = await safety.run_confirmation(db, fake, ENC, body["confirmation_id"])
+    assert counts == {"succeeded": 2, "failed": 1, "refused": 0, "skipped": 0}
+    assert sorted(address for address, _ in fake.sets) == ["10.80.0.1", "10.80.0.2"]
+    assert {vb for _, vbs in fake.sets for vb in vbs} == {(BDCOM_CONFIG_OPERATION, "integer", 1)}
+    failed = await db.fetchrow("select target, error from action_results where status = 'failed'")
+    assert json.loads(failed["target"]) == {"device_id": devices["hw-1"]} and "only supported on BDCOM" in failed["error"]

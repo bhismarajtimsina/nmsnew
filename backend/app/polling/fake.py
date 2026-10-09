@@ -21,6 +21,7 @@ class FakeTransport:
         self.walk_limits: list[tuple[str, str, int, int]] = []   # (address, root, max_rows, timeout_ms)
         self.get_limits: list[tuple[str, int, int]] = []          # (address, timeout_ms, retries)
         self.sets: list[tuple[str, tuple[tuple[str, str, Any], ...]]] = []  # (address, ((oid, type, value), ...))
+        self.set_limits: list[tuple[str, int]] = []                       # (address, timeout_ms)
         self.refuse_sets: dict[str, str] = {}   # address -> error the device returns for any set
         self.ignore_sets: set[str] = set()      # addresses that accept a set but do not apply it
 
@@ -63,6 +64,7 @@ class FakeTransport:
     async def set(self, target: Target, varbinds: Sequence[VarBind], *, timeout_ms: int) -> dict[str, Any]:
         self.calls.append(("set", target.address, tuple(vb.oid for vb in varbinds)))
         self.sets.append((target.address, tuple((vb.oid, vb.type, vb.value) for vb in varbinds)))
+        self.set_limits.append((target.address, timeout_ms))
         self.seen_communities.append(target.credentials.community)
         await self._pause()
         self._fail(target)

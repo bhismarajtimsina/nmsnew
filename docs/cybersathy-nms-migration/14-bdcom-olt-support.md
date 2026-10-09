@@ -102,6 +102,11 @@ to `None`. A test checks that every name exists in the right profile.
   recorded as a risk in Plans 26 and 38, so actions are never ported by their legacy names.
 - GPON `profile.onu.flow.uni_type` is a T-CONT bandwidth-profile id.
 - EPON `pon.portCountOnu` is `llidSequenceNo`, not an ONU count.
+- EPON `ont.action.resetOnu` (3310c, `…3320.101.10.1.1.29`, 0 = Reset) matches `onuReset`, column 29 of the ONU table
+  in BDCOM-EPON-ONU.MIB (reset(0), no-reset(1), write-only). A second, unrelated object is also named `onuReset`, in
+  BDCOM-EPON-ONU-RESET.my (`…3320.101.25.1.1.2`, indexed by LLID), where reset is 1. Writing 1 to the wrong one
+  either does nothing or resets an ONU. Neither MIB says whether "reset" is a reboot or a factory reset, so no ONU
+  driver is built (D-31). Found 2026-10-09; the OID-map tool used to keep only one of the two (see Plan 38).
 
 **GPON units:** the MIB states none for ONU receive and transmit power or distance, so those are stored without a unit
 until a fixture fixes the scale. EPON's units come from its MIB (0.1 dBm, 0.1 dB).

@@ -285,4 +285,44 @@ Mutation checks: 12 backend and 7 new frontend mutations, all caught. The first 
 
 Not verified in a browser against a live worker, and not verified against a device.
 
-Still to do: more drivers (OIDs from MIBs only), diagnostics and the console gateway.
+### Second driver: `switch.save_config` on BDCOM (2026-10-09)
+
+**What it writes.** `operation` in NMS-CONFIG-MGMT (`1.3.6.1.4.1.3320.20.15.1.1.0`): read-write, and its
+DESCRIPTION reads "1 means to save the command configuration". This is the same OID and value legacy writes for
+`olt.save` on BDCOM switches and OLTs.
+- The test re-derives the object from NMS-CONFIG-MGMT.my by file, not by name. `operation` is defined with three
+  different OIDs across BDCOM's MIBs.
+- The test also checks ACCESS and the "1 means" sentence, and that BDCOM-CONFIG-MGMT.my uses the same
+  sub-identifiers.
+
+**How it runs.** One SET with the write community, using a 15-second timeout because writing flash is slow (access
+profiles stop at 10 s). Then one read of the sibling `result`, recorded raw because the MIB gives it no description.
+- A save cannot be read back or undone. Success means the device accepted the write.
+- A refused or timed-out write fails with "the device may still have saved its configuration".
+- An unanswered follow-up read does not turn an accepted save into a failure.
+- Any vendor other than BDCOM is refused before anything is sent: no other vendor's save object is in a repository
+  MIB (K-25).
+- The device query now also returns the registry vendor.
+
+**Device page.** A "Save configuration" button opens the shared dialog for this one device. It shows whenever the
+action can run, and the driver's refusal for other vendors appears in the dialog's results.
+
+**OID-map tool fix.** `tools/bdcom-mib-oid-map.py` kept only the first definition of a repeated name. If that first
+definition could not be resolved, the name came out unresolved even when another definition could be.
+- That hid one of BDCOM's two `onuReset` objects, which have opposite values; see Plan 14 and D-31.
+- The tool now lists every definition in `byoid`, falls back to the first definition that resolves, and reports
+  repeated names under `duplicates`. There are 68 such names in the NMS set, `operation` and `onuReset` among them.
+
+**Not built: ONU reboot, reset, deregister and disable on BDCOM.** Which `onuReset` object to write, and whether it
+reboots the ONU or restores factory settings, needs the owner or a hardware test (D-31).
+
+Tests: 11 driver tests (including the MIB check and three refused vendors), and one end-to-end test through prepare,
+execute and the worker with the real driver on two BDCOM devices and one Huawei device.
+
+Mutation checks: 13, all caught. On the first run three survived; the cause was the mutation run's own test filter,
+not missing tests.
+
+Not verified against a device.
+
+Still to do: more drivers (OIDs from MIBs only; the BDCOM ONU actions wait on D-31), diagnostics and the console
+gateway.

@@ -264,6 +264,12 @@ describe('the pages', () => {
     expect(detail).toMatch(/:disabled="record\.protected"\s+@click="setAdminState\(record, 'down'\)"/);
     expect(detail).toMatch(/canProtect = computed\(\(\) => can\('interfaces\.manage'\)\)/);
   });
+
+  it('the device page offers Save configuration only when that action can run, for this device alone', () => {
+    expect(detail).toMatch(/canSaveConfig = computed\(\(\) => canRun\(actionSpecs\.value, SAVE_CONFIG_ACTION, can\)\)/);
+    expect(detail).toMatch(/v-if="canSaveConfig && detail"/);
+    expect(detail).toMatch(/action: SAVE_CONFIG_ACTION, targets: \[\{ device_id: deviceId\.value \}\], params: \{\}/);
+  });
 });
 
 describe('waking the poll early', () => {
