@@ -226,6 +226,32 @@ through the queue.
 
 17 mutations checked, all caught (one needed a new test: only an `actions` worker may consume action jobs). The deployed worker and the CLI default now include the `actions` kind; the compose file sets `DEVICE_ACTIONS_ENABLED: "false"` explicitly.
 
-Still to do: a stop-on-first-failure option for bulk requests, a realtime notice when results arrive, the frontend
-confirmation modal and results view, the protect toggle in the interface UI, more drivers, diagnostics and the
-console gateway.
+### Frontend: confirmation dialog, results and port controls (2026-10-09)
+
+`frontend/src/components/actions/`:
+
+- `actions.ts` holds the typed calls (list, prepare, execute, results, protection) and the rules:
+  - `canRun`: an action is offered only with the global gate and an entry `GET /actions` reports `available`.
+  - `ackPhrase`: a typed acknowledgement is required for every bulk request (type "N targets"), for reboot, factory
+    reset, deregister and disable, and for shutting a port down (type the port, ONU or device name the dry run
+    resolved). A single low-impact request needs only the click.
+  - `followResults`: polls `GET /actions/results/{id}` every 2 seconds until every target has finished. It stops
+    after 150 polls or when the dialog closes; closing stops the following, not the work.
+  - `actionError`: shows the API's own reason, with fallbacks for 409 (expired or used confirmation), 501 and 503.
+- `ActionConfirmModal.vue` runs the dry run when it opens and lists the resolved targets and parameters. Send stays
+  disabled until the acknowledgement matches. After sending, the dialog shows each target's status and error.
+
+On the device page (`DeviceDetailNewPage.vue`), the interface table gains a Protected column: a switch for holders of
+`interfaces.manage`, a tag for everyone else. It also gains Enable and Disable buttons, shown only when the port
+action can run. Disable is greyed out on a protected port; the driver refuses it anyway. When an action finishes, the
+interface list reloads.
+
+Tests: 17 vitest tests in `actions.test.ts`. 14 mutations checked, all caught; the first run left three survivors.
+Two were fixed with new tests: a bulk request of exactly two targets, and unprotecting sends `false`. The third was
+an equivalent mutant (a target never has both an interface and an ONU) and was replaced with a meaningful one.
+
+Not verified in a browser against a running API with a real worker, and not verified against a device; the
+build's SNMP transport is still the disabled one (D-17).
+
+Still to do: a stop-on-first-failure option for bulk requests, a realtime notice when results arrive (the dialog polls
+for now), more drivers, diagnostics and the console gateway.

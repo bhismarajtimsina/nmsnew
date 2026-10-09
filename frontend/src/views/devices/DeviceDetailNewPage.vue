@@ -8,6 +8,18 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { api, ApiError } from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
+import ActionConfirmModal from '@/components/actions/ActionConfirmModal.vue';
+import {
+  actionError,
+  actionsApi,
+  canRun,
+  GATE,
+  PORT_ADMIN_ACTION,
+  type ActionSpec,
+  type Executed,
+  type Params,
+  type Target,
+} from '@/components/actions/actions';
 import { Main } from '../styled';
 import {
   loadDevice,
@@ -45,7 +57,11 @@ async function load() {
   } catch (error) {
     detail.value = null;
     loadError.value =
-      error instanceof ApiError && error.status === 404 ? 'This device does not exist, or is not one you can see.' : error instanceof Error ? error.message : 'Could not load the device.';
+      error instanceof ApiError && error.status === 404
+        ? 'This device does not exist, or is not one you can see.'
+        : error instanceof Error
+        ? error.message
+        : 'Could not load the device.';
     loading.value = false;
     return;
   }
@@ -57,7 +73,46 @@ async function load() {
   ]);
 }
 
+// Device actions: offered only when the user holds the permissions and the API says this build can run them now.
+const actions = actionsApi(api);
+const actionSpecs = ref<ActionSpec[]>([]);
+const canPortAdmin = computed(() => canRun(actionSpecs.value, PORT_ADMIN_ACTION, can));
+const canProtect = computed(() => can('interfaces.manage'));
+const pending = ref<{ action: string; targets: Target[]; params: Params } | null>(null);
+const protecting = ref<string | null>(null);
+const protectError = ref<string | null>(null);
+
+async function loadActions() {
+  if (!can(GATE)) return;
+  try {
+    actionSpecs.value = await actions.list();
+  } catch {
+    actionSpecs.value = []; // no actions offered; the read-only page still works
+  }
+}
+
+function setAdminState(row: Interface, state: 'up' | 'down') {
+  pending.value = { action: PORT_ADMIN_ACTION, targets: [{ interface_id: row.id }], params: { state } };
+}
+
+async function toggleProtection(row: Interface, value: boolean) {
+  protecting.value = row.id;
+  protectError.value = null;
+  try {
+    row.protected = await actions.setProtection(row.id, value);
+  } catch (error) {
+    protectError.value = actionError(error);
+  } finally {
+    protecting.value = null;
+  }
+}
+
+async function actionFinished(_executed: Executed) {
+  interfaces.value = await loadInterfaces(api, deviceId.value, can);
+}
+
 onMounted(load);
+onMounted(loadActions);
 watch(deviceId, load);
 
 const interfaceColumns = [
@@ -66,6 +121,8 @@ const interfaceColumns = [
   { title: 'Description', dataIndex: 'alias', key: 'alias' },
   { title: 'Admin', dataIndex: 'admin_status', key: 'admin_status', width: 100 },
   { title: 'Oper', dataIndex: 'oper_status', key: 'oper_status', width: 100 },
+  { title: 'Protected', dataIndex: 'protected', key: 'protected', width: 100 },
+  { title: '', key: 'actions', width: 170 },
 ];
 const eventColumns = [
   { title: 'When', dataIndex: 'occurred_at', key: 'occurred_at', width: 190 },
@@ -91,11 +148,17 @@ const severityColor: Record<string, string> = { info: 'blue', warning: 'orange',
 
 <template>
   <sdPageHeader
-    :routes="[{ path: '/', breadcrumbName: 'Dashboard' }, { path: '/devices/list', breadcrumbName: 'Devices' }, { path: '', breadcrumbName: detail?.overview.name || 'Device' }]"
+    :routes="[
+      { path: '/', breadcrumbName: 'Dashboard' },
+      { path: '/devices/list', breadcrumbName: 'Devices' },
+      { path: '', breadcrumbName: detail?.overview.name || 'Device' },
+    ]"
     class="ninjadash-page-header-main"
   >
     <template #buttons>
-      <sdButton type="light" @click="router.push({ name: 'devices-list' })"><unicon name="arrow-left"></unicon> Back</sdButton>
+      <sdButton type="light" @click="router.push({ name: 'devices-list' })"
+        ><unicon name="arrow-left"></unicon> Back</sdButton
+      >
       <sdButton type="default" :disabled="loading" @click="load"><unicon name="redo"></unicon> Reload</sdButton>
     </template>
   </sdPageHeader>
@@ -112,7 +175,9 @@ const severityColor: Record<string, string> = { info: 'blue', warning: 'orange',
             </h2>
             <div class="ddn-head__ip">{{ detail.overview.management_ip }}</div>
           </div>
-          <a-tag :color="ping.tone === 'ok' ? 'green' : ping.tone === 'bad' ? 'red' : 'default'">{{ ping.label }}</a-tag>
+          <a-tag :color="ping.tone === 'ok' ? 'green' : ping.tone === 'bad' ? 'red' : 'default'">{{
+            ping.label
+          }}</a-tag>
         </div>
         <a-descriptions :column="{ xs: 1, md: 2, xl: 3 }" size="small">
           <a-descriptions-item label="Type">{{ detail.device.device_type }}</a-descriptions-item>
@@ -125,7 +190,9 @@ const severityColor: Record<string, string> = { info: 'blue', warning: 'orange',
             <span class="ddn-up">{{ detail.overview.interfaces.up }} up</span> /
             <span class="ddn-down">{{ detail.overview.interfaces.down }} down</span>
           </a-descriptions-item>
-          <a-descriptions-item label="Last ping">{{ when(detail.overview.ping?.last_checked_at) || '—' }}</a-descriptions-item>
+          <a-descriptions-item label="Last ping">{{
+            when(detail.overview.ping?.last_checked_at) || '—'
+          }}</a-descriptions-item>
           <a-descriptions-item label="Added">{{ when(detail.device.created_at) }}</a-descriptions-item>
         </a-descriptions>
       </sdCards>
@@ -133,35 +200,100 @@ const severityColor: Record<string, string> = { info: 'blue', warning: 'orange',
       <sdCards :headless="true">
         <a-tabs>
           <a-tab-pane key="interfaces" tab="Interfaces">
-            <a-empty v-if="interfaces?.state === 'forbidden'" description="You do not have permission to view interfaces." />
+            <a-empty
+              v-if="interfaces?.state === 'forbidden'"
+              description="You do not have permission to view interfaces."
+            />
             <a-alert v-else-if="interfaces?.state === 'error'" type="error" :message="interfaces.message" />
             <template v-else-if="interfaces?.state === 'ok'">
               <p v-if="interfaces.data.total > interfaces.data.items.length" class="ddn-note">
                 Showing the first {{ interfaces.data.items.length }} of {{ interfaces.data.total }} interfaces.
               </p>
-              <a-table :columns="interfaceColumns" :data-source="interfaces.data.items" row-key="id" size="small" :pagination="{ pageSize: 50 }" />
+              <a-alert
+                v-if="protectError"
+                type="error"
+                :message="protectError"
+                closable
+                style="margin-bottom: 8px"
+                @close="protectError = null"
+              />
+              <a-table
+                :columns="interfaceColumns"
+                :data-source="interfaces.data.items"
+                row-key="id"
+                size="small"
+                :pagination="{ pageSize: 50 }"
+              >
+                <template #bodyCell="{ column, record }">
+                  <template v-if="column.key === 'protected'">
+                    <a-switch
+                      v-if="canProtect"
+                      size="small"
+                      :checked="record.protected"
+                      :loading="protecting === record.id"
+                      @change="(value: boolean) => toggleProtection(record, value)"
+                    />
+                    <a-tag v-else-if="record.protected" color="gold">protected</a-tag>
+                  </template>
+                  <template v-else-if="column.key === 'actions' && canPortAdmin">
+                    <a-space>
+                      <sdButton size="small" type="light" @click="setAdminState(record, 'up')">Enable</sdButton>
+                      <a-tooltip :title="record.protected ? 'Protected: this port cannot be shut down from here' : ''">
+                        <sdButton
+                          size="small"
+                          type="danger"
+                          :disabled="record.protected"
+                          @click="setAdminState(record, 'down')"
+                          >Disable</sdButton
+                        >
+                      </a-tooltip>
+                    </a-space>
+                  </template>
+                </template>
+              </a-table>
             </template>
             <a-skeleton v-else active />
           </a-tab-pane>
           <a-tab-pane key="events" tab="Events">
             <a-empty v-if="events?.state === 'forbidden'" description="You do not have permission to view events." />
             <a-alert v-else-if="events?.state === 'error'" type="error" :message="events.message" />
-            <a-table v-else-if="events?.state === 'ok'" :columns="eventColumns" :data-source="events.data.items" row-key="id" size="small" :pagination="false">
+            <a-table
+              v-else-if="events?.state === 'ok'"
+              :columns="eventColumns"
+              :data-source="events.data.items"
+              row-key="id"
+              size="small"
+              :pagination="false"
+            >
               <template #bodyCell="{ column, record }">
-                <template v-if="column.key === 'occurred_at' || column.key === 'resolved_at'">{{ when(record[column.key]) }}</template>
-                <a-tag v-else-if="column.key === 'severity'" :color="severityColor[record.severity]">{{ record.severity }}</a-tag>
+                <template v-if="column.key === 'occurred_at' || column.key === 'resolved_at'">{{
+                  when(record[column.key])
+                }}</template>
+                <a-tag v-else-if="column.key === 'severity'" :color="severityColor[record.severity]">{{
+                  record.severity
+                }}</a-tag>
               </template>
             </a-table>
             <a-skeleton v-else active />
           </a-tab-pane>
           <a-tab-pane key="polls" tab="Polling">
-            <a-empty v-if="polls?.state === 'forbidden'" description="You do not have permission to view polling history." />
+            <a-empty
+              v-if="polls?.state === 'forbidden'"
+              description="You do not have permission to view polling history."
+            />
             <a-alert v-else-if="polls?.state === 'error'" type="error" :message="polls.message" />
             <template v-else-if="polls?.state === 'ok'">
               <p v-if="polls.data.state?.breaker_open" class="ddn-note ddn-down">
-                Polling is paused after repeated failures until {{ when(polls.data.state.breaker_open_until) }}: {{ polls.data.state.last_error }}
+                Polling is paused after repeated failures until {{ when(polls.data.state.breaker_open_until) }}:
+                {{ polls.data.state.last_error }}
               </p>
-              <a-table :columns="pollColumns" :data-source="polls.data.results" row-key="id" size="small" :pagination="false">
+              <a-table
+                :columns="pollColumns"
+                :data-source="polls.data.results"
+                row-key="id"
+                size="small"
+                :pagination="false"
+              >
                 <template #bodyCell="{ column, record }">
                   <template v-if="column.key === 'started_at'">{{ when(record.started_at) }}</template>
                 </template>
@@ -173,6 +305,15 @@ const severityColor: Record<string, string> = { info: 'blue', warning: 'orange',
       </sdCards>
     </template>
   </Main>
+  <ActionConfirmModal
+    v-if="pending"
+    :open="pending !== null"
+    :action="pending.action"
+    :targets="pending.targets"
+    :params="pending.params"
+    @close="pending = null"
+    @finished="actionFinished"
+  />
 </template>
 
 <style scoped>
