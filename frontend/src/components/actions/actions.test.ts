@@ -11,7 +11,9 @@ import {
   describeTarget,
   followResults,
   isFinal,
+  isNoticeFor,
   summarize,
+  wakeableSleep,
   tally,
   type ActionSpec,
   type Executed,
@@ -29,6 +31,7 @@ const summary = (over: Partial<Prepared['summary']> = {}): Prepared['summary'] =
   title: 'Enable or disable a port',
   count: 1,
   params: { state: 'up' },
+  stop_on_failure: false,
   targets: [{ interface_id: 'i1', interface: 'Gi0/1', device_id: 'd1', device: 'core-sw' }],
   ...over,
 });
@@ -67,11 +70,13 @@ describe('results', () => {
 
   it('are counted by status and summarized in one line', () => {
     const rows = [result('succeeded'), result('succeeded'), result('failed')];
-    expect(tally(rows)).toEqual({ queued: 0, running: 0, succeeded: 2, failed: 1, refused: 0 });
+    expect(tally(rows)).toEqual({ queued: 0, running: 0, succeeded: 2, failed: 1, refused: 0, skipped: 0 });
     expect(summarize(rows)).toBe('2 succeeded, 1 failed');
     expect(summarize([result('queued'), result('running'), result('failed')])).toBe('Waiting for 2 targets');
     expect(summarize([result('queued')])).toBe('Waiting for 1 target');
     expect(summarize([result('refused')])).toBe('1 refused');
+    expect(summarize([result('failed'), result('skipped'), result('skipped')])).toBe('1 failed, 2 skipped');
+    expect(isFinal([result('failed'), result('skipped')])).toBe(true);
     expect(summarize([])).toBe('No targets');
   });
 
@@ -177,15 +182,26 @@ describe('the API calls', () => {
       {
         method: 'POST',
         path: '/api/v1/actions/switch.port.set_admin_state/prepare',
-        body: { targets, params: { state: 'down' } },
+        body: { targets, params: { state: 'down' }, stop_on_failure: false },
       },
       {
         method: 'POST',
         path: '/api/v1/actions/switch.port.set_admin_state/execute',
-        body: { token: 't', targets, params: { state: 'down' } },
+        body: { token: 't', targets, params: { state: 'down' }, stop_on_failure: false },
       },
       { method: 'PUT', path: '/api/v1/interfaces/i1/protection', body: { protected: true } },
     ]);
+  });
+
+  it('stop-on-failure is sent with both the dry run and the execute', async () => {
+    const { api, seen } = serve([
+      { token: 't', expires_at: '2026-01-01T00:00:00Z', summary: summary() },
+      executed('queued'),
+    ]);
+    const targets = [{ interface_id: 'i1' }, { interface_id: 'i2' }];
+    await api.prepare('switch.counters.clear', targets, {}, { stopOnFailure: true });
+    await api.execute('switch.counters.clear', 't', targets, {}, { stopOnFailure: true });
+    expect(seen.map((s) => (s.body as { stop_on_failure: boolean }).stop_on_failure)).toEqual([true, true]);
   });
 
   it('removing protection sends false', async () => {
@@ -238,12 +254,92 @@ describe('the pages', () => {
       /const canSend = computed\(\(\) => stage\.value === 'confirm' && ackMatches\(phrase\.value, typed\.value\)\)/,
     );
     expect(modal).toMatch(/:disabled="!canSend"/);
-    expect(modal).toMatch(/actions\.execute\(props\.action, prepared\.value\.token, props\.targets/);
+    expect(modal).toMatch(/actions\.execute\(\s*props\.action,\s*prepared\.value\.token,\s*props\.targets/);
+    expect(modal).toMatch(/const options = \(\) => \(\{ stopOnFailure: bulk\.value && stopOnFailure\.value \}\)/);
+    expect(modal).toMatch(/isNoticeFor\(message\.data, executed\.value\?\.confirmation_id\)\) wakeable\.wake\(\)/);
   });
 
   it('the interface table offers Enable/Disable only when the action can run, and never Disable on a protected port', () => {
     expect(detail).toMatch(/column\.key === 'actions' && canPortAdmin/);
     expect(detail).toMatch(/:disabled="record\.protected"\s+@click="setAdminState\(record, 'down'\)"/);
     expect(detail).toMatch(/canProtect = computed\(\(\) => can\('interfaces\.manage'\)\)/);
+  });
+});
+
+describe('waking the poll early', () => {
+  function manualTimer() {
+    const pending: (() => void)[] = [];
+    return {
+      timer: () => new Promise<void>((resolve) => pending.push(resolve)),
+      fire: () => pending.shift()?.(),
+      pending,
+    };
+  }
+
+  it('a wake ends the current sleep at once', async () => {
+    const { timer } = manualTimer();
+    const w = wakeableSleep(timer);
+    let done = false;
+    const sleeping = w.sleep(2000).then(() => (done = true));
+    await Promise.resolve();
+    expect(done).toBe(false);
+    w.wake();
+    await sleeping;
+    expect(done).toBe(true);
+  });
+
+  it('a sleep ends on its own when the timer fires', async () => {
+    const { timer, fire } = manualTimer();
+    const w = wakeableSleep(timer);
+    const sleeping = w.sleep(2000);
+    fire();
+    await expect(sleeping).resolves.toBeUndefined();
+  });
+
+  it('a wake between two sleeps is remembered once', async () => {
+    const { timer, pending } = manualTimer();
+    const w = wakeableSleep(timer);
+    w.wake();
+    await w.sleep(2000); // returns at once, no timer started
+    expect(pending).toHaveLength(0);
+    let done = false;
+    w.sleep(2000).then(() => (done = true));
+    await Promise.resolve();
+    expect(done).toBe(false);
+    expect(pending).toHaveLength(1);
+  });
+
+  it('a wake after a sleep ended on its own is remembered for the next one', async () => {
+    const { timer, fire, pending } = manualTimer();
+    const w = wakeableSleep(timer);
+    const first = w.sleep(2000);
+    fire();
+    await first;
+    w.wake();
+    await w.sleep(2000);
+    expect(pending).toHaveLength(0);
+  });
+
+  it('a late timer after a wake does nothing', async () => {
+    const { timer, fire } = manualTimer();
+    const w = wakeableSleep(timer);
+    const first = w.sleep(2000);
+    w.wake();
+    await first;
+    fire(); // the first sleep's timer, now stale
+    let done = false;
+    w.sleep(2000).then(() => (done = true));
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(done).toBe(false);
+  });
+
+  it('only a notice for this confirmation counts', () => {
+    expect(isNoticeFor({ confirmation_id: CID }, CID)).toBe(true);
+    expect(isNoticeFor({ confirmation_id: 'other' }, CID)).toBe(false);
+    expect(isNoticeFor({ confirmation_id: CID }, undefined)).toBe(false);
+    expect(isNoticeFor(null, CID)).toBe(false);
+    expect(isNoticeFor({}, undefined)).toBe(false);
+    expect(isNoticeFor(CID, CID)).toBe(false);
   });
 });

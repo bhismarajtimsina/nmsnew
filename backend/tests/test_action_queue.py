@@ -33,7 +33,7 @@ def ran(monkeypatch):
     return calls
 
 
-async def queued(app_client, db, role="ISP Admin", targets=2, name="op"):
+async def queued(app_client, db, role="ISP Admin", targets=2, name="op", stop_on_failure=None):
     group = await make_group(db, f"G-{name}")
     olt = await make_device(db, f"olt-{name}", group, ip=f"10.9.{len(name)}.1")
     user = await make_user(db, name, role)
@@ -42,8 +42,10 @@ async def queued(app_client, db, role="ISP Admin", targets=2, name="op"):
     if role.startswith("Reseller"):
         await db.execute("insert into user_device_group_scopes (user_id, device_group_id) values ($1::uuid, $2::uuid)", user, group)
     body = [{"device_id": olt, "onu": f"HWTC{i:04d}"} for i in range(targets)]
-    token = (await app_client.post(f"{A}/onu.reboot/prepare", headers=headers, json={"targets": body, "params": {}})).json()["token"]
-    response = await app_client.post(f"{A}/onu.reboot/execute", headers=headers, json={"token": token, "targets": body, "params": {}})
+    extra = {} if stop_on_failure is None else {"stop_on_failure": stop_on_failure}
+    token = (await app_client.post(f"{A}/onu.reboot/prepare", headers=headers, json={"targets": body, "params": {}, **extra})).json()["token"]
+    response = await app_client.post(f"{A}/onu.reboot/execute", headers=headers,
+                                     json={"token": token, "targets": body, "params": {}, **extra})
     assert response.status_code == 200, response.text
     return user, headers, response.json()
 
@@ -66,7 +68,8 @@ async def test_a_redelivered_job_never_runs_a_target_twice(app_client, db, ran):
     _, _, body = await queued(app_client, db)
     first = await safety.run_confirmation(db, FakeTransport(), ENC, body["confirmation_id"])
     second = await safety.run_confirmation(db, FakeTransport(), ENC, body["confirmation_id"])
-    assert first == {"succeeded": 2, "failed": 0, "refused": 0} and second == {"succeeded": 0, "failed": 0, "refused": 0}
+    assert first == {"succeeded": 2, "failed": 0, "refused": 0, "skipped": 0}
+    assert second == {"succeeded": 0, "failed": 0, "refused": 0, "skipped": 0}
     assert len(ran) == 2
 
 
@@ -174,3 +177,128 @@ async def test_only_an_actions_worker_consumes_action_jobs(ctx):
     assert ACTION_STREAM in [name for name, _ in Worker(ctx, {"actions"}).streams()]
     for kinds in ({"poller"}, {"discovery"}, {"poller", "discovery"}):
         assert ACTION_STREAM not in [name for name, _ in Worker(ctx, kinds).streams()]
+
+
+@pytest.fixture
+def fails_first(monkeypatch):
+    """A driver that fails on the first ONU (HWTC0000) and succeeds on the rest."""
+    calls = []
+
+    async def fake(conn, user, target, params):
+        calls.append(target["onu"])
+        if target["onu"] == "HWTC0000":
+            raise safety.ActionFailed("the ONU did not answer")
+        return safety.Outcome(before={}, after={})
+
+    monkeypatch.setattr(settings, "device_actions_enabled", True)
+    monkeypatch.setattr(drivers_module, "DRIVERS", {key: (lambda transport, enc: fake) for key in ACTIONS})
+    return calls
+
+
+async def test_stop_on_failure_skips_every_target_after_the_first_failure(app_client, db, fails_first):
+    _, headers, body = await queued(app_client, db, targets=3, stop_on_failure=True)
+    counts = await safety.run_confirmation(db, FakeTransport(), ENC, body["confirmation_id"])
+    assert counts == {"succeeded": 0, "failed": 1, "refused": 0, "skipped": 2}
+    assert fails_first == ["HWTC0000"]
+    results = (await app_client.get(f"{A}/results/{body['confirmation_id']}", headers=headers)).json()["results"]
+    assert [r["status"] for r in results] == ["failed", "skipped", "skipped"]
+    assert results[1]["error"] == safety.SKIPPED_REASON
+    audit = await db.fetchrow("select metadata from audit_logs where action = 'action.skipped'")
+    assert json.loads(audit["metadata"])["count"] == 2
+    assert await db.fetchval("select count(*) from action_results where finished_at is null") == 0
+
+
+async def test_without_stop_on_failure_every_target_still_runs(app_client, db, fails_first):
+    _, _, body = await queued(app_client, db, targets=3)
+    counts = await safety.run_confirmation(db, FakeTransport(), ENC, body["confirmation_id"])
+    assert counts == {"succeeded": 2, "failed": 1, "refused": 0, "skipped": 0}
+    assert fails_first == ["HWTC0000", "HWTC0001", "HWTC0002"]
+    assert await db.fetchval("select count(*) from audit_logs where action = 'action.skipped'") == 0
+
+
+async def test_a_refused_target_also_stops_the_request(app_client, db, ran):
+    user, _, body = await queued(app_client, db, role="Reseller Operator", targets=3, stop_on_failure=True)
+    await db.execute("delete from user_device_group_scopes where user_id = $1::uuid", user)
+    counts = await safety.run_confirmation(db, FakeTransport(), ENC, body["confirmation_id"])
+    assert counts == {"succeeded": 0, "failed": 0, "refused": 1, "skipped": 2} and ran == []
+
+
+async def test_stop_on_failure_with_every_target_succeeding_skips_nothing(app_client, db, ran):
+    _, _, body = await queued(app_client, db, targets=2, stop_on_failure=True)
+    counts = await safety.run_confirmation(db, FakeTransport(), ENC, body["confirmation_id"])
+    assert counts == {"succeeded": 2, "failed": 0, "refused": 0, "skipped": 0} and len(ran) == 2
+
+
+async def test_stop_on_failure_is_part_of_what_was_confirmed(app_client, db, ran):
+    group = await make_group(db, "G")
+    olt = await make_device(db, "olt", group)
+    await make_user(db, "op", "ISP Admin")
+    headers = await bearer(app_client, "op")
+    app_client.cookies.clear()
+    body = [{"device_id": olt, "onu": "HWTC0001"}, {"device_id": olt, "onu": "HWTC0002"}]
+    prepared = (await app_client.post(f"{A}/onu.reboot/prepare", headers=headers,
+                                      json={"targets": body, "params": {}, "stop_on_failure": True})).json()
+    assert prepared["summary"]["stop_on_failure"] is True
+    response = await app_client.post(f"{A}/onu.reboot/execute", headers=headers,
+                                     json={"token": prepared["token"], "targets": body, "params": {}})
+    assert response.status_code == 409 and ran == []
+    assert await db.fetchval("select count(*) from action_results") == 0
+    stored = await db.fetchval("select metadata from audit_logs where action = 'action.prepare'")
+    assert json.loads(stored)["stop_on_failure"] is True
+
+
+async def test_the_database_accepts_skipped_only_with_a_reason(app_client, db, ran):
+    _, _, body = await queued(app_client, db, targets=1)
+    with pytest.raises(Exception):
+        await db.execute("update action_results set status = 'skipped', finished_at = now() where confirmation_id = $1::uuid",
+                         body["confirmation_id"])
+    with pytest.raises(Exception):
+        await db.execute("update action_results set status = 'bogus', error = 'x', finished_at = now() where confirmation_id = $1::uuid",
+                         body["confirmation_id"])
+
+
+async def test_the_worker_announces_a_finished_action_with_only_its_id(app_client, db, ctx, ran):
+    from app.realtime.bus import ACTIONS_FINISHED, REALTIME_CHANNEL
+    from app.workers import handlers
+    from app.workers.queue import Message
+
+    _, _, body = await queued(app_client, db, targets=1)
+    pubsub = ctx.redis.pubsub()
+    await pubsub.subscribe(REALTIME_CHANNEL)
+    await pubsub.get_message(timeout=1.0)  # the subscribe confirmation
+    await handlers.handle_action(ctx, Message("1-0", ACTION_STREAM, {"confirmation_id": body["confirmation_id"]}))
+    message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=2.0)
+    await pubsub.aclose()
+    assert json.loads(message["data"]) == {"name": ACTIONS_FINISHED, "data": {"confirmation_id": body["confirmation_id"]}}
+    assert await statuses(db, body["confirmation_id"]) == ["succeeded"]
+
+
+async def test_a_redis_failure_does_not_fail_the_notice(caplog):
+    from redis.exceptions import ConnectionError as RedisConnectionError
+
+    from app.realtime.bus import notify_action_finished
+
+    class Down:
+        async def publish(self, *args):
+            raise RedisConnectionError("down")
+
+    await notify_action_finished(Down(), "00000000-0000-0000-0000-000000000001")
+    assert "could not publish actions.finished" in caplog.text
+
+
+def test_only_action_holders_may_subscribe_to_action_notices():
+    from app.realtime.permissions import CHANNEL_RULES, is_subscribe_allowed
+
+    gate = frozenset({"dangerous_actions.execute"})
+    assert is_subscribe_allowed(CHANNEL_RULES, channel="actions.finished", user_permissions=gate, scope_all=False)
+    assert not is_subscribe_allowed(CHANNEL_RULES, channel="actions.finished", user_permissions=frozenset({"devices.view"}),
+                                    scope_all=True)
+
+
+async def test_stopping_never_touches_a_target_another_worker_is_running(app_client, db, fails_first):
+    _, _, body = await queued(app_client, db, targets=3, stop_on_failure=True)
+    await db.execute("update action_results set status = 'running' where confirmation_id = $1::uuid and target->>'onu' = 'HWTC0002'",
+                     body["confirmation_id"])
+    counts = await safety.run_confirmation(db, FakeTransport(), ENC, body["confirmation_id"])
+    assert counts == {"succeeded": 0, "failed": 1, "refused": 0, "skipped": 1}
+    assert await statuses(db, body["confirmation_id"]) == ["failed", "running", "skipped"]

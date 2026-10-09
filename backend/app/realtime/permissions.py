@@ -39,6 +39,7 @@ CHANNEL_RULES: list[ChannelRule] = [
     ChannelRule(patterns=("interfaces.*",), permissions=("interfaces.view",)),
     ChannelRule(patterns=("traps.*", "pinger.*"), permissions=("traps.view",)),
     ChannelRule(patterns=("notifications.*",), permissions=("notifications.history.view",)),
+    ChannelRule(patterns=("actions.*",), permissions=("dangerous_actions.execute",)),
 ]
 
 

@@ -2,7 +2,7 @@
  * Dangerous device actions (Plans 26 and 38) as the browser sees them. The flow is always the same: prepare (a dry
  * run that lists every target and returns a short-lived, single-use confirmation), show that list to the user, then
  * execute with the confirmation. Execute only queues the work; the results are followed by polling until every
- * target has finished. Nothing here talks to a device: the API and its worker do, and only when the operator has
+ * target has finished, and an `actions.finished` realtime notice cuts the wait short. Nothing here talks to a device: the API and its worker do, and only when the operator has
  * switched device actions on.
  */
 import { ApiError, type ApiClient } from '@/api/client';
@@ -15,6 +15,11 @@ export type Executed = Schemas['ActionExecuted'];
 export type TargetResult = Schemas['ActionTargetResult'];
 export type Target = Record<string, string>;
 export type Params = Record<string, string>;
+/** Bulk requests: stop at the first target that does not succeed. Part of what is confirmed, like the targets. */
+export interface RunOptions {
+  stopOnFailure?: boolean;
+}
+export const ACTIONS_FINISHED = 'actions.finished';
 
 /** Both are needed for any action; the catalogue entry adds its own permission on top. */
 export const GATE = 'dangerous_actions.execute';
@@ -30,18 +35,24 @@ export function actionsApi(client: ApiClient) {
       const { data } = await client.GET('/api/v1/actions');
       return data?.items ?? [];
     },
-    async prepare(action: string, targets: Target[], params: Params = {}): Promise<Prepared> {
+    async prepare(action: string, targets: Target[], params: Params = {}, options: RunOptions = {}): Promise<Prepared> {
       const { data } = await client.POST('/api/v1/actions/{action}/prepare', {
         params: { path: { action } },
-        body: { targets, params },
+        body: { targets, params, stop_on_failure: options.stopOnFailure ?? false },
       });
       if (!data) throw new ApiError(500, null);
       return data;
     },
-    async execute(action: string, token: string, targets: Target[], params: Params = {}): Promise<Executed> {
+    async execute(
+      action: string,
+      token: string,
+      targets: Target[],
+      params: Params = {},
+      options: RunOptions = {},
+    ): Promise<Executed> {
       const { data } = await client.POST('/api/v1/actions/{action}/execute', {
         params: { path: { action } },
-        body: { token, targets, params },
+        body: { token, targets, params, stop_on_failure: options.stopOnFailure ?? false },
       });
       if (!data) throw new ApiError(500, null);
       return data;
@@ -71,7 +82,7 @@ export function canRun(specs: ActionSpec[], key: string, can: (permission: strin
   return can(GATE) && specs.some((spec) => spec.key === key && spec.available);
 }
 
-const FINAL = new Set<TargetResult['status']>(['succeeded', 'failed', 'refused']);
+const FINAL = new Set<TargetResult['status']>(['succeeded', 'failed', 'refused', 'skipped']);
 
 export function isFinal(results: TargetResult[]): boolean {
   return results.every((result) => FINAL.has(result.status));
@@ -80,7 +91,7 @@ export function isFinal(results: TargetResult[]): boolean {
 export type Tally = Record<TargetResult['status'], number>;
 
 export function tally(results: TargetResult[]): Tally {
-  const counts: Tally = { queued: 0, running: 0, succeeded: 0, failed: 0, refused: 0 };
+  const counts: Tally = { queued: 0, running: 0, succeeded: 0, failed: 0, refused: 0, skipped: 0 };
   for (const result of results) counts[result.status] += 1;
   return counts;
 }
@@ -90,7 +101,9 @@ export function summarize(results: TargetResult[]): string {
   const counts = tally(results);
   const pending = counts.queued + counts.running;
   if (pending) return `Waiting for ${pending} target${pending === 1 ? '' : 's'}`;
-  const parts = (['succeeded', 'failed', 'refused'] as const).filter((s) => counts[s]).map((s) => `${counts[s]} ${s}`);
+  const parts = (['succeeded', 'failed', 'refused', 'skipped'] as const)
+    .filter((s) => counts[s])
+    .map((s) => `${counts[s]} ${s}`);
   return parts.join(', ') || 'No targets';
 }
 
@@ -143,6 +156,47 @@ export interface PollOptions {
 }
 
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/**
+ * A sleep that `wake()` ends early: the dialog passes it to followResults and wakes it when the realtime notice for
+ * its own confirmation arrives, so results show at once instead of on the next poll. A wake with nobody asleep is
+ * remembered, so a notice that lands between two polls is not lost.
+ */
+export function wakeableSleep(timer: (ms: number) => Promise<void> = wait) {
+  let wakeUp: (() => void) | null = null;
+  let early = false;
+  return {
+    sleep(ms: number): Promise<void> {
+      if (early) {
+        early = false;
+        return Promise.resolve();
+      }
+      return new Promise<void>((resolve) => {
+        // Each sleep ends through its own `finish`, so a timer left over from an earlier, woken sleep cannot end this one.
+        const finish = () => {
+          if (wakeUp === finish) wakeUp = null;
+          resolve();
+        };
+        wakeUp = finish;
+        timer(ms).then(finish);
+      });
+    },
+    wake(): void {
+      if (wakeUp) wakeUp();
+      else early = true;
+    },
+  };
+}
+
+/** Whether a realtime notice is about this request. The notice carries only the id; the results come from the API. */
+export function isNoticeFor(data: unknown, confirmationId: string | undefined): boolean {
+  return (
+    confirmationId !== undefined &&
+    typeof data === 'object' &&
+    data !== null &&
+    (data as { confirmation_id?: unknown }).confirmation_id === confirmationId
+  );
+}
 
 /** Follow a queued request until every target has finished, the poll budget runs out, or the caller cancels. */
 export async function followResults(api: ActionsApi, first: Executed, options: PollOptions = {}): Promise<Executed> {

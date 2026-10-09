@@ -739,6 +739,7 @@ class ActionList(Strict):
 class ActionPrepareIn(Strict):
     targets: list[dict[str, str]] = Field(min_length=1, max_length=500)
     params: dict[str, str] = Field(default_factory=dict)
+    stop_on_failure: bool = False  # bulk: stop at the first target that does not succeed; part of what is confirmed
 
 
 class ActionExecuteIn(ActionPrepareIn):
@@ -751,6 +752,7 @@ class ActionSummary(Strict):
     targets: list[dict[str, str | None]]
     count: int
     params: dict[str, str]
+    stop_on_failure: bool
 
 
 class ActionPrepared(Strict):
@@ -761,7 +763,7 @@ class ActionPrepared(Strict):
 
 class ActionTargetResult(Strict):
     target: dict[str, str]
-    status: Literal["queued", "running", "succeeded", "failed", "refused"]
+    status: Literal["queued", "running", "succeeded", "failed", "refused", "skipped"]
     error: str | None
 
 

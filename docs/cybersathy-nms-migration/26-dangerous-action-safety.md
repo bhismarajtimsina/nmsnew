@@ -113,5 +113,5 @@ Tests: 22 (`tests/test_action_safety.py`), with a fake executor registered only 
 Still to do:
 
 - ~~the shared confirmation modal in the frontend~~ (done 2026-10-09, see Plan 38: `ActionConfirmModal.vue`);
-- a realtime notice when results arrive;
+- ~~a realtime notice when results arrive~~ (done 2026-10-09: `actions.finished`, see Plan 38);
 - Plan 38's executors, each of whose OIDs is re-derived from its MIB (see the Risks above for the legacy mislabels).

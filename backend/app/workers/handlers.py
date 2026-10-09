@@ -143,6 +143,7 @@ async def handle_action(ctx: Context, message: Message) -> None:
     the requester's current permission and scope, and each target's visibility. Results already finished are never
     run again, so a redelivered message is harmless."""
     from app.actions.safety import run_confirmation
+    from app.realtime.bus import notify_action_finished
 
     confirmation_id = message.fields.get("confirmation_id", "")
     try:
@@ -153,3 +154,4 @@ async def handle_action(ctx: Context, message: Message) -> None:
         raise Permanent("credential encryption is not configured")
     async with ctx.pool.acquire() as conn:
         await run_confirmation(conn, ctx.transport, ctx.enc, confirmation_id)
+    await notify_action_finished(ctx.redis, confirmation_id)

@@ -130,6 +130,11 @@
             "title": "Params",
             "type": "object"
           },
+          "stop_on_failure": {
+            "default": false,
+            "title": "Stop On Failure",
+            "type": "boolean"
+          },
           "targets": {
             "items": {
               "additionalProperties": {
@@ -209,6 +214,11 @@
             },
             "title": "Params",
             "type": "object"
+          },
+          "stop_on_failure": {
+            "default": false,
+            "title": "Stop On Failure",
+            "type": "boolean"
           },
           "targets": {
             "items": {
@@ -328,6 +338,10 @@
             "title": "Params",
             "type": "object"
           },
+          "stop_on_failure": {
+            "title": "Stop On Failure",
+            "type": "boolean"
+          },
           "targets": {
             "items": {
               "additionalProperties": {
@@ -355,7 +369,8 @@
           "title",
           "targets",
           "count",
-          "params"
+          "params",
+          "stop_on_failure"
         ],
         "title": "ActionSummary",
         "type": "object"
@@ -380,7 +395,8 @@
               "running",
               "succeeded",
               "failed",
-              "refused"
+              "refused",
+              "skipped"
             ],
             "title": "Status",
             "type": "string"

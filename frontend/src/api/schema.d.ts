@@ -1779,6 +1779,11 @@ export interface components {
             params?: {
                 [key: string]: string;
             };
+            /**
+             * Stop On Failure
+             * @default false
+             */
+            stop_on_failure: boolean;
             /** Targets */
             targets: {
                 [key: string]: string;
@@ -1806,6 +1811,11 @@ export interface components {
             params?: {
                 [key: string]: string;
             };
+            /**
+             * Stop On Failure
+             * @default false
+             */
+            stop_on_failure: boolean;
             /** Targets */
             targets: {
                 [key: string]: string;
@@ -1852,6 +1862,8 @@ export interface components {
             params: {
                 [key: string]: string;
             };
+            /** Stop On Failure */
+            stop_on_failure: boolean;
             /** Targets */
             targets: {
                 [key: string]: string | null;
@@ -1867,7 +1879,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "queued" | "running" | "succeeded" | "failed" | "refused";
+            status: "queued" | "running" | "succeeded" | "failed" | "refused" | "skipped";
             /** Target */
             target: {
                 [key: string]: string;

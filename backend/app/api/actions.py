@@ -42,7 +42,8 @@ async def prepare_action(
     user, for exactly these targets and parameters, for two minutes."""
     try:
         async with conn.transaction():
-            return await safety.prepare(conn, user, action, body.targets, body.params, ip=user.client_ip)
+            return await safety.prepare(conn, user, action, body.targets, body.params, stop_on_failure=body.stop_on_failure,
+                                        ip=user.client_ip)
     except safety.ActionError as exc:
         raise _http(exc) from exc
 
@@ -59,7 +60,8 @@ async def execute_action(
     # Deliberately no surrounding transaction: consuming the confirmation must commit on its own, so a rejected or
     # failed request still burns it (see safety._consume).
     try:
-        queued = await safety.execute(conn, user, action, body.token, body.targets, body.params, ip=user.client_ip)
+        queued = await safety.execute(conn, user, action, body.token, body.targets, body.params,
+                                      stop_on_failure=body.stop_on_failure, ip=user.client_ip)
     except safety.ActionError as exc:
         raise _http(exc) from exc
     confirmation_id = queued["confirmation_id"]

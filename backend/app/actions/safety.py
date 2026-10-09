@@ -174,29 +174,32 @@ async def _describe_all(conn: asyncpg.Connection, user: CurrentUser, spec: Actio
 
 
 async def prepare(conn: asyncpg.Connection, user: CurrentUser, action: str, targets: list[dict[str, Any]], params: dict[str, Any],
-                  *, ip: str | None = None) -> dict[str, Any]:
+                  *, stop_on_failure: bool = False, ip: str | None = None) -> dict[str, Any]:
     spec = spec_for(user, action)
     ensure_available(spec)
     canonical = normalize_targets(spec, targets)
     clean = normalize_params(spec, params)
     described = await _describe_all(conn, user, spec, canonical)
     token = secrets.token_urlsafe(32)
-    summary = {"action": spec.key, "title": spec.title, "targets": described, "count": len(canonical), "params": clean}
+    summary = {"action": spec.key, "title": spec.title, "targets": described, "count": len(canonical), "params": clean,
+               "stop_on_failure": stop_on_failure}
     expires_at: datetime = await conn.fetchval(
         """
-        insert into action_confirmations (token_hash, user_id, action, targets, target_count, params_digest, summary, expires_at)
-        values ($1, $2::uuid, $3, $4::jsonb, $5, $6, $7::jsonb, now() + make_interval(secs => $8)) returning expires_at
+        insert into action_confirmations (token_hash, user_id, action, targets, target_count, params_digest, summary, expires_at,
+                                          stop_on_failure)
+        values ($1, $2::uuid, $3, $4::jsonb, $5, $6, $7::jsonb, now() + make_interval(secs => $8), $9) returning expires_at
         """,
         _token_hash(token), user.id, spec.key, json.dumps(canonical), len(canonical), _digest(clean), json.dumps(summary),
-        CONFIRMATION_TTL_SECONDS,
+        CONFIRMATION_TTL_SECONDS, stop_on_failure,
     )
     await write_audit(conn, action="action.prepare", actor_user_id=user.id, resource_type="action", ip=ip,
-                      metadata={"action": spec.key, "count": len(canonical), "targets": canonical, "params": clean})
+                      metadata={"action": spec.key, "count": len(canonical), "targets": canonical, "params": clean,
+                                "stop_on_failure": stop_on_failure})
     return {"token": token, "expires_at": expires_at, "summary": summary}
 
 
 async def _consume(conn: asyncpg.Connection, user: CurrentUser, spec: ActionSpec, token: str, canonical: list[dict[str, str]],
-                   clean: dict[str, str]) -> str:
+                   clean: dict[str, str], stop_on_failure: bool) -> str:
     """Marks the confirmation used and returns its id, or raises. A token presented with anything that does not match
     what it was issued for (another target, other parameters, another action) is burned as well: one wrong use and it
     is gone. The reason is not said, so a caller cannot probe which part was wrong.
@@ -209,15 +212,18 @@ async def _consume(conn: asyncpg.Connection, user: CurrentUser, spec: ActionSpec
         """
         update action_confirmations set used_at = now()
         where token_hash = $1 and user_id = $2::uuid and used_at is null
-        returning id, action, targets, params_digest, expires_at > used_at as fresh
+        returning id, action, targets, params_digest, stop_on_failure, expires_at > used_at as fresh
         """,
         _token_hash(token), user.id,
     )
     stored_targets = json.loads(row["targets"]) if row is not None and isinstance(row["targets"], str) else (row["targets"] if row else None)
     if (row is None or not row["fresh"] or row["action"] != spec.key or stored_targets != canonical
-            or row["params_digest"] != _digest(clean)):
+            or row["params_digest"] != _digest(clean) or row["stop_on_failure"] != stop_on_failure):
         raise ConfirmationRejected("the confirmation is invalid, expired, already used, or for a different request")
     return str(row["id"])
+
+
+SKIPPED_REASON = "not run: an earlier target did not succeed and this request stops on the first failure"
 
 
 def ensure_available(spec: ActionSpec) -> None:
@@ -228,14 +234,14 @@ def ensure_available(spec: ActionSpec) -> None:
 
 
 async def execute(conn: asyncpg.Connection, user: CurrentUser, action: str, token: str, targets: list[dict[str, Any]],
-                  params: dict[str, Any], *, ip: str | None = None) -> dict[str, Any]:
+                  params: dict[str, Any], *, stop_on_failure: bool = False, ip: str | None = None) -> dict[str, Any]:
     """Consume the confirmation and queue one result per target. Runs nothing: the caller publishes the job, and a
     worker runs it (`run_confirmation`)."""
     spec = spec_for(user, action)
     ensure_available(spec)
     canonical = normalize_targets(spec, targets)
     clean = normalize_params(spec, params)
-    confirmation_id = await _consume(conn, user, spec, token, canonical, clean)
+    confirmation_id = await _consume(conn, user, spec, token, canonical, clean, stop_on_failure)
     async with conn.transaction():
         for target in canonical:
             await conn.execute(
@@ -243,7 +249,8 @@ async def execute(conn: asyncpg.Connection, user: CurrentUser, action: str, toke
                 confirmation_id, user.id, spec.key, json.dumps(target),
             )
         await write_audit(conn, action="action.queued", actor_user_id=user.id, resource_type="action", ip=ip,
-                          metadata={"action": spec.key, "targets": canonical, "params": clean, "confirmation_id": confirmation_id})
+                          metadata={"action": spec.key, "targets": canonical, "params": clean, "stop_on_failure": stop_on_failure,
+                                    "confirmation_id": confirmation_id})
     return {"action": spec.key, "confirmation_id": confirmation_id,
             "results": [{"target": t, "status": "queued", "error": None} for t in canonical]}
 
@@ -282,9 +289,13 @@ async def _finish(conn: asyncpg.Connection, result_id: str, status: str, error: 
 
 async def run_confirmation(conn: asyncpg.Connection, transport: Any, enc: EncryptionService, confirmation_id: str) -> dict[str, int]:
     """Worker side: run every queued result of one confirmation. Each result is claimed atomically, so a redelivered
-    job never runs a target twice. Returns counts by final status."""
-    confirmation = await conn.fetchrow("select user_id, action, summary from action_confirmations where id = $1::uuid", confirmation_id)
-    counts = {"succeeded": 0, "failed": 0, "refused": 0}
+    job never runs a target twice. Returns counts by final status.
+
+    A request confirmed with stop_on_failure stops at the first target that does not succeed (failed or refused): the
+    targets still queued are marked `skipped` with the reason, and nothing more is sent."""
+    confirmation = await conn.fetchrow("select user_id, action, summary, stop_on_failure from action_confirmations where id = $1::uuid",
+                                       confirmation_id)
+    counts = {"succeeded": 0, "failed": 0, "refused": 0, "skipped": 0}
     if confirmation is None:
         return counts
     summary = json.loads(confirmation["summary"]) if isinstance(confirmation["summary"], str) else confirmation["summary"]
@@ -328,6 +339,21 @@ async def run_confirmation(conn: asyncpg.Connection, transport: Any, enc: Encryp
                           metadata={"action": confirmation["action"], "target": target, "params": params, "status": status,
                                     "error": error, "confirmation_id": confirmation_id})
         counts[status] += 1
+        if status != "succeeded" and confirmation["stop_on_failure"]:
+            counts["skipped"] += await _skip_rest(conn, confirmation, confirmation_id)
+            return counts
+
+
+async def _skip_rest(conn: asyncpg.Connection, confirmation: asyncpg.Record, confirmation_id: str) -> int:
+    skipped = await conn.fetch(
+        "update action_results set status = 'skipped', error = $2, finished_at = now() "
+        "where confirmation_id = $1::uuid and status = 'queued' returning target",
+        confirmation_id, SKIPPED_REASON,
+    )
+    if skipped:
+        await write_audit(conn, action="action.skipped", actor_user_id=str(confirmation["user_id"]), resource_type="action",
+                          metadata={"action": confirmation["action"], "count": len(skipped), "confirmation_id": confirmation_id})
+    return len(skipped)
 
 
 async def results(conn: asyncpg.Connection, user: CurrentUser, confirmation_id: str) -> dict[str, Any] | None:

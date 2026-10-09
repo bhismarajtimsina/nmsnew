@@ -2,11 +2,14 @@
 /**
  * The one confirmation dialog every device action goes through (Plan 38). Opening it runs the dry run, so the user
  * sees exactly which targets the server resolved, inside their scope, before anything is sent. High-impact and bulk
- * requests also need a typed acknowledgement. After execute the dialog follows the queued results until each target
- * has finished; closing it early stops following, not the work.
+ * requests also need a typed acknowledgement, and can stop at the first target that fails (on by default; changing it
+ * runs the dry run again, since the choice is part of what is confirmed). After execute the dialog follows the queued
+ * results until each target has finished, woken early by the `actions.finished` notice; closing it early stops
+ * following, not the work.
  */
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { api } from '@/api/client';
+import { useRealtimeStore } from '@/stores/realtime';
 import {
   ackMatches,
   ackPhrase,
@@ -15,7 +18,10 @@ import {
   describeTarget,
   followResults,
   isFinal,
+  isNoticeFor,
   summarize,
+  wakeableSleep,
+  ACTIONS_FINISHED,
   type Executed,
   type Params,
   type Prepared,
@@ -31,7 +37,12 @@ const prepared = ref<Prepared | null>(null);
 const executed = ref<Executed | null>(null);
 const error = ref<string | null>(null);
 const typed = ref('');
+const stopOnFailure = ref(true);
+const bulk = computed(() => props.targets.length > 1);
+const options = () => ({ stopOnFailure: bulk.value && stopOnFailure.value });
 let cancelled = false;
+let wakeable = wakeableSleep();
+let unsubscribe: () => void = () => {};
 
 const phrase = computed(() => (prepared.value ? ackPhrase(prepared.value.summary) : null));
 const canSend = computed(() => stage.value === 'confirm' && ackMatches(phrase.value, typed.value));
@@ -41,6 +52,7 @@ const statusColor: Record<string, string> = {
   succeeded: 'green',
   failed: 'red',
   refused: 'orange',
+  skipped: 'default',
 };
 
 async function prepare() {
@@ -51,7 +63,7 @@ async function prepare() {
   error.value = null;
   typed.value = '';
   try {
-    prepared.value = await actions.prepare(props.action, props.targets, props.params ?? {});
+    prepared.value = await actions.prepare(props.action, props.targets, props.params ?? {}, options());
     stage.value = 'confirm';
   } catch (e) {
     error.value = actionError(e);
@@ -63,9 +75,20 @@ async function send() {
   if (!prepared.value || !canSend.value) return;
   stage.value = 'sending';
   try {
-    executed.value = await actions.execute(props.action, prepared.value.token, props.targets, props.params ?? {});
+    executed.value = await actions.execute(
+      props.action,
+      prepared.value.token,
+      props.targets,
+      props.params ?? {},
+      options(),
+    );
     stage.value = 'following';
+    wakeable = wakeableSleep();
+    unsubscribe = useRealtimeStore().subscribe(ACTIONS_FINISHED, (message) => {
+      if (isNoticeFor(message.data, executed.value?.confirmation_id)) wakeable.wake();
+    });
     executed.value = await followResults(actions, executed.value, {
+      sleep: wakeable.sleep,
       onUpdate: (update) => (executed.value = update),
       isCancelled: () => cancelled,
     });
@@ -74,11 +97,20 @@ async function send() {
   } catch (e) {
     error.value = actionError(e);
     stage.value = 'error';
+  } finally {
+    stopListening();
   }
+}
+
+function stopListening() {
+  unsubscribe();
+  unsubscribe = () => {};
 }
 
 function close() {
   cancelled = true;
+  wakeable.wake();
+  stopListening();
   emit('close');
 }
 
@@ -90,7 +122,11 @@ watch(
   },
   { immediate: true },
 );
-onBeforeUnmount(() => (cancelled = true));
+onBeforeUnmount(() => {
+  cancelled = true;
+  wakeable.wake();
+  stopListening();
+});
 </script>
 
 <template>
@@ -113,6 +149,14 @@ onBeforeUnmount(() => (cancelled = true));
         <strong>{{ name }}</strong
         >: {{ value }}
       </p>
+      <a-checkbox
+        v-if="bulk"
+        v-model:checked="stopOnFailure"
+        :disabled="stage !== 'confirm'"
+        class="acm-stop"
+        @change="prepare"
+        >Stop at the first target that does not succeed</a-checkbox
+      >
       <template v-if="phrase !== null">
         <p class="acm-warn">
           This cannot be undone from here. Type <code>{{ phrase }}</code> to confirm.
@@ -153,6 +197,10 @@ onBeforeUnmount(() => (cancelled = true));
   max-height: 200px;
   overflow-y: auto;
   padding-left: 20px;
+}
+.acm-stop {
+  display: block;
+  margin-top: 8px;
 }
 .acm-param {
   margin: 4px 0;

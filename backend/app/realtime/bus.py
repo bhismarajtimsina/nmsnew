@@ -38,6 +38,22 @@ async def notify_devices_changed(redis: Redis, action: str) -> None:
         logger.warning("could not publish %s (%s)", DEVICES_CHANGED, action, exc_info=True)
 
 
+ACTIONS_FINISHED = "actions.finished"
+
+
+async def notify_action_finished(redis: Redis, confirmation_id: str) -> None:
+    """Tells the requester's open dialog that a queued device action has run, so it fetches the results now instead of
+    on its next poll.
+
+    Carries only the confirmation id. Dispatch is not per user, so every `dangerous_actions.execute` holder with the
+    channel open receives it, but the id gives them nothing: GET /actions/results answers 404 to anyone but the
+    requester. Never raises: a missed notice only means the dialog waits for its next poll."""
+    try:
+        await publish(redis, ACTIONS_FINISHED, {"confirmation_id": confirmation_id})
+    except Exception:  # noqa: BLE001 - Redis being down must not fail an action that already ran
+        logger.warning("could not publish %s (%s)", ACTIONS_FINISHED, confirmation_id, exc_info=True)
+
+
 async def run_subscriber(redis: Redis, manager: ConnectionManager, *, stop: asyncio.Event) -> None:
     """Runs until `stop` is set. One of these runs per process alongside its WebSocket connections - started at
     application startup, not per connection."""

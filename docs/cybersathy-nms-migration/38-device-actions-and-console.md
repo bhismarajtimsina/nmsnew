@@ -253,5 +253,36 @@ an equivalent mutant (a target never has both an interface and an ONU) and was r
 Not verified in a browser against a running API with a real worker, and not verified against a device; the
 build's SNMP transport is still the disabled one (D-17).
 
-Still to do: a stop-on-first-failure option for bulk requests, a realtime notice when results arrive (the dialog polls
-for now), more drivers, diagnostics and the console gateway.
+### Stop on first failure and the realtime results notice (2026-10-09)
+
+**Stop on first failure.** `stop_on_failure` (default false) can be sent with prepare and execute.
+- It is part of what is confirmed: it is stored on the confirmation (migration `0025`), shown in the dry-run summary
+  and audited. A token presented with the other value is burned and refused, like a changed target.
+- The worker stops at the first target that does not succeed, whether it failed or was refused. Targets still queued
+  become `skipped`, a new final status that the database requires to carry a reason. The skip is audited once
+  (`action.skipped`, with the count).
+- A target another worker is already running is left alone.
+- The dialog offers the option on every bulk request, ticked by default. Changing it runs the dry run again, since
+  the old confirmation no longer matches.
+
+**Realtime notice.** After a worker has run a confirmation, it publishes `actions.finished` carrying only the
+confirmation id.
+- The channel needs `dangerous_actions.execute` to subscribe.
+- Dispatch is not per user, so other gate holders can see that some action finished. The id gives them nothing:
+  results answer 404 to anyone but the requester.
+- A Redis failure is logged, never raised; the action has already run.
+- The dialog still polls every 2 seconds. A notice for its own confirmation wakes the current wait at once, and a
+  notice arriving between two polls is remembered.
+
+Writing the tests found a bug in the wake helper: a timer left over from an earlier, woken wait could end the next
+wait early. Each wait now ends only through its own timer, and a test covers it.
+
+Tests: 10 new backend tests in `tests/test_action_queue.py` and 7 new frontend tests.
+
+Mutation checks: 12 backend and 7 new frontend mutations, all caught. The first runs let two through:
+- skipping targets already `running`, closed with the test above;
+- matching a notice that carries no id, closed with a new test.
+
+Not verified in a browser against a live worker, and not verified against a device.
+
+Still to do: more drivers (OIDs from MIBs only), diagnostics and the console gateway.
