@@ -9,6 +9,13 @@ import {
   consoleApi,
   consoleError,
   gatewayUrl,
+  loadTranscript,
+  MAX_TRANSCRIPT_PAGES,
+  PAGE_SIZE,
+  sessionLength,
+  splitTranscript,
+  type ConsoleSession,
+  type TranscriptChunk,
   UNAUTHORIZED,
   UNAVAILABLE,
   type ConsoleTicket,
@@ -212,5 +219,111 @@ describe('the browser socket adapter', () => {
     expect(ws.sent).toEqual(['x']);
     expect(ws.closed).toBe(1000);
     expect(events).toEqual(['open', 'data:sw# ', 'close:4401:unauthorized']);
+  });
+});
+
+const SESSION: ConsoleSession = {
+  id: 's1',
+  user_id: 'u1',
+  username: 'op',
+  device_id: 'd1',
+  device_name: 'core-sw',
+  auto_auth: false,
+  status: 'closed',
+  created_at: '2026-10-10T10:00:00Z',
+  opened_at: '2026-10-10T10:00:05Z',
+  closed_at: '2026-10-10T10:12:05Z',
+  close_reason: 'closed by user',
+};
+const chunk = (seq: number, direction: 'in' | 'out', data: string): TranscriptChunk => ({
+  seq,
+  direction,
+  data,
+  at: 't',
+});
+
+describe('reading a transcript', () => {
+  it('pages through by sequence number until a short page', async () => {
+    const asked: number[] = [];
+    const page = (from: number, n: number) => Array.from({ length: n }, (_, i) => chunk(from + i + 1, 'out', 'x'));
+    const fake = {
+      async history(_: string, after = 0) {
+        asked.push(after);
+        return { session: SESSION, chunks: after === 0 ? page(0, PAGE_SIZE) : page(after, 3) };
+      },
+    };
+    const result = await loadTranscript(fake, 's1');
+    expect(asked).toEqual([0, PAGE_SIZE]);
+    expect(result.chunks).toHaveLength(PAGE_SIZE + 3);
+    expect(result.complete).toBe(true);
+  });
+
+  it('stops on an empty page, and says when a very long transcript was cut', async () => {
+    const empty = await loadTranscript({ history: async () => ({ session: SESSION, chunks: [] }) }, 's1');
+    expect(empty).toMatchObject({ chunks: [], complete: true });
+    let calls = 0;
+    const endless = {
+      async history(_: string, after = 0) {
+        calls += 1;
+        return {
+          session: SESSION,
+          chunks: Array.from({ length: PAGE_SIZE }, (_, i) => chunk(after + i + 1, 'out', 'x')),
+        };
+      },
+    };
+    const cut = await loadTranscript(endless, 's1');
+    expect(calls).toBe(MAX_TRANSCRIPT_PAGES);
+    expect(cut.complete).toBe(false);
+  });
+
+  it('separates device output from typed lines, keeping the hidden-input marker', () => {
+    const { output, input } = splitTranscript([
+      chunk(1, 'out', 'Password: '),
+      chunk(2, 'in', '[input hidden]\r'),
+      chunk(3, 'out', '\r\nsw# '),
+      chunk(4, 'in', 's'),
+      chunk(5, 'in', 'how ver\r'),
+      chunk(6, 'in', '\x03\r\r'),
+    ]);
+    expect(output).toBe('Password: \r\nsw# ');
+    expect(input).toEqual(['[input hidden]', 'show ver']);
+  });
+
+  it('describes how long a session lasted, or why it never ran', () => {
+    expect(sessionLength(SESSION)).toBe('12 min');
+    expect(sessionLength({ ...SESSION, closed_at: '2026-10-10T10:00:50Z' })).toBe('45 s');
+    expect(sessionLength({ ...SESSION, closed_at: null, status: 'open' }, new Date('2026-10-10T10:02:05Z'))).toBe(
+      '2 min so far',
+    );
+    expect(sessionLength({ ...SESSION, opened_at: null, closed_at: null, status: 'expired' })).toBe(
+      'ticket expired unused',
+    );
+    expect(sessionLength({ ...SESSION, opened_at: null, closed_at: null, status: 'pending' })).toBe('not opened');
+  });
+
+  it("lists one device's sessions", async () => {
+    const urls: string[] = [];
+    const fetchImpl = vi.fn(async (request: Request) => {
+      urls.push(new URL(request.url).pathname + new URL(request.url).search);
+      return new Response(JSON.stringify({ items: [SESSION] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }) as unknown as typeof fetch;
+    const store = { get: () => 'token', remove: () => {} };
+    const consoles = consoleApi(
+      createApiClient({ baseUrl: 'http://nms.test', store, onUnauthorized: () => {}, fetch: fetchImpl }),
+    );
+    expect(await consoles.sessions('d1')).toEqual([SESSION]);
+    expect(urls).toEqual(['/api/v1/console/sessions?device_id=d1']);
+  });
+
+  it('the device page shows sessions only to holders of console.logs.view, and lets them open only sessions that ran', () => {
+    const detail = readFileSync(resolve(__dirname, '../../views/devices/DeviceDetailNewPage.vue'), 'utf8');
+    const viewer = readFileSync(resolve(__dirname, 'TranscriptViewer.vue'), 'utf8');
+    expect(detail).toMatch(/canConsoleLogs = computed\(\(\) => can\(LOGS_PERMISSION\)\)/);
+    expect(detail).toMatch(/v-if="canConsoleLogs" key="console"/);
+    expect(detail).toMatch(/column\.key === 'view' && record\.opened_at/);
+    expect(viewer).toMatch(/disableStdin: true/);
   });
 });

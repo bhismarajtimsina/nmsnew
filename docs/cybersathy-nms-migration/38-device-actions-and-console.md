@@ -510,5 +510,28 @@ the socket's `readyState`; it was removed rather than kept.
 
 Not tried in a browser against a running gateway.
 
+### Reading recorded sessions (2026-10-10)
+
+**Device page.** A "Console sessions" tab for holders of `console.logs.view` lists the device's sessions: start time,
+user, length, and how each ended. It loads when the tab is first opened. A session that never opened (expired ticket,
+refused) has nothing to view.
+
+**Viewer** (`TranscriptViewer.vue`).
+- **Device output:** replayed in a read-only xterm.js terminal (`disableStdin`), so colours and cursor moves render as
+  they did.
+- **Typed input:** shown as lines, with control characters stripped and `[input hidden]` wherever a password was
+  typed. The secret was never stored.
+- **Header:** device, user, length, how it ended, and whether the stored login was used.
+
+**Logic** (`console.ts`).
+- `loadTranscript` pages by sequence number until a short page. It stops after 200 pages (100,000 chunks) and says
+  the transcript was cut.
+- `splitTranscript` separates output from input.
+- `sessionLength` describes a session ("12 min", "2 min so far", "ticket expired unused").
+
+Tests: 7 new. Mutation checks: 11, all caught.
+
+Not tried in a browser against stored sessions.
+
 Still to do: more drivers (OIDs from MIBs only; the BDCOM ONU actions wait on D-31), the console's SSH or telnet
-transport (the owner's call, like D-17), a page for reading past transcripts, and sensor devices.
+transport (the owner's call, like D-17), and sensor devices.

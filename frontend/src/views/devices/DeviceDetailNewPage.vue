@@ -10,7 +10,15 @@ import { api, ApiError } from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import ActionConfirmModal from '@/components/actions/ActionConfirmModal.vue';
 import ConsoleTerminal from '@/components/console/ConsoleTerminal.vue';
-import { OPEN_PERMISSION } from '@/components/console/console';
+import TranscriptViewer from '@/components/console/TranscriptViewer.vue';
+import {
+  consoleApi,
+  consoleError,
+  LOGS_PERMISSION,
+  OPEN_PERMISSION,
+  sessionLength,
+  type ConsoleSession,
+} from '@/components/console/console';
 import { useRealtimeStore } from '@/stores/realtime';
 import { wakeableSleep } from '@/components/actions/actions';
 import {
@@ -173,6 +181,34 @@ function closePing() {
 const canConsole = computed(() => can(OPEN_PERMISSION));
 const consoleOpen = ref(false);
 
+// Past console sessions on this device, for holders of console.logs.view; loaded when the tab is first opened.
+const consoles = consoleApi(api);
+const canConsoleLogs = computed(() => can(LOGS_PERMISSION));
+const consoleSessions = ref<ConsoleSession[] | null>(null);
+const consoleSessionsError = ref<string | null>(null);
+const viewing = ref<string | null>(null);
+
+async function loadConsoleSessions() {
+  consoleSessionsError.value = null;
+  try {
+    consoleSessions.value = await consoles.sessions(deviceId.value);
+  } catch (error) {
+    consoleSessionsError.value = consoleError(error);
+  }
+}
+
+function onTab(key: string | number) {
+  if (key === 'console' && consoleSessions.value === null) loadConsoleSessions();
+}
+
+const consoleColumns = [
+  { title: 'Started', dataIndex: 'created_at', key: 'created_at', width: 190 },
+  { title: 'User', dataIndex: 'username', key: 'username' },
+  { title: 'Length', key: 'length', width: 150 },
+  { title: 'Ended', dataIndex: 'close_reason', key: 'close_reason' },
+  { title: '', key: 'view', width: 90 },
+];
+
 onMounted(load);
 onMounted(loadActions);
 watch(deviceId, load);
@@ -269,7 +305,7 @@ const severityColor: Record<string, string> = { info: 'blue', warning: 'orange',
       </sdCards>
 
       <sdCards :headless="true">
-        <a-tabs>
+        <a-tabs @change="onTab">
           <a-tab-pane key="interfaces" tab="Interfaces">
             <a-empty
               v-if="interfaces?.state === 'forbidden'"
@@ -347,6 +383,34 @@ const severityColor: Record<string, string> = { info: 'blue', warning: 'orange',
             </a-table>
             <a-skeleton v-else active />
           </a-tab-pane>
+          <a-tab-pane v-if="canConsoleLogs" key="console" tab="Console sessions">
+            <a-alert v-if="consoleSessionsError" type="error" :message="consoleSessionsError" />
+            <a-table
+              v-else-if="consoleSessions"
+              :columns="consoleColumns"
+              :data-source="consoleSessions"
+              row-key="id"
+              size="small"
+              :pagination="{ pageSize: 20 }"
+            >
+              <template #bodyCell="{ column, record }">
+                <template v-if="column.key === 'created_at'">{{ when(record.created_at) }}</template>
+                <template v-else-if="column.key === 'username'">{{ record.username ?? '(deleted user)' }}</template>
+                <template v-else-if="column.key === 'length'">{{ sessionLength(record) }}</template>
+                <template v-else-if="column.key === 'close_reason'">{{
+                  record.close_reason ?? record.status
+                }}</template>
+                <sdButton
+                  v-else-if="column.key === 'view' && record.opened_at"
+                  size="small"
+                  type="light"
+                  @click="viewing = record.id"
+                  >View</sdButton
+                >
+              </template>
+            </a-table>
+            <a-skeleton v-else active />
+          </a-tab-pane>
           <a-tab-pane key="polls" tab="Polling">
             <a-empty
               v-if="polls?.state === 'forbidden'"
@@ -390,6 +454,7 @@ const severityColor: Record<string, string> = { info: 'blue', warning: 'orange',
       Sent from the NMS to {{ detail?.overview.management_ip }}; the result is kept for ten minutes.
     </p>
   </a-modal>
+  <TranscriptViewer v-if="viewing" :open="viewing !== null" :session-id="viewing" @close="viewing = null" />
   <ConsoleTerminal
     v-if="detail && consoleOpen"
     :open="consoleOpen"

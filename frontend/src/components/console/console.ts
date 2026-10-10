@@ -142,3 +142,64 @@ export function browserSocket(url: string, Impl: typeof WebSocket = WebSocket): 
   ws.onclose = (ev) => adapter.onclose?.({ code: ev.code, reason: ev.reason });
   return adapter;
 }
+
+export type TranscriptChunk = ConsoleHistory['chunks'][number];
+
+/** The API's default page size (app/api/console.py), used to tell the last page apart. */
+export const PAGE_SIZE = 500;
+
+/** The most pages one transcript view fetches; a longer transcript is shown cut, and says so. */
+export const MAX_TRANSCRIPT_PAGES = 200;
+
+/**
+ * A whole transcript, page by page (the API pages by `after_seq`). Stops at the first short or empty page, or after
+ * MAX_TRANSCRIPT_PAGES, in which case `complete` is false.
+ */
+export async function loadTranscript(
+  consoles: Pick<ConsoleApi, 'history'>,
+  sessionId: string,
+): Promise<{ session: ConsoleSession; chunks: TranscriptChunk[]; complete: boolean }> {
+  const chunks: TranscriptChunk[] = [];
+  let after = 0;
+  let session: ConsoleSession | null = null;
+  for (let page = 0; page < MAX_TRANSCRIPT_PAGES; page += 1) {
+    const reply = await consoles.history(sessionId, after);
+    session = reply.session;
+    chunks.push(...reply.chunks);
+    if (!reply.chunks.length) return { session, chunks, complete: true };
+    after = reply.chunks[reply.chunks.length - 1].seq;
+    if (reply.chunks.length < PAGE_SIZE) return { session, chunks, complete: true };
+  }
+  if (session === null) throw new Error('no transcript');
+  return { session, chunks, complete: false };
+}
+
+/**
+ * What the device printed, to replay in a read-only terminal, and what the user typed, as lines. The device usually
+ * echoes typed commands into its output, so the two overlap; the input view is there to show exactly what was sent,
+ * with `[input hidden]` where a password was typed.
+ */
+export function splitTranscript(chunks: TranscriptChunk[]): { output: string; input: string[] } {
+  const output = chunks
+    .filter((c) => c.direction === 'out')
+    .map((c) => c.data)
+    .join('');
+  const typed = chunks
+    .filter((c) => c.direction === 'in')
+    .map((c) => c.data)
+    .join('');
+  const input = typed
+    .split(/\r\n|\r|\n/)
+    .map((line) => line.replace(/[\x00-\x08\x0b-\x1f\x7f]/g, ''))
+    .filter((line) => line.trim() !== '');
+  return { output, input };
+}
+
+/** "12 min", "45 s", or how far a session got when it never opened or is still open. */
+export function sessionLength(session: ConsoleSession, now: Date = new Date()): string {
+  if (!session.opened_at) return session.status === 'expired' ? 'ticket expired unused' : 'not opened';
+  const end = session.closed_at ? new Date(session.closed_at) : now;
+  const seconds = Math.max(0, Math.round((end.getTime() - new Date(session.opened_at).getTime()) / 1000));
+  const length = seconds < 60 ? `${seconds} s` : `${Math.round(seconds / 60)} min`;
+  return session.closed_at ? length : `${length} so far`;
+}
