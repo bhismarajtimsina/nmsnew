@@ -1109,3 +1109,29 @@ class UplinkStep(Strict):
 class UplinkChain(Strict):
     device_id: str
     steps: list[UplinkStep]
+
+
+class LldpRemoteDevice(Strict):
+    device_id: str
+    name: str
+    matched_by: Literal["chassis_mac", "system_name"]
+
+
+class LldpNeighbourOut(Strict):
+    local_port_num: int
+    local_port: str | None
+    local_interface_id: str | None
+    local_interface: str | None
+    chassis_subtype: str | None
+    chassis_id: str | None
+    port_subtype: str | None
+    port_id: str | None
+    port_description: str | None
+    system_name: str | None
+    seen_at: datetime
+    remote_device: LldpRemoteDevice | None
+
+
+class LldpNeighbourList(Strict):
+    device_id: str
+    items: list[LldpNeighbourOut]

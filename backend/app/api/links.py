@@ -123,3 +123,14 @@ async def topology_upward(device_id: LinkId, user: View, conn: Conn) -> dict[str
     """The chain of upstream devices from a device to its top, nearest first."""
     links = await _visible_links(conn, user, device_id)
     return {"device_id": device_id, "steps": trees.upward_chain(device_id, links)}
+
+
+@router.get("/topology/lldp/{device_id}", response_model=schemas.LldpNeighbourList)
+async def lldp_neighbours(device_id: LinkId, user: View, conn: Conn) -> dict[str, Any]:
+    """The device's LLDP neighbours as last polled, each matched to a device the caller may see where possible."""
+    from app.repositories import lldp as lldp_repo
+
+    items = await lldp_repo.device_neighbours(conn, user, device_id)
+    if items is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    return {"device_id": device_id, "items": items}

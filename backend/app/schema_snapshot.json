@@ -2082,6 +2082,92 @@
       },
       "triggers": {}
     },
+    "lldp_neighbours": {
+      "columns": {
+        "chassis_id": {
+          "default": null,
+          "length": 255,
+          "nullable": true,
+          "type": "varchar"
+        },
+        "chassis_subtype": {
+          "default": null,
+          "length": 20,
+          "nullable": true,
+          "type": "varchar"
+        },
+        "device_id": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "local_interface_id": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "uuid"
+        },
+        "local_port": {
+          "default": null,
+          "length": 255,
+          "nullable": true,
+          "type": "varchar"
+        },
+        "local_port_num": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "int4"
+        },
+        "port_description": {
+          "default": null,
+          "length": 255,
+          "nullable": true,
+          "type": "varchar"
+        },
+        "port_id": {
+          "default": null,
+          "length": 255,
+          "nullable": true,
+          "type": "varchar"
+        },
+        "port_subtype": {
+          "default": null,
+          "length": 20,
+          "nullable": true,
+          "type": "varchar"
+        },
+        "remote_index": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "int4"
+        },
+        "seen_at": {
+          "default": "now()",
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        "system_name": {
+          "default": null,
+          "length": 255,
+          "nullable": true,
+          "type": "varchar"
+        }
+      },
+      "constraints": {
+        "lldp_neighbours_device_id_fkey": "FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE",
+        "lldp_neighbours_local_interface_id_fkey": "FOREIGN KEY (local_interface_id) REFERENCES interfaces(id) ON DELETE SET NULL",
+        "pk_lldp_neighbours": "PRIMARY KEY (device_id, local_port_num, remote_index)"
+      },
+      "indexes": {
+        "ix_lldp_neighbours_chassis": "CREATE INDEX ix_lldp_neighbours_chassis ON public.lldp_neighbours USING btree (chassis_id)",
+        "pk_lldp_neighbours": "CREATE UNIQUE INDEX pk_lldp_neighbours ON public.lldp_neighbours USING btree (device_id, local_port_num, remote_index)"
+      },
+      "triggers": {}
+    },
     "login_attempts": {
       "columns": {
         "id": {

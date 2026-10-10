@@ -17,6 +17,7 @@ from app.core.redis import create_redis
 from app.polling.engine import Context
 from app.polling.transport import DisabledTransport, SnmpTransport
 from app.diagnostics.ping import build_prober
+from app.topology.sink import ReadingSink
 from app.workers.runner import KINDS, Worker
 
 
@@ -40,7 +41,7 @@ async def run(kinds: set[str]) -> int:
         enc = None
         log.warning("credential encryption is not configured; jobs that need credentials will fail")
     prober = build_prober(settings.diagnostics_enabled, settings.pinger_privileged)
-    worker = Worker(Context(pool, redis, build_transport(), enc, settings), kinds, prober=prober)
+    worker = Worker(Context(pool, redis, build_transport(), enc, settings), kinds, prober=prober, sink=ReadingSink(pool))
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGTERM, signal.SIGINT):
         loop.add_signal_handler(sig, worker.stop.set)

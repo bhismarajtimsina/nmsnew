@@ -1,6 +1,6 @@
 # Plan 27: Topology and Links
 
-> **Phase:** 7 · **Depends on:** 10 · **Status:** Partial (links, link state, scoped graph, paths with state, groups and metrics; tree views; LLDP, utilisation and frontend to do)
+> **Phase:** 7 · **Depends on:** 10 · **Status:** Partial (links, link state, scoped graph, paths with state, groups and metrics; tree views, LLDP neighbours; LLDP link suggestions, utilisation and frontend to do)
 
 ## Goal
 Build topology and link management.
@@ -171,8 +171,55 @@ per link, and an explicit visibility check. Either alone suffices; both are kept
 Tests: 7 in `tests/test_topology_tree.py`. Mutation checks: 14. Three are equivalent, by design: they remove one of the
 two guards, or merge the placeholders the other guard already makes harmless.
 
+### Built: LLDP neighbours (2026-10-10)
+
+**Where BDCOM keeps LLDP.** BDCOM switches carry LLDP under their own enterprise tree (`nms 127`,
+`1.3.6.1.4.1.3320.127`), which is the IEEE LLDP-MIB re-hosted. A legacy comment records that the standard
+`1.0.8802.1.1.2` tree returned "No Such Object" on these switches.
+
+**Profile.** The draft `bdcom_switch_basic` profile already read four neighbour columns. It now also reads:
+- the neighbour's chassis-id and port-id subtypes;
+- the local port table: port id, its subtype, and description.
+
+Each new column is checked against `NMS-LLDP-MIB.MIB` by the existing profile test: same OID, read-only, bounded to 256
+rows. The profile is still a draft, so nothing polls it. An installation that already seeded the draft keeps its old
+entries until an operator rebuilds it.
+
+**Decoding** (`app/topology/lldp.py`).
+- **Row indexes:** the MIB's own (`<TimeMark>.<LocalPortNum>.<RemIndex>`, and `<LocPortNum>`). A reading whose OID
+  is under another tree, or whose index does not fit, is dropped.
+- **Ids:** decoded by subtype, using the MIB's enumerations (a test compares them with the MIB):
+  - a MAC is six octets, even when its octets happen to be printable;
+  - a network address is an IANA family octet followed by the address;
+  - anything else is shown as text when printable, as hex when not.
+- **Local port:** matched to an interface by exact name, or by a single case-insensitive match. Never a partial match,
+  so `Gi0/1` cannot land on `Gi0/10`.
+
+**Storage.** A polling sink, now wired into the worker, replaces a device's `lldp_neighbours` rows (migration `0030`)
+on each poll that returns LLDP data. Polls of other profiles leave them alone.
+
+**Reading.** `GET /topology/lldp/{device_id}` needs `links.view` and the device in scope. Each neighbour is matched to
+one of our devices only among those the caller may see:
+- **By MAC:** devices have no MAC of their own here, so the chassis MAC is looked for on interfaces. It counts only
+  when it is a real MAC-type id and belongs to exactly one device.
+- **By name:** otherwise by a unique, case-insensitive system name.
+- **Resellers:** see what the switch reported, but never that a neighbour is a device outside their scope.
+
+Tests: 11 in `tests/test_lldp.py`, and 5 more cases in the profile test. Mutation checks: 15, all caught. The first run
+left six survivors, each closed with a new case:
+- valid UTF-8 that is not printable;
+- the right column name under the wrong tree;
+- an exact name winning over a case-insensitive one;
+- a MAC made of printable octets;
+- a non-LLDP poll after a stored LLDP poll;
+- a look-alike id beside a real MAC with the same digits.
+
+Not verified against a device; the profile is a draft and the build's SNMP transport is the disabled one (D-17).
+
 ### Still to do
 
+- LLDP link suggestions: neighbours matched to devices, offered as links to accept (`source = lldp`), with external
+  neighbour names for the unmatched ones.
 - LLDP neighbours through a bounded profile (BDCOM's LLDP MIB is in the repository) and external neighbour names.
 - Link utilisation (legacy computes it every two minutes for the `high_link_utilization` alarm).
 - The topology frontend.

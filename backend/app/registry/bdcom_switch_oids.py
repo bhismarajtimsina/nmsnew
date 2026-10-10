@@ -77,6 +77,18 @@ DEFINITIONS: list[VendorDefinition] = [
                      "1.3.6.1.4.1.3320.127.1.4.1.1.8", "walk", NEIGHBOUR_ROWS, WALK_TIMEOUT_MS),
     VendorDefinition("bdcom.lldp.remote_system_name", "NMS-LLDP-MIB.MIB", "lldpRemSysName",
                      "1.3.6.1.4.1.3320.127.1.4.1.1.9", "walk", NEIGHBOUR_ROWS, WALK_TIMEOUT_MS),
+    # What the two ids above are (MAC address, interface name, ...): without them an id cannot be read correctly.
+    VendorDefinition("bdcom.lldp.remote_chassis_id_subtype", "NMS-LLDP-MIB.MIB", "lldpRemChassisIdSubtype",
+                     "1.3.6.1.4.1.3320.127.1.4.1.1.4", "walk", NEIGHBOUR_ROWS, WALK_TIMEOUT_MS),
+    VendorDefinition("bdcom.lldp.remote_port_id_subtype", "NMS-LLDP-MIB.MIB", "lldpRemPortIdSubtype",
+                     "1.3.6.1.4.1.3320.127.1.4.1.1.6", "walk", NEIGHBOUR_ROWS, WALK_TIMEOUT_MS),
+    # The local port table: a neighbour row names a local LLDP port number, and this says which port that is.
+    VendorDefinition("bdcom.lldp.local_port_id_subtype", "NMS-LLDP-MIB.MIB", "lldpLocPortIdSubtype",
+                     "1.3.6.1.4.1.3320.127.1.3.7.1.2", "walk", NEIGHBOUR_ROWS, WALK_TIMEOUT_MS),
+    VendorDefinition("bdcom.lldp.local_port_id", "NMS-LLDP-MIB.MIB", "lldpLocPortId",
+                     "1.3.6.1.4.1.3320.127.1.3.7.1.3", "walk", NEIGHBOUR_ROWS, WALK_TIMEOUT_MS),
+    VendorDefinition("bdcom.lldp.local_port_description", "NMS-LLDP-MIB.MIB", "lldpLocPortDesc",
+                     "1.3.6.1.4.1.3320.127.1.3.7.1.4", "walk", NEIGHBOUR_ROWS, WALK_TIMEOUT_MS),
     # SFP digital diagnostics per optical port, bounded. Units are the MIB's own words.
     VendorDefinition("bdcom.sfp.tx_power", "NMS-IF-MIB.my", "txPower",
                      "1.3.6.1.4.1.3320.9.63.1.7.1.2", "walk", PORT_ROWS, WALK_TIMEOUT_MS, "0.1 dBm"),

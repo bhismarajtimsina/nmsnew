@@ -1687,6 +1687,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/topology/lldp/{device_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lldp Neighbours
+         * @description The device's LLDP neighbours as last polled, each matched to a device the caller may see where possible.
+         */
+        get: operations["lldp_neighbours_api_v1_topology_lldp__device_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/topology/tree/{device_id}": {
         parameters: {
             query?: never;
@@ -3049,6 +3069,54 @@ export interface components {
             dest_interface_id?: string | null;
             /** Src Interface Id */
             src_interface_id?: string | null;
+        };
+        /** LldpNeighbourList */
+        LldpNeighbourList: {
+            /** Device Id */
+            device_id: string;
+            /** Items */
+            items: components["schemas"]["LldpNeighbourOut"][];
+        };
+        /** LldpNeighbourOut */
+        LldpNeighbourOut: {
+            /** Chassis Id */
+            chassis_id: string | null;
+            /** Chassis Subtype */
+            chassis_subtype: string | null;
+            /** Local Interface */
+            local_interface: string | null;
+            /** Local Interface Id */
+            local_interface_id: string | null;
+            /** Local Port */
+            local_port: string | null;
+            /** Local Port Num */
+            local_port_num: number;
+            /** Port Description */
+            port_description: string | null;
+            /** Port Id */
+            port_id: string | null;
+            /** Port Subtype */
+            port_subtype: string | null;
+            remote_device: components["schemas"]["LldpRemoteDevice"] | null;
+            /**
+             * Seen At
+             * Format: date-time
+             */
+            seen_at: string;
+            /** System Name */
+            system_name: string | null;
+        };
+        /** LldpRemoteDevice */
+        LldpRemoteDevice: {
+            /** Device Id */
+            device_id: string;
+            /**
+             * Matched By
+             * @enum {string}
+             */
+            matched_by: "chassis_mac" | "system_name";
+            /** Name */
+            name: string;
         };
         /** LoginRequest */
         LoginRequest: {
@@ -8644,6 +8712,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TopologyGraph"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    lldp_neighbours_api_v1_topology_lldp__device_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                device_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LldpNeighbourList"];
                 };
             };
             /** @description Validation Error */
