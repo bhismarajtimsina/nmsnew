@@ -29,11 +29,13 @@ async def get_session(conn: asyncpg.Connection, user: CurrentUser, session_id: s
     )
 
 
-async def history(conn: asyncpg.Connection, session_id: str, *, after_seq: int, limit: int) -> list[asyncpg.Record]:
-    """A session's transcript chunks; call only after `get_session` has checked the caller may see the session."""
+async def history(conn: asyncpg.Connection, user: CurrentUser, session_id: str, *, after_seq: int, limit: int) -> list[asyncpg.Record]:
+    """A session's transcript chunks, scoped by the session's device like the session itself."""
     return await conn.fetch(
-        "select seq, direction, data, at from console_history where session_id = $1::uuid and seq > $2 order by seq limit $3",
-        session_id, after_seq, limit,
+        f"{GRANTED_GROUPS_CTE} select h.seq, h.direction, h.data, h.at from console_history h "
+        f"join console_sessions s on s.id = h.session_id join devices d on d.id = s.device_id "
+        f"where h.session_id = $3::uuid and h.seq > $4 and {DEVICE_VISIBLE} order by h.seq limit $5",
+        user.id, user.scope_all, session_id, after_seq, limit,
     )
 
 

@@ -1151,6 +1151,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Links */
+        get: operations["list_links_api_v1_links_get"];
+        put?: never;
+        /** Create Link */
+        post: operations["create_link_api_v1_links_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/links/{link_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Link */
+        get: operations["get_link_api_v1_links__link_id__get"];
+        /** Update Link */
+        put: operations["update_link_api_v1_links__link_id__put"];
+        post?: never;
+        /** Delete Link */
+        delete: operations["delete_link_api_v1_links__link_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/macros": {
         parameters: {
             query?: never;
@@ -1545,6 +1582,26 @@ export interface paths {
         };
         /** Job Runs */
         get: operations["job_runs_api_v1_system_schedule__key__runs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/topology/graph": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Topology Graph
+         * @description Every link the caller may see, as nodes and edges with their state.
+         */
+        get: operations["topology_graph_api_v1_topology_graph_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2597,6 +2654,35 @@ export interface components {
             /** Favorite */
             favorite: boolean;
         };
+        /** GraphEdge */
+        GraphEdge: {
+            /** From */
+            from: string;
+            /** From Interface */
+            from_interface: string | null;
+            /** Id */
+            id: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "up" | "down" | "unknown";
+            /** To */
+            to: string;
+            /** To Interface */
+            to_interface: string | null;
+        };
+        /** GraphNode */
+        GraphNode: {
+            /** Id */
+            id: string;
+            /** Ip */
+            ip: string | null;
+            /** Name */
+            name: string | null;
+            /** Visible */
+            visible: boolean;
+        };
         /** GroupCreate */
         GroupCreate: {
             /** Description */
@@ -2770,6 +2856,81 @@ export interface components {
             params?: {
                 [key: string]: unknown;
             } | null;
+        };
+        /** LinkCreate */
+        LinkCreate: {
+            /** Description */
+            description?: string | null;
+            /** Dest Device Id */
+            dest_device_id: string;
+            /** Dest Interface Id */
+            dest_interface_id?: string | null;
+            /** Src Device Id */
+            src_device_id: string;
+            /** Src Interface Id */
+            src_interface_id?: string | null;
+        };
+        /** LinkEnd */
+        LinkEnd: {
+            /** Device Id */
+            device_id: string | null;
+            /** Interface */
+            interface: string | null;
+            /** Interface Id */
+            interface_id: string | null;
+            /** Ip */
+            ip: string | null;
+            /** Name */
+            name: string | null;
+            /** State */
+            state: ("up" | "down" | "unknown") | null;
+            /** Visible */
+            visible: boolean;
+        };
+        /** LinkList */
+        LinkList: {
+            /** Items */
+            items: components["schemas"]["LinkOut"][];
+            /** Truncated */
+            truncated: boolean;
+        };
+        /** LinkOut */
+        LinkOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Description */
+            description: string | null;
+            dest: components["schemas"]["LinkEnd"];
+            /** Id */
+            id: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "manual" | "fdb" | "lldp";
+            src: components["schemas"]["LinkEnd"];
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "up" | "down" | "unknown";
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** LinkUpdate */
+        LinkUpdate: {
+            /** Description */
+            description?: string | null;
+            /** Dest Interface Id */
+            dest_interface_id?: string | null;
+            /** Src Interface Id */
+            src_interface_id?: string | null;
         };
         /** LoginRequest */
         LoginRequest: {
@@ -3743,6 +3904,15 @@ export interface components {
             permissions: string[];
             /** Revoked At */
             revoked_at: string | null;
+        };
+        /** TopologyGraph */
+        TopologyGraph: {
+            /** Edges */
+            edges: components["schemas"]["GraphEdge"][];
+            /** Nodes */
+            nodes: components["schemas"]["GraphNode"][];
+            /** Truncated */
+            truncated: boolean;
         };
         /** TotpDisable */
         TotpDisable: {
@@ -6639,6 +6809,177 @@ export interface operations {
             };
         };
     };
+    list_links_api_v1_links_get: {
+        parameters: {
+            query?: {
+                device_id?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_link_api_v1_links_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_link_api_v1_links__link_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                link_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_link_api_v1_links__link_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                link_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_link_api_v1_links__link_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                link_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatusOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_macro_api_v1_macros_get: {
         parameters: {
             query?: never;
@@ -7643,6 +7984,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ScheduleRunOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    topology_graph_api_v1_topology_graph_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TopologyGraph"];
                 };
             };
             /** @description Validation Error */

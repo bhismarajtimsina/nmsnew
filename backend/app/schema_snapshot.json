@@ -1957,6 +1957,131 @@
       },
       "triggers": {}
     },
+    "link_external_names": {
+      "columns": {
+        "created_at": {
+          "default": "now()",
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        "id": {
+          "default": null,
+          "length": 191,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "name": {
+          "default": null,
+          "length": 255,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "updated_at": {
+          "default": "now()",
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        }
+      },
+      "constraints": {
+        "ck_link_external_names_id": "CHECK (((id)::text ~ '^ext:[0-9a-f-]{36}:([0-9a-f]{2}:){5}[0-9a-f]{2}$'::text))",
+        "link_external_names_pkey": "PRIMARY KEY (id)"
+      },
+      "indexes": {
+        "link_external_names_pkey": "CREATE UNIQUE INDEX link_external_names_pkey ON public.link_external_names USING btree (id)"
+      },
+      "triggers": {}
+    },
+    "links": {
+      "columns": {
+        "created_at": {
+          "default": "now()",
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        "created_by": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "uuid"
+        },
+        "description": {
+          "default": null,
+          "length": 255,
+          "nullable": true,
+          "type": "varchar"
+        },
+        "dest_device_id": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "dest_interface_id": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "uuid"
+        },
+        "id": {
+          "default": "gen_random_uuid()",
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "legacy_id": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "int4"
+        },
+        "source": {
+          "default": "'manual'::character varying",
+          "length": 8,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "src_device_id": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "src_interface_id": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "uuid"
+        },
+        "updated_at": {
+          "default": "now()",
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        }
+      },
+      "constraints": {
+        "ck_links_not_self": "CHECK (((src_interface_id IS NULL) OR (src_interface_id IS DISTINCT FROM dest_interface_id)))",
+        "ck_links_source": "CHECK (((source)::text = ANY ((ARRAY['manual'::character varying, 'fdb'::character varying, 'lldp'::character varying])::text[])))",
+        "links_created_by_fkey": "FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL",
+        "links_dest_device_id_fkey": "FOREIGN KEY (dest_device_id) REFERENCES devices(id) ON DELETE CASCADE",
+        "links_dest_interface_id_fkey": "FOREIGN KEY (dest_interface_id) REFERENCES interfaces(id) ON DELETE SET NULL",
+        "links_legacy_id_key": "UNIQUE (legacy_id)",
+        "links_pkey": "PRIMARY KEY (id)",
+        "links_src_device_id_fkey": "FOREIGN KEY (src_device_id) REFERENCES devices(id) ON DELETE CASCADE",
+        "links_src_interface_id_fkey": "FOREIGN KEY (src_interface_id) REFERENCES interfaces(id) ON DELETE SET NULL"
+      },
+      "indexes": {
+        "ix_links_dest_device": "CREATE INDEX ix_links_dest_device ON public.links USING btree (dest_device_id)",
+        "ix_links_src_device": "CREATE INDEX ix_links_src_device ON public.links USING btree (src_device_id)",
+        "links_legacy_id_key": "CREATE UNIQUE INDEX links_legacy_id_key ON public.links USING btree (legacy_id)",
+        "links_pkey": "CREATE UNIQUE INDEX links_pkey ON public.links USING btree (id)",
+        "uq_links_ends": "CREATE UNIQUE INDEX uq_links_ends ON public.links USING btree (LEAST((((src_device_id)::text || '/'::text) || (COALESCE(src_interface_id, '00000000-0000-0000-0000-000000000000'::uuid))::text), (((dest_device_id)::text || '/'::text) || (COALESCE(dest_interface_id, '00000000-0000-0000-0000-000000000000'::uuid))::text)), GREATEST((((src_device_id)::text || '/'::text) || (COALESCE(src_interface_id, '00000000-0000-0000-0000-000000000000'::uuid))::text), (((dest_device_id)::text || '/'::text) || (COALESCE(dest_interface_id, '00000000-0000-0000-0000-000000000000'::uuid))::text)))"
+      },
+      "triggers": {}
+    },
     "login_attempts": {
       "columns": {
         "id": {

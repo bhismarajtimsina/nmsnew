@@ -2463,6 +2463,107 @@
         "title": "FavoriteSet",
         "type": "object"
       },
+      "GraphEdge": {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "title": "From",
+            "type": "string"
+          },
+          "from_interface": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Interface"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "up",
+              "down",
+              "unknown"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "to": {
+            "title": "To",
+            "type": "string"
+          },
+          "to_interface": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Interface"
+          }
+        },
+        "required": [
+          "id",
+          "from",
+          "to",
+          "state",
+          "from_interface",
+          "to_interface"
+        ],
+        "title": "GraphEdge",
+        "type": "object"
+      },
+      "GraphNode": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "visible": {
+            "title": "Visible",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "ip",
+          "visible"
+        ],
+        "title": "GraphNode",
+        "type": "object"
+      },
       "GroupCreate": {
         "properties": {
           "description": {
@@ -3054,6 +3155,285 @@
           }
         },
         "title": "JobUpdate",
+        "type": "object"
+      },
+      "LinkCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "dest_device_id": {
+            "pattern": "^[0-9a-fA-F-]{36}$",
+            "title": "Dest Device Id",
+            "type": "string"
+          },
+          "dest_interface_id": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-fA-F-]{36}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dest Interface Id"
+          },
+          "src_device_id": {
+            "pattern": "^[0-9a-fA-F-]{36}$",
+            "title": "Src Device Id",
+            "type": "string"
+          },
+          "src_interface_id": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-fA-F-]{36}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Src Interface Id"
+          }
+        },
+        "required": [
+          "src_device_id",
+          "dest_device_id"
+        ],
+        "title": "LinkCreate",
+        "type": "object"
+      },
+      "LinkEnd": {
+        "additionalProperties": false,
+        "properties": {
+          "device_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Id"
+          },
+          "interface": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interface"
+          },
+          "interface_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interface Id"
+          },
+          "ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "enum": [
+                  "up",
+                  "down",
+                  "unknown"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State"
+          },
+          "visible": {
+            "title": "Visible",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "device_id",
+          "name",
+          "ip",
+          "interface_id",
+          "interface",
+          "visible",
+          "state"
+        ],
+        "title": "LinkEnd",
+        "type": "object"
+      },
+      "LinkList": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/LinkOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "truncated": {
+            "title": "Truncated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "truncated"
+        ],
+        "title": "LinkList",
+        "type": "object"
+      },
+      "LinkOut": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "dest": {
+            "$ref": "#/components/schemas/LinkEnd"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "manual",
+              "fdb",
+              "lldp"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "src": {
+            "$ref": "#/components/schemas/LinkEnd"
+          },
+          "state": {
+            "enum": [
+              "up",
+              "down",
+              "unknown"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "description",
+          "src",
+          "dest",
+          "state",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "LinkOut",
+        "type": "object"
+      },
+      "LinkUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "dest_interface_id": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-fA-F-]{36}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dest Interface Id"
+          },
+          "src_interface_id": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-fA-F-]{36}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Src Interface Id"
+          }
+        },
+        "title": "LinkUpdate",
         "type": "object"
       },
       "LoginRequest": {
@@ -6335,6 +6715,36 @@
           "created_at"
         ],
         "title": "TokenItem",
+        "type": "object"
+      },
+      "TopologyGraph": {
+        "additionalProperties": false,
+        "properties": {
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/GraphEdge"
+            },
+            "title": "Edges",
+            "type": "array"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/GraphNode"
+            },
+            "title": "Nodes",
+            "type": "array"
+          },
+          "truncated": {
+            "title": "Truncated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "nodes",
+          "edges",
+          "truncated"
+        ],
+        "title": "TopologyGraph",
         "type": "object"
       },
       "TotpDisable": {
@@ -12190,6 +12600,312 @@
         ]
       }
     },
+    "/api/v1/links": {
+      "get": {
+        "operationId": "list_links_api_v1_links_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "device_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^[0-9a-fA-F-]{36}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Device Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Links",
+        "tags": [
+          "topology"
+        ]
+      },
+      "post": {
+        "operationId": "create_link_api_v1_links_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Link",
+        "tags": [
+          "topology"
+        ]
+      }
+    },
+    "/api/v1/links/{link_id}": {
+      "delete": {
+        "operationId": "delete_link_api_v1_links__link_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "link_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Link Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Link",
+        "tags": [
+          "topology"
+        ]
+      },
+      "get": {
+        "operationId": "get_link_api_v1_links__link_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "link_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Link Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Link",
+        "tags": [
+          "topology"
+        ]
+      },
+      "put": {
+        "operationId": "update_link_api_v1_links__link_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "link_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Link Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Link",
+        "tags": [
+          "topology"
+        ]
+      }
+    },
     "/api/v1/macros": {
       "get": {
         "operationId": "list_macro_api_v1_macros_get",
@@ -14024,6 +14740,56 @@
         "summary": "Job Runs",
         "tags": [
           "schedule"
+        ]
+      }
+    },
+    "/api/v1/topology/graph": {
+      "get": {
+        "description": "Every link the caller may see, as nodes and edges with their state.",
+        "operationId": "topology_graph_api_v1_topology_graph_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopologyGraph"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Topology Graph",
+        "tags": [
+          "topology"
         ]
       }
     },

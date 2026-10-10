@@ -904,3 +904,70 @@ class ConsoleChunk(Strict):
 class ConsoleHistory(Strict):
     session: ConsoleSessionOut
     chunks: list[ConsoleChunk]
+
+
+# --- Topology links (Plan 27) ---
+
+class LinkEnd(Strict):
+    device_id: str | None
+    name: str | None
+    ip: str | None
+    interface_id: str | None
+    interface: str | None
+    visible: bool
+    state: Literal["up", "down", "unknown"] | None
+
+
+class LinkOut(Strict):
+    id: str
+    source: Literal["manual", "fdb", "lldp"]
+    description: str | None
+    src: LinkEnd
+    dest: LinkEnd
+    state: Literal["up", "down", "unknown"]
+    created_at: datetime
+    updated_at: datetime
+
+
+class LinkList(Strict):
+    items: list[LinkOut]
+    truncated: bool
+
+
+_UUID = r"^[0-9a-fA-F-]{36}$"
+
+
+class LinkCreate(Strict):
+    src_device_id: str = Field(pattern=_UUID)
+    src_interface_id: str | None = Field(default=None, pattern=_UUID)
+    dest_device_id: str = Field(pattern=_UUID)
+    dest_interface_id: str | None = Field(default=None, pattern=_UUID)
+    description: str | None = Field(default=None, max_length=255)
+
+
+class LinkUpdate(Strict):
+    src_interface_id: str | None = Field(default=None, pattern=_UUID)
+    dest_interface_id: str | None = Field(default=None, pattern=_UUID)
+    description: str | None = Field(default=None, max_length=255)
+
+
+class GraphNode(Strict):
+    id: str
+    name: str | None
+    ip: str | None
+    visible: bool
+
+
+class GraphEdge(Strict):
+    id: str
+    from_: str = Field(alias="from")
+    to: str
+    state: Literal["up", "down", "unknown"]
+    from_interface: str | None
+    to_interface: str | None
+
+
+class TopologyGraph(Strict):
+    nodes: list[GraphNode]
+    edges: list[GraphEdge]
+    truncated: bool

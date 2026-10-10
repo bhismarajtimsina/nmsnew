@@ -55,5 +55,5 @@ async def console_history(
     session = await console_repo.get_session(conn, user, session_id)
     if session is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    chunks = await console_repo.history(conn, session_id, after_seq=after_seq, limit=limit)
+    chunks = await console_repo.history(conn, user, session_id, after_seq=after_seq, limit=limit)
     return {"session": console_repo.as_dict(session), "chunks": [dict(c) for c in chunks]}
