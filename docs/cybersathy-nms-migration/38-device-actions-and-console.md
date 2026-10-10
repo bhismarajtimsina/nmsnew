@@ -529,7 +529,7 @@ refused) has nothing to view.
 - `splitTranscript` separates output from input.
 - `sessionLength` describes a session ("12 min", "2 min so far", "ticket expired unused").
 
-Tests: 7 new. Mutation checks: 11, all caught.
+Tests: 6 new. Mutation checks: 11, all caught.
 
 Not tried in a browser against stored sessions.
 
