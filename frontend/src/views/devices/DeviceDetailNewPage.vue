@@ -9,6 +9,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { api, ApiError } from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import ActionConfirmModal from '@/components/actions/ActionConfirmModal.vue';
+import ConsoleTerminal from '@/components/console/ConsoleTerminal.vue';
+import { OPEN_PERMISSION } from '@/components/console/console';
 import { useRealtimeStore } from '@/stores/realtime';
 import { wakeableSleep } from '@/components/actions/actions';
 import {
@@ -167,6 +169,10 @@ function closePing() {
   pingOpen.value = false;
 }
 
+// Console: offered to holders of console.open; the terminal itself asks for a ticket only when the user connects.
+const canConsole = computed(() => can(OPEN_PERMISSION));
+const consoleOpen = ref(false);
+
 onMounted(load);
 onMounted(loadActions);
 watch(deviceId, load);
@@ -218,6 +224,9 @@ const severityColor: Record<string, string> = { info: 'blue', warning: 'orange',
       <sdButton type="default" :disabled="loading" @click="load"><unicon name="redo"></unicon> Reload</sdButton>
       <sdButton v-if="canPing && detail" type="default" :disabled="pinging" @click="runPing"
         ><unicon name="wifi"></unicon> Ping</sdButton
+      >
+      <sdButton v-if="canConsole && detail" type="default" @click="consoleOpen = true"
+        ><unicon name="window"></unicon> Console</sdButton
       >
       <sdButton v-if="canSaveConfig && detail" type="primary" @click="saveConfig"
         ><unicon name="save"></unicon> Save configuration</sdButton
@@ -381,6 +390,13 @@ const severityColor: Record<string, string> = { info: 'blue', warning: 'orange',
       Sent from the NMS to {{ detail?.overview.management_ip }}; the result is kept for ten minutes.
     </p>
   </a-modal>
+  <ConsoleTerminal
+    v-if="detail && consoleOpen"
+    :open="consoleOpen"
+    :device-id="deviceId"
+    :device-name="detail.overview.name"
+    @close="consoleOpen = false"
+  />
   <ActionConfirmModal
     v-if="pending"
     :open="pending !== null"

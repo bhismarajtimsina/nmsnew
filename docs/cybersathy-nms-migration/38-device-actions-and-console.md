@@ -484,5 +484,31 @@ left one mutant in `app/console/gateway.py` (the auto-login permission check rep
 
 Not verified against a device.
 
+### Browser terminal (2026-10-10)
+
+**Dependencies.** `@xterm/xterm` 6 and `@xterm/addon-fit` 0.11 were added to the frontend, and the lockfile was
+updated by npm. `npm audit` reports the same 44 findings before and after; none involve xterm.
+
+**Terminal.** On the device page, a "Console" button (for holders of `console.open`) opens `ConsoleTerminal.vue`.
+- A banner says the session is recorded with the user's name and that input at password prompts is hidden.
+- Nothing connects until the user presses Connect. Holders of `console.open_auto_auth` can tick "log in with the
+  stored login".
+- Connect asks the API for a ticket, opens xterm.js, and connects to the gateway at the same origin.
+- Closing the dialog ends the session.
+
+**Logic** (`frontend/src/components/console/console.ts`), kept free of xterm and the real socket so it is tested in
+Node:
+- the gateway address, built from the page's own scheme and host with the ticket escaped; it refuses a path that is not
+  on this origin;
+- a connection wrapper that sends keystrokes only while the socket reports open, and writes only text frames to the
+  terminal. Keystrokes before or after a session are dropped, never queued and replayed into a later session;
+- a close reason in words for each gateway close code;
+- a small adapter from the browser `WebSocket` to the wrapper's interface.
+
+Tests: 12. Mutation checks: 10, then 9. One survivor showed that the wrapper's own open-state check was redundant with
+the socket's `readyState`; it was removed rather than kept.
+
+Not tried in a browser against a running gateway.
+
 Still to do: more drivers (OIDs from MIBs only; the BDCOM ONU actions wait on D-31), the console's SSH or telnet
-transport and browser terminal, and sensor devices.
+transport (the owner's call, like D-17), a page for reading past transcripts, and sensor devices.
