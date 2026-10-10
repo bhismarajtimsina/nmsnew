@@ -15,6 +15,17 @@ def _csv(name: str, default: str) -> tuple[str, ...]:
     return tuple(part.strip() for part in os.getenv(name, default).split(",") if part.strip())
 
 
+_UTILIZATION_PERIODS = {"10m": 10, "15m": 15, "30m": 30, "1h": 60, "3h": 180, "6h": 360}
+
+
+def _utilization_minutes(raw: str) -> int:
+    """Legacy's own variable and choices, so an existing setting carries over. Anything else is a typo, refused at
+    start-up rather than guessed at."""
+    if raw not in _UTILIZATION_PERIODS:
+        raise ValueError(f"LINKS_UTILIZATION_CALCULATE_PERIOD must be one of {', '.join(_UTILIZATION_PERIODS)}")
+    return _UTILIZATION_PERIODS[raw]
+
+
 @dataclass
 class Settings:
     app_name: str
@@ -84,6 +95,8 @@ class Settings:
     # Transport paths (Plan 27), legacy PATHS_DEGRADED_LATENCY_MS and PATHS_STATE_METRIC_TTL_SEC.
     paths_degraded_latency_ms: int
     paths_state_metric_ttl_seconds: int
+    # Link utilisation period in minutes, from legacy's LINKS_UTILIZATION_CALCULATE_PERIOD (10m, 15m, 30m, 1h, 3h, 6h).
+    links_utilization_minutes: int
     trap_source_rate: float
     trap_source_burst: float
     trap_global_rate: float
@@ -189,6 +202,7 @@ def load_settings() -> Settings:
         console_max_seconds=int(os.getenv("CONSOLE_MAX_SECONDS", "1800")),
         paths_degraded_latency_ms=int(os.getenv("PATHS_DEGRADED_LATENCY_MS", "150")),
         paths_state_metric_ttl_seconds=int(os.getenv("PATHS_STATE_METRIC_TTL_SEC", "300")),
+        links_utilization_minutes=_utilization_minutes(os.getenv("LINKS_UTILIZATION_CALCULATE_PERIOD", "15m")),
         # Flood protection (risk K-15). Traps per second, refilled continuously, with a burst allowance on top: an OLT
         # reporting a PON-wide LOS legitimately sends one trap per ONU at once, so the per-source burst is generous.
         # Not yet tuned against real trap volumes - revisit once the receiver runs in observe mode.

@@ -1149,6 +1149,20 @@ class LldpSuggestionList(Strict):
     items: list[LldpSuggestion]
 
 
+class LinkUtilization(Strict):
+    link_id: str
+    percent: float | None
+    mbps: float
+    speed_mbps: float | None
+    side: Literal["src", "dest"]
+    direction: Literal["in", "out"]
+
+
+class LinkUtilizationList(Strict):
+    minutes: int
+    items: list[LinkUtilization]
+
+
 class ExternalNameIn(Strict):
     name: str | None = Field(default=None, min_length=1, max_length=255)
 

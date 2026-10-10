@@ -19,6 +19,9 @@
     "events": {
       "compression": true
     },
+    "interface_counter_samples": {
+      "compression": false
+    },
     "interface_status_history": {
       "compression": true
     },
@@ -73,6 +76,13 @@
         "drop_after": "2 years"
       },
       "hypertable": "events",
+      "job": "policy_retention"
+    },
+    {
+      "config": {
+        "drop_after": "7 days"
+      },
+      "hypertable": "interface_counter_samples",
       "job": "policy_retention"
     },
     {
@@ -1722,6 +1732,51 @@
       },
       "indexes": {
         "family_capabilities_pkey": "CREATE UNIQUE INDEX family_capabilities_pkey ON public.family_capabilities USING btree (family_id, capability_code)"
+      },
+      "triggers": {}
+    },
+    "interface_counter_samples": {
+      "columns": {
+        "in_octets": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "int8"
+        },
+        "interface_id": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "out_octets": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "int8"
+        },
+        "sampled_at": {
+          "default": "now()",
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        "speed_bps": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "int8"
+        }
+      },
+      "constraints": {
+        "ck_interface_counter_samples_has_counter": "CHECK (((in_octets IS NOT NULL) OR (out_octets IS NOT NULL)))",
+        "ck_interface_counter_samples_non_negative": "CHECK (((in_octets >= 0) AND (out_octets >= 0) AND (speed_bps > 0)))",
+        "interface_counter_samples_interface_id_fkey": "FOREIGN KEY (interface_id) REFERENCES interfaces(id) ON DELETE CASCADE",
+        "pk_interface_counter_samples": "PRIMARY KEY (interface_id, sampled_at)"
+      },
+      "indexes": {
+        "interface_counter_samples_sampled_at_idx": "CREATE INDEX interface_counter_samples_sampled_at_idx ON public.interface_counter_samples USING btree (sampled_at DESC)",
+        "pk_interface_counter_samples": "CREATE UNIQUE INDEX pk_interface_counter_samples ON public.interface_counter_samples USING btree (interface_id, sampled_at)"
       },
       "triggers": {}
     },

@@ -66,7 +66,8 @@ Target homes: **env** (process environment, read at start), **settings** (`syste
 |---|---|
 | `ANALYTICS_IGNORE_IFACES_WITH_MORE_THAN`, `ANALYTICS_SHOW_ACTIVE_MORE_THAN`, `ANALYTICS_MIN_RX_SIGNAL`, `ANALYTICS_MAX_RX_SIGNAL`, `ANALYTICS_MIN_OLT_RX_SIGNAL`, `ANALYTICS_MAX_OLT_RX_SIGNAL`, `ANALYTICS_MIN_SFP_RX_SIGNAL`, `ANALYTICS_MAX_SFP_RX_SIGNAL` | settings (thresholds also feed alarm rules, Plan 20) |
 | `AUTO_TOPOLOGY_SCHEDULE_ENABLED`, `AUTO_TOPOLOGY_THREADS` | settings |
-| `LINKS_UTILIZATION_CALCULATE_PERIOD`, `LINKS_UTILIZATION_MAX_PRC_FOR_ALERT` | settings |
+| `LINKS_UTILIZATION_CALCULATE_PERIOD` | settings (same name and values, `10m` to `6h`; anything else refuses to start) |
+| `LINKS_UTILIZATION_MAX_PRC_FOR_ALERT` | the threshold in the `high_link_utilization` alarm rule's expression (85), editable there |
 | `PATHS_DEGRADED_LATENCY_MS`, `PATHS_STATE_METRIC_TTL_SEC` | settings |
 
 ## Search, console, notifications, maps, web

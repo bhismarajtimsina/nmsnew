@@ -13,6 +13,7 @@ import asyncpg
 from app.core.security import CurrentUser
 from app.repositories import devices as device_repo
 from app.repositories.scope import DEVICE_VISIBLE, GRANTED_GROUPS_CTE
+from app.topology.utilization import counter_rate, link_utilization
 
 MAX_LINKS = 5000
 
@@ -111,3 +112,75 @@ async def delete_link(conn: asyncpg.Connection, user: CurrentUser, link_id: str)
         return False
     await conn.execute("delete from links where id = $1::uuid", link_id)
     return True
+
+
+# Link utilisation (app/topology/utilization.py): counter samples in, rates per linked interface out.
+
+_SYSTEM_SELECT = "with visible as (select id from devices)" + _SELECT[_SELECT.index("\n    select l.id"):]
+
+
+async def system_links(conn: asyncpg.Connection) -> list[asyncpg.Record]:
+    """Every link with both ends in full (no caller, so nothing is masked): for the metrics export."""
+    return await conn.fetch(_SYSTEM_SELECT + " order by l.id limit $1", MAX_LINKS)
+
+
+async def system_store_samples(conn: asyncpg.Connection, device_id: str, samples: dict[int, dict[str, int | None]]) -> int:
+    """One counter sample per polled interface the inventory knows (by ifIndex); others are skipped. Returns how many."""
+    indexes = sorted(samples)
+    rows = await conn.fetch(
+        """
+        insert into interface_counter_samples (interface_id, in_octets, out_octets, speed_bps)
+        select i.id, s.in_octets, s.out_octets, s.speed_bps
+        from unnest($2::int[], $3::bigint[], $4::bigint[], $5::bigint[]) as s(if_index, in_octets, out_octets, speed_bps)
+        join interfaces i on i.device_id = $1::uuid and i.if_index = s.if_index
+        on conflict do nothing
+        returning interface_id
+        """,
+        device_id, indexes, [samples[i]["in"] for i in indexes], [samples[i]["out"] for i in indexes],
+        [samples[i]["speed"] for i in indexes],
+    )
+    return len(rows)
+
+
+async def interface_rates(conn: asyncpg.Connection, interface_ids: list[str], minutes: int) -> dict[str, dict[str, Any]]:
+    """In and out bits per second over the last `minutes` for each interface, and its speed: the latest sampled one,
+    else the inventory's. Only ever given interface ids taken from rows the caller already may see (or from the
+    system export), so it applies no scope of its own."""
+    if not interface_ids:
+        return {}
+    rows = await conn.fetch(
+        """
+        select s.interface_id::text as interface_id, extract(epoch from s.sampled_at)::float8 as t,
+               s.in_octets, s.out_octets, s.speed_bps, i.speed_bps as inventory_speed
+        from interface_counter_samples s join interfaces i on i.id = s.interface_id
+        where s.interface_id = any($1::uuid[]) and s.sampled_at > now() - make_interval(mins => $2)
+        order by s.interface_id, s.sampled_at
+        """,
+        interface_ids, minutes,
+    )
+    by_interface: dict[str, list[asyncpg.Record]] = {}
+    for r in rows:
+        by_interface.setdefault(r["interface_id"], []).append(r)
+    out: dict[str, dict[str, Any]] = {}
+    for interface_id, samples in by_interface.items():
+        speeds = [s["speed_bps"] for s in samples if s["speed_bps"]]
+        out[interface_id] = {
+            "in_bps": counter_rate([(s["t"], s["in_octets"]) for s in samples if s["in_octets"] is not None]),
+            "out_bps": counter_rate([(s["t"], s["out_octets"]) for s in samples if s["out_octets"] is not None]),
+            "speed_bps": speeds[-1] if speeds else samples[-1]["inventory_speed"],
+        }
+    return out
+
+
+async def utilization_of(conn: asyncpg.Connection, rows: list[asyncpg.Record], minutes: int, *,
+                         visible_only: bool) -> dict[str, dict[str, Any] | None]:
+    """Each link's utilisation from the interfaces at its ends. With visible_only, an end outside the caller's scope
+    is not measured: the caller's own end carries the same traffic, and nothing is read from a device they may not
+    see."""
+    def ends(row: asyncpg.Record) -> list[tuple[str, str]]:
+        return [(side, str(row[f"{side}_interface_id"])) for side in ("src", "dest")
+                if row[f"{side}_interface_id"] is not None and (row[f"{side}_visible"] or not visible_only)]
+
+    rates = await interface_rates(conn, sorted({i for row in rows for _, i in ends(row)}), minutes)
+    return {str(row["id"]): link_utilization([{"side": side, **rates[i]} for side, i in ends(row) if i in rates])
+            for row in rows}

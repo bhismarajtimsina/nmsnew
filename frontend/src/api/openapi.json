@@ -3456,6 +3456,89 @@
         "title": "LinkUpdate",
         "type": "object"
       },
+      "LinkUtilization": {
+        "additionalProperties": false,
+        "properties": {
+          "direction": {
+            "enum": [
+              "in",
+              "out"
+            ],
+            "title": "Direction",
+            "type": "string"
+          },
+          "link_id": {
+            "title": "Link Id",
+            "type": "string"
+          },
+          "mbps": {
+            "title": "Mbps",
+            "type": "number"
+          },
+          "percent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Percent"
+          },
+          "side": {
+            "enum": [
+              "src",
+              "dest"
+            ],
+            "title": "Side",
+            "type": "string"
+          },
+          "speed_mbps": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speed Mbps"
+          }
+        },
+        "required": [
+          "link_id",
+          "percent",
+          "mbps",
+          "speed_mbps",
+          "side",
+          "direction"
+        ],
+        "title": "LinkUtilization",
+        "type": "object"
+      },
+      "LinkUtilizationList": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/LinkUtilization"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "minutes": {
+            "title": "Minutes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "minutes",
+          "items"
+        ],
+        "title": "LinkUtilizationList",
+        "type": "object"
+      },
       "LldpNeighbourList": {
         "additionalProperties": false,
         "properties": {
@@ -16405,6 +16488,73 @@
           }
         },
         "summary": "Topology Graph",
+        "tags": [
+          "topology"
+        ]
+      }
+    },
+    "/api/v1/topology/links/utilization": {
+      "get": {
+        "description": "How busy each link the caller may see is, over the configured period: the busiest direction at an end inside\nthe caller's scope. Links with nothing measured are left out.",
+        "operationId": "link_utilization_api_v1_topology_links_utilization_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "device_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^[0-9a-fA-F-]{36}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Device Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkUtilizationList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Link Utilization",
         "tags": [
           "topology"
         ]

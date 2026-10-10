@@ -1,6 +1,6 @@
 # Plan 27: Topology and Links
 
-> **Phase:** 7 · **Depends on:** 10 · **Status:** Partial (links, link state, scoped graph, paths with state, groups and metrics; tree views, LLDP neighbours and link suggestions; utilisation and frontend to do)
+> **Phase:** 7 · **Depends on:** 10 · **Status:** Partial (links, link state, scoped graph, paths with state, groups and metrics; tree views, LLDP neighbours and link suggestions, link utilisation; frontend to do)
 
 ## Goal
 Build topology and link management.
@@ -247,7 +247,49 @@ Tests: 15 in `tests/test_lldp_suggestions.py`. Mutation checks: 16, all caught. 
 fold-in rule) is equivalent: two different reports with the same number of known interfaces cannot cover each other.
 Not verified against a device.
 
+### Built: link utilisation (2026-10-10)
+
+**Counters.** The polling sink now also stores a counter sample from each `interface_basic` poll:
+- one row per interface the inventory knows, matched by ifIndex (migration `0031`, a hypertable kept 7 days);
+- the in and out octet counters as read;
+- ifSpeed where it is usable. A speed of 0, or the Gauge32 maximum (a port faster than ifSpeed can hold, whose real
+  speed is in ifHighSpeed, not yet read), counts as unknown.
+
+Rows for unknown ifIndexes are skipped; creating interfaces from a poll is still Plan 10's gap.
+
+**Rates and utilisation** (`app/topology/utilization.py`):
+- **Period:** legacy's `LINKS_UTILIZATION_CALCULATE_PERIOD`, with the same name and values (`10m` to `6h`, default
+  `15m`). Anything else refuses to start.
+- **Resets:** a counter that drops was reset (restart, cleared counters, or a 32-bit wrap) and counts from zero, as
+  Prometheus' `rate()` does. A reset can only under-read, never raise a false alarm.
+- **Percent:** bits per second over the interface speed. When the samples carry no speed, the inventory's speed is
+  used. Legacy mixed binary megabits with a speed where 1G meant 1024, reading about 7% low on gigabit ports and 5%
+  high on 100M ones.
+- **Busiest direction:** a link's utilisation is its busiest direction at any end it measures. Legacy took the source
+  end and fell back to the destination; both ends carry the same traffic, so the highest is the same figure when both
+  are right, and the useful one when one end's counters are stale.
+
+**Reading** (`GET /topology/links/utilization`, `links.view`, optional `device_id`). This gives the figure for each
+visible link with something measured. An end outside the caller's scope is not measured: their own end carries the
+same traffic, and nothing is read from a device they may not see.
+
+**Metrics.** `/metrics` exports legacy's `link_utilization_prc`, `link_utilization_mbps`, `link_utilization_speed`
+and `link_status`, with legacy's labels (minus the bind key, which has no equivalent here). The ported
+`high_link_utilization` (> 85% for 15 minutes) and `link_down` rules now have their series. Two differences from
+legacy:
+- An idle link exports 0 rather than nothing.
+- `link_status` follows the link's state, and an unknown state exports nothing. Legacy wrote 0 for any link without an
+  Up interface at both ends, so a device-to-device link raised `link_down` forever.
+
+Tests: 18 in `tests/test_link_utilization.py`. Mutation checks: 26, all caught. Three more were equivalent, and the
+redundant code they pointed at was removed:
+- a two-point check the elapsed-time check already covered;
+- a speed condition that could never fail;
+- an empty-input guard the insert did not need.
+
+Not verified against a device: no counter has been read from real hardware, and the build's SNMP transport is the
+disabled one (D-17).
+
 ### Still to do
 
-- Link utilisation (legacy computes it every two minutes for the `high_link_utilization` alarm).
 - The topology frontend.

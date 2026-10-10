@@ -1687,6 +1687,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/topology/links/utilization": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Link Utilization
+         * @description How busy each link the caller may see is, over the configured period: the busiest direction at an end inside
+         *     the caller's scope. Links with nothing measured are left out.
+         */
+        get: operations["link_utilization_api_v1_topology_links_utilization_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/topology/lldp/external-names/{ext_id}": {
         parameters: {
             query?: never;
@@ -3136,6 +3157,34 @@ export interface components {
             dest_interface_id?: string | null;
             /** Src Interface Id */
             src_interface_id?: string | null;
+        };
+        /** LinkUtilization */
+        LinkUtilization: {
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "in" | "out";
+            /** Link Id */
+            link_id: string;
+            /** Mbps */
+            mbps: number;
+            /** Percent */
+            percent: number | null;
+            /**
+             * Side
+             * @enum {string}
+             */
+            side: "src" | "dest";
+            /** Speed Mbps */
+            speed_mbps: number | null;
+        };
+        /** LinkUtilizationList */
+        LinkUtilizationList: {
+            /** Items */
+            items: components["schemas"]["LinkUtilization"][];
+            /** Minutes */
+            minutes: number;
         };
         /** LldpNeighbourList */
         LldpNeighbourList: {
@@ -8810,6 +8859,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TopologyGraph"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    link_utilization_api_v1_topology_links_utilization_get: {
+        parameters: {
+            query?: {
+                device_id?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkUtilizationList"];
                 };
             };
             /** @description Validation Error */

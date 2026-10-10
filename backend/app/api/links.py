@@ -100,6 +100,17 @@ async def topology_graph(user: View, conn: Conn) -> dict[str, Any]:
     return {**topology.graph([topology.present(r) for r in rows]), "truncated": len(rows) >= repo.MAX_LINKS}
 
 
+@router.get("/topology/links/utilization", response_model=schemas.LinkUtilizationList)
+async def link_utilization(user: View, conn: Conn,
+                           device_id: Annotated[str | None, Query(pattern=r"^[0-9a-fA-F-]{36}$")] = None) -> dict[str, Any]:
+    """How busy each link the caller may see is, over the configured period: the busiest direction at an end inside
+    the caller's scope. Links with nothing measured are left out."""
+    rows = await repo.list_links(conn, user, device_id=device_id)
+    figures = await repo.utilization_of(conn, rows, settings.links_utilization_minutes, visible_only=True)
+    return {"minutes": settings.links_utilization_minutes,
+            "items": [{"link_id": link_id, **f} for link_id, f in figures.items() if f is not None]}
+
+
 async def _visible_links(conn: asyncpg.Connection, user: CurrentUser, device_id: str) -> list[dict[str, Any]]:
     if await device_repo.get_device(conn, user, device_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")

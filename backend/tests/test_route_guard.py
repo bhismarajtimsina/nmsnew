@@ -120,7 +120,10 @@ UNSCOPED_HELPERS = {"as_dict", "resolve_family", "_check_access_profile", "_desc
                     # The polling sink's LLDP writer: one device's poll results, no caller.
                     "system_replace_neighbours",
                     # Names of external LLDP neighbours: the id already names a device the caller was shown.
-                    "external_names"}
+                    "external_names",
+                    # Link utilisation: the metrics export (every link, no caller), the polling sink's counter writer, and
+                    # rates for interface ids taken from rows the caller was already allowed to see.
+                    "system_links", "system_store_samples", "interface_rates"}
 SCOPED_ENTRY = ("get_device(", "get_group(", "get_interface(", "get_event(", "get_window(",
                 # links.py: get_link applies DEVICE_VISIBLE; editable_link and _check_end go through get_link and get_device.
                 "get_link(", "editable_link(", "_check_end(",

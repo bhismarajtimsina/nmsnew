@@ -18,8 +18,11 @@ from app.api.diagnostics import router as diagnostics_router
 from app.api.console import router as console_router
 from app.api.links import router as links_router
 from app.api.paths import router as paths_router
+from app.repositories import links as link_repo
 from app.repositories import paths as path_repo
+from app.topology.links import present as present_link
 from app.topology.path_service import render_metrics as render_path_metrics
+from app.topology.utilization import render_metrics as render_link_metrics
 from app.api.auth import router as auth_router
 from app.api.dashboards import router as dashboards_router
 from app.api.device_access import router as device_access_router
@@ -132,6 +135,13 @@ async def metrics() -> Response:
         body += render_path_metrics(rows).encode()
     except Exception:  # noqa: BLE001 - the process metrics must still be served when the database is not
         logger.exception("could not export path metrics")
+    try:
+        async with app.state.pool.acquire() as conn:
+            rows = await link_repo.system_links(conn)
+            utilization = await link_repo.utilization_of(conn, rows, settings.links_utilization_minutes, visible_only=False)
+        body += render_link_metrics([present_link(r) for r in rows], utilization).encode()
+    except Exception:  # noqa: BLE001 - as above
+        logger.exception("could not export link metrics")
     return Response(body, media_type=CONTENT_TYPE_LATEST)
 
 
