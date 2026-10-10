@@ -2344,6 +2344,26 @@
         "title": "EventPage",
         "type": "object"
       },
+      "ExternalNameIn": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "ExternalNameIn",
+        "type": "object"
+      },
       "FailingPoll": {
         "additionalProperties": false,
         "properties": {
@@ -3483,6 +3503,28 @@
             ],
             "title": "Chassis Subtype"
           },
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Id"
+          },
+          "external_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Name"
+          },
           "local_interface": {
             "anyOf": [
               {
@@ -3592,7 +3634,9 @@
           "port_description",
           "system_name",
           "seen_at",
-          "remote_device"
+          "remote_device",
+          "external_id",
+          "external_name"
         ],
         "title": "LldpNeighbourOut",
         "type": "object"
@@ -3623,6 +3667,90 @@
           "matched_by"
         ],
         "title": "LldpRemoteDevice",
+        "type": "object"
+      },
+      "LldpSuggestion": {
+        "additionalProperties": false,
+        "properties": {
+          "conflict": {
+            "title": "Conflict",
+            "type": "boolean"
+          },
+          "dest_device_id": {
+            "title": "Dest Device Id",
+            "type": "string"
+          },
+          "dest_interface_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dest Interface Id"
+          },
+          "matched_by": {
+            "enum": [
+              "chassis_mac",
+              "system_name"
+            ],
+            "title": "Matched By",
+            "type": "string"
+          },
+          "remote_name": {
+            "title": "Remote Name",
+            "type": "string"
+          },
+          "seen_from_both_sides": {
+            "title": "Seen From Both Sides",
+            "type": "boolean"
+          },
+          "src_device_id": {
+            "title": "Src Device Id",
+            "type": "string"
+          },
+          "src_interface_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Src Interface Id"
+          }
+        },
+        "required": [
+          "src_device_id",
+          "src_interface_id",
+          "dest_device_id",
+          "dest_interface_id",
+          "remote_name",
+          "matched_by",
+          "conflict",
+          "seen_from_both_sides"
+        ],
+        "title": "LldpSuggestion",
+        "type": "object"
+      },
+      "LldpSuggestionList": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/LldpSuggestion"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "LldpSuggestionList",
         "type": "object"
       },
       "LoginRequest": {
@@ -16277,6 +16405,203 @@
           }
         },
         "summary": "Topology Graph",
+        "tags": [
+          "topology"
+        ]
+      }
+    },
+    "/api/v1/topology/lldp/external-names/{ext_id}": {
+      "put": {
+        "description": "A display name for an LLDP neighbour that is not in the inventory (legacy's external neighbour names). The id\nnames the reporting device, which must be inside the caller's scope. A null name removes it.",
+        "operationId": "set_external_name_api_v1_topology_lldp_external_names__ext_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ext_id",
+            "required": true,
+            "schema": {
+              "pattern": "^ext:[0-9a-f-]{36}:([0-9a-f]{2}:){5}[0-9a-f]{2}$",
+              "title": "Ext Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExternalNameIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set External Name",
+        "tags": [
+          "topology"
+        ]
+      }
+    },
+    "/api/v1/topology/lldp/suggestions": {
+      "get": {
+        "description": "Links the stored LLDP data supports and the inventory lacks, between devices the caller may see.",
+        "operationId": "lldp_suggestions_api_v1_topology_lldp_suggestions_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "device_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^[0-9a-fA-F-]{36}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Device Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LldpSuggestionList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Lldp Suggestions",
+        "tags": [
+          "topology"
+        ]
+      }
+    },
+    "/api/v1/topology/lldp/suggestions/accept": {
+      "post": {
+        "description": "Create a link from a current suggestion, in either direction. Anything the stored LLDP data does not support right\nnow is refused: this route cannot be used to create an arbitrary link marked as learned by LLDP.",
+        "operationId": "accept_lldp_suggestion_api_v1_topology_lldp_suggestions_accept_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Accept Lldp Suggestion",
         "tags": [
           "topology"
         ]

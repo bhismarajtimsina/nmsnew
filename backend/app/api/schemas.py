@@ -1130,6 +1130,27 @@ class LldpNeighbourOut(Strict):
     system_name: str | None
     seen_at: datetime
     remote_device: LldpRemoteDevice | None
+    external_id: str | None
+    external_name: str | None
+
+
+class LldpSuggestion(Strict):
+    src_device_id: str
+    src_interface_id: str | None
+    dest_device_id: str
+    dest_interface_id: str | None
+    remote_name: str
+    matched_by: Literal["chassis_mac", "system_name"]
+    conflict: bool
+    seen_from_both_sides: bool
+
+
+class LldpSuggestionList(Strict):
+    items: list[LldpSuggestion]
+
+
+class ExternalNameIn(Strict):
+    name: str | None = Field(default=None, min_length=1, max_length=255)
 
 
 class LldpNeighbourList(Strict):

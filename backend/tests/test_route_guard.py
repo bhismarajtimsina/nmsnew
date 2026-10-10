@@ -118,12 +118,16 @@ UNSCOPED_HELPERS = {"as_dict", "resolve_family", "_check_access_profile", "_desc
                     # The scheduler's path-state job and the metrics export: every path, no caller, never answering a user.
                     "system_paths", "system_save_states", "system_fresh_states",
                     # The polling sink's LLDP writer: one device's poll results, no caller.
-                    "system_replace_neighbours"}
+                    "system_replace_neighbours",
+                    # Names of external LLDP neighbours: the id already names a device the caller was shown.
+                    "external_names"}
 SCOPED_ENTRY = ("get_device(", "get_group(", "get_interface(", "get_event(", "get_window(",
                 # links.py: get_link applies DEVICE_VISIBLE; editable_link and _check_end go through get_link and get_device.
                 "get_link(", "editable_link(", "_check_end(",
                 # paths.py: get_path applies DEVICE_VISIBLE to both endpoints.
-                "get_path(")
+                "get_path(",
+                # lldp.py: _owners applies DEVICE_VISIBLE.
+                "_owners(")
 
 
 def test_every_repository_function_touching_scoped_tables_applies_scope():

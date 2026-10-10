@@ -1687,6 +1687,68 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/topology/lldp/external-names/{ext_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set External Name
+         * @description A display name for an LLDP neighbour that is not in the inventory (legacy's external neighbour names). The id
+         *     names the reporting device, which must be inside the caller's scope. A null name removes it.
+         */
+        put: operations["set_external_name_api_v1_topology_lldp_external_names__ext_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/topology/lldp/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lldp Suggestions
+         * @description Links the stored LLDP data supports and the inventory lacks, between devices the caller may see.
+         */
+        get: operations["lldp_suggestions_api_v1_topology_lldp_suggestions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/topology/lldp/suggestions/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept Lldp Suggestion
+         * @description Create a link from a current suggestion, in either direction. Anything the stored LLDP data does not support right
+         *     now is refused: this route cannot be used to create an arbitrary link marked as learned by LLDP.
+         */
+        post: operations["accept_lldp_suggestion_api_v1_topology_lldp_suggestions_accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/topology/lldp/{device_id}": {
         parameters: {
             query?: never;
@@ -2750,6 +2812,11 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** ExternalNameIn */
+        ExternalNameIn: {
+            /** Name */
+            name?: string | null;
+        };
         /** FailingPoll */
         FailingPoll: {
             device: components["schemas"]["DeviceRef"];
@@ -3083,6 +3150,10 @@ export interface components {
             chassis_id: string | null;
             /** Chassis Subtype */
             chassis_subtype: string | null;
+            /** External Id */
+            external_id: string | null;
+            /** External Name */
+            external_name: string | null;
             /** Local Interface */
             local_interface: string | null;
             /** Local Interface Id */
@@ -3117,6 +3188,33 @@ export interface components {
             matched_by: "chassis_mac" | "system_name";
             /** Name */
             name: string;
+        };
+        /** LldpSuggestion */
+        LldpSuggestion: {
+            /** Conflict */
+            conflict: boolean;
+            /** Dest Device Id */
+            dest_device_id: string;
+            /** Dest Interface Id */
+            dest_interface_id: string | null;
+            /**
+             * Matched By
+             * @enum {string}
+             */
+            matched_by: "chassis_mac" | "system_name";
+            /** Remote Name */
+            remote_name: string;
+            /** Seen From Both Sides */
+            seen_from_both_sides: boolean;
+            /** Src Device Id */
+            src_device_id: string;
+            /** Src Interface Id */
+            src_interface_id: string | null;
+        };
+        /** LldpSuggestionList */
+        LldpSuggestionList: {
+            /** Items */
+            items: components["schemas"]["LldpSuggestion"][];
         };
         /** LoginRequest */
         LoginRequest: {
@@ -8712,6 +8810,111 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TopologyGraph"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_external_name_api_v1_topology_lldp_external_names__ext_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                ext_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExternalNameIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatusOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    lldp_suggestions_api_v1_topology_lldp_suggestions_get: {
+        parameters: {
+            query?: {
+                device_id?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LldpSuggestionList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    accept_lldp_suggestion_api_v1_topology_lldp_suggestions_accept_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkOut"];
                 };
             };
             /** @description Validation Error */

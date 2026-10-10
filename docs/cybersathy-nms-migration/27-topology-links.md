@@ -1,6 +1,6 @@
 # Plan 27: Topology and Links
 
-> **Phase:** 7 · **Depends on:** 10 · **Status:** Partial (links, link state, scoped graph, paths with state, groups and metrics; tree views, LLDP neighbours; LLDP link suggestions, utilisation and frontend to do)
+> **Phase:** 7 · **Depends on:** 10 · **Status:** Partial (links, link state, scoped graph, paths with state, groups and metrics; tree views, LLDP neighbours and link suggestions; utilisation and frontend to do)
 
 ## Goal
 Build topology and link management.
@@ -216,10 +216,38 @@ left six survivors, each closed with a new case:
 
 Not verified against a device; the profile is a draft and the build's SNMP transport is the disabled one (D-17).
 
+### Built: LLDP link suggestions and external neighbour names (2026-10-10)
+
+**Suggestions** (`GET /topology/lldp/suggestions`, `links.view`, optional `device_id`). Each stored neighbour row that
+matched one of the caller's devices (as above) becomes a candidate link:
+- **Local end:** the reporting device and the interface named by the local port table.
+- **Remote end:** the matched device and its interface. The interface is found by the reported port id when that id
+  is a name (`interfaceName`, `interfaceAlias`, `local`), else by the port description. A MAC-type port id is never
+  matched as a name.
+- **One per adjacency.** The two sides of one cable become one suggestion, flagged `seen_from_both_sides`. A report
+  that knows less (same pair of devices, no interface the other lacks) folds into the one that knows more. Reports
+  that contradict each other, or that each know a different end, are all kept for the operator to judge.
+- **Existing links are left out.** This covers a device-level link between the pair, or a link with matching
+  interfaces. Every link the caller can see counts, hidden ends included.
+- **Conflict:** a suggestion whose interface end is already linked to another device is still listed, but marked
+  `conflict`.
+
+**Accepting** (`POST /topology/lldp/suggestions/accept`, `links.edit`). The body must be the same link (either
+direction) as a suggestion computed now from the stored data, or it is refused with 409. The endpoint therefore
+cannot create arbitrary links marked as LLDP. The link is created with `source = lldp` through the same rules as
+`POST /links`, so both ends must be in scope and interfaces must belong to their device. It is audited with
+`source: lldp`.
+
+**External names** (`PUT /topology/lldp/external-names/{ext_id}`, `links.edit`). A neighbour that matches no device
+but reported a MAC chassis id gets the id `ext:<device>:<mac>`. A name can be given to it (legacy's
+`c_links_external_names`), which needs the reporting device in scope; a null name removes it. The neighbour list
+returns `external_id` and `external_name`. Changes are audited as `link.external_name_set`.
+
+Tests: 15 in `tests/test_lldp_suggestions.py`. Mutation checks: 16, all caught. One more mutant (`>` to `>=` in the
+fold-in rule) is equivalent: two different reports with the same number of known interfaces cannot cover each other.
+Not verified against a device.
+
 ### Still to do
 
-- LLDP link suggestions: neighbours matched to devices, offered as links to accept (`source = lldp`), with external
-  neighbour names for the unmatched ones.
-- LLDP neighbours through a bounded profile (BDCOM's LLDP MIB is in the repository) and external neighbour names.
 - Link utilisation (legacy computes it every two minutes for the `high_link_utilization` alarm).
 - The topology frontend.

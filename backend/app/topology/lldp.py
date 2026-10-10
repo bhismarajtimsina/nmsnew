@@ -127,3 +127,81 @@ def match_interface(port: str | None, interfaces: dict[str, str]) -> str | None:
         return interfaces[port]
     folded = [i for name, i in interfaces.items() if name.lower() == port.lower()]
     return folded[0] if len(folded) == 1 else None
+
+
+# Port ids that are names of the remote port (rather than a MAC or an address).
+_NAMED_PORT = {"interfaceName", "interfaceAlias", "local"}
+
+
+def suggest_links(matched: list[tuple[Any, dict[str, Any] | None]], interfaces: dict[str, dict[str, str]],
+                  existing: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Links the stored LLDP data supports and the inventory lacks.
+
+    `matched` pairs each neighbour row with the device it points at (or None); `interfaces` maps a device id to its
+    interface names; `existing` is the caller's fully visible links as app/topology/links.present() shows them.
+
+    - The remote interface comes from the reported port id when it is a name, else from the port description.
+    - The same adjacency reported from both switches becomes one suggestion; one that knows fewer interfaces than
+      another for the same two devices, without contradicting it, is folded into it. Parallel links on different ports
+      stay separate.
+    - A suggestion whose ends an existing link already joins is left out. One whose local or remote interface is
+      already linked to something else is kept and marked `conflict`.
+    """
+    found: dict[frozenset, dict[str, Any]] = {}
+    for row, remote in matched:
+        if remote is None:
+            continue
+        local = (str(row["device_id"]), str(row["local_interface_id"]) if row["local_interface_id"] else None)
+        names = interfaces.get(remote["device_id"], {})
+        port = row["port_id"] if row["port_subtype"] in _NAMED_PORT else None
+        remote_if = match_interface(port, names) or match_interface(row["port_description"], names)
+        far = (remote["device_id"], remote_if)
+        key = frozenset({local, far})
+        found.setdefault(key, {"a": local, "b": far, "remote_name": remote["name"], "matched_by": remote["matched_by"],
+                               "evidence": []})["evidence"].append({"reported_by": local[0], "local_port_num": row["local_port_num"]})
+
+    def covers(big: dict[str, Any], small: dict[str, Any]) -> bool:
+        if {big["a"][0], big["b"][0]} != {small["a"][0], small["b"][0]} or big is small:
+            return False
+        for dev, iface in (small["a"], small["b"]):
+            theirs = big["a"][1] if big["a"][0] == dev else big["b"][1]
+            if iface is not None and iface != theirs:
+                return False
+        known = lambda s: sum(x[1] is not None for x in (s["a"], s["b"]))  # noqa: E731
+        return known(big) > known(small)
+
+    candidates = list(found.values())
+    kept = []
+    for s in candidates:
+        bigger = [b for b in candidates if covers(b, s)]
+        if bigger:
+            bigger[0]["evidence"].extend(s["evidence"])
+        else:
+            kept.append(s)
+
+    out = []
+    for s in kept:
+        ends = {s["a"], s["b"]}
+        already = False
+        conflict = False
+        for link in existing:
+            pair = {(link["src"]["device_id"], link["src"]["interface_id"]), (link["dest"]["device_id"], link["dest"]["interface_id"])}
+            devices = {p[0] for p in pair}
+            if devices == {s["a"][0], s["b"][0]} and all(any(e[0] == p[0] and (e[1] is None or p[1] is None or e[1] == p[1]) for p in pair) for e in ends):
+                already = True
+                break
+            for end in ends:
+                if end[1] is not None and end in pair and devices != {s["a"][0], s["b"][0]}:
+                    conflict = True
+        if not already:
+            out.append({"src_device_id": s["a"][0], "src_interface_id": s["a"][1], "dest_device_id": s["b"][0],
+                        "dest_interface_id": s["b"][1], "remote_name": s["remote_name"], "matched_by": s["matched_by"],
+                        "conflict": conflict, "seen_from_both_sides": len({e["reported_by"] for e in s["evidence"]}) > 1})
+    return sorted(out, key=lambda x: (x["src_device_id"], x["src_interface_id"] or "", x["dest_device_id"]))
+
+
+def same_link(suggestion: dict[str, Any], body: dict[str, Any]) -> bool:
+    """Whether an accept request names exactly this suggestion's two ends, in either direction."""
+    a = {(suggestion["src_device_id"], suggestion["src_interface_id"]), (suggestion["dest_device_id"], suggestion["dest_interface_id"])}
+    b = {(body["src_device_id"], body.get("src_interface_id")), (body["dest_device_id"], body.get("dest_interface_id"))}
+    return a == b

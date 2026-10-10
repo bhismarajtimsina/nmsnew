@@ -125,6 +125,65 @@ async def topology_upward(device_id: LinkId, user: View, conn: Conn) -> dict[str
     return {"device_id": device_id, "steps": trees.upward_chain(device_id, links)}
 
 
+async def _suggestions(conn: asyncpg.Connection, user: CurrentUser, device_id: str | None = None) -> list[dict[str, Any]]:
+    from app.repositories import lldp as lldp_repo
+    from app.topology.lldp import suggest_links
+
+    inputs = await lldp_repo.suggestion_inputs(conn, user, device_id)
+    # A masked end has no device id, so it can never equal a suggestion's end: every visible link can be compared.
+    existing = [topology.present(r) for r in await repo.list_links(conn, user)]
+    return suggest_links(inputs["matched"], inputs["interfaces"], existing)
+
+
+@router.get("/topology/lldp/suggestions", response_model=schemas.LldpSuggestionList)
+async def lldp_suggestions(user: View, conn: Conn,
+                           device_id: Annotated[str | None, Query(pattern=r"^[0-9a-fA-F-]{36}$")] = None) -> dict[str, Any]:
+    """Links the stored LLDP data supports and the inventory lacks, between devices the caller may see."""
+    return {"items": await _suggestions(conn, user, device_id)}
+
+
+@router.post("/topology/lldp/suggestions/accept", response_model=schemas.LinkOut, status_code=status.HTTP_201_CREATED)
+async def accept_lldp_suggestion(body: schemas.LinkCreate, request: Request, user: Edit, conn: Conn) -> dict[str, Any]:
+    """Create a link from a current suggestion, in either direction. Anything the stored LLDP data does not support right
+    now is refused: this route cannot be used to create an arbitrary link marked as learned by LLDP."""
+    from app.topology.lldp import same_link
+
+    data = body.model_dump()
+    if not any(same_link(s, data) for s in await _suggestions(conn, user)):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="No current LLDP suggestion joins these two ends")
+    try:
+        async with conn.transaction():
+            link_id = await repo.create_link(conn, user, {**data, "source": "lldp"})
+            link = topology.present(await repo.get_link(conn, user, link_id))
+            await write_audit(conn, action="link.created", actor_user_id=user.id, resource_type="link", resource_id=link_id,
+                              ip=user.client_ip, user_agent=request.headers.get("user-agent"), after={**_snapshot(link), "source": "lldp"})
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except repo.LinkRejected as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+    except asyncpg.UniqueViolationError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="These two ends are already linked") from exc
+    return link
+
+
+@router.put("/topology/lldp/external-names/{ext_id}", response_model=schemas.StatusOut)
+async def set_external_name(
+    ext_id: Annotated[str, Path(pattern=r"^ext:[0-9a-f-]{36}:([0-9a-f]{2}:){5}[0-9a-f]{2}$")],
+    body: schemas.ExternalNameIn, request: Request, user: Edit, conn: Conn,
+) -> dict[str, str]:
+    """A display name for an LLDP neighbour that is not in the inventory (legacy's external neighbour names). The id
+    names the reporting device, which must be inside the caller's scope. A null name removes it."""
+    from app.repositories import lldp as lldp_repo
+
+    async with conn.transaction():
+        if not await lldp_repo.set_external_name(conn, user, ext_id, body.name):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+        await write_audit(conn, action="link.external_name_set", actor_user_id=user.id, resource_type="device",
+                          resource_id=ext_id.split(":")[1], ip=user.client_ip, user_agent=request.headers.get("user-agent"),
+                          metadata={"external_id": ext_id, "name": body.name})
+    return {"status": "saved"}
+
+
 @router.get("/topology/lldp/{device_id}", response_model=schemas.LldpNeighbourList)
 async def lldp_neighbours(device_id: LinkId, user: View, conn: Conn) -> dict[str, Any]:
     """The device's LLDP neighbours as last polled, each matched to a device the caller may see where possible."""
@@ -134,3 +193,4 @@ async def lldp_neighbours(device_id: LinkId, user: View, conn: Conn) -> dict[str
     if items is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     return {"device_id": device_id, "items": items}
+
