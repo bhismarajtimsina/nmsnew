@@ -1466,6 +1466,83 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/paths": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Paths */
+        get: operations["list_paths_api_v1_paths_get"];
+        put?: never;
+        /** Create Path */
+        post: operations["create_path_api_v1_paths_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/paths/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Path Groups
+         * @description Redundancy groups from the paths the caller may see, with their stored states.
+         */
+        get: operations["path_groups_api_v1_paths_groups_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/paths/{path_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Path */
+        get: operations["get_path_api_v1_paths__path_id__get"];
+        /** Update Path */
+        put: operations["update_path_api_v1_paths__path_id__put"];
+        post?: never;
+        /** Delete Path */
+        delete: operations["delete_path_api_v1_paths__path_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/paths/{path_id}/segments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Segments
+         * @description Replace the path's hops with these links, in order. They must form one unbroken route from endpoint A to B.
+         */
+        put: operations["set_segments_api_v1_paths__path_id__segments_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/realtime/ticket": {
         parameters: {
             query?: never;
@@ -3370,6 +3447,198 @@ export interface components {
              * @constant
              */
             status: "password_reset";
+        };
+        /** PathCreate */
+        PathCreate: {
+            /** Description */
+            description?: string | null;
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /** Endpoint A Id */
+            endpoint_a_id: string;
+            /** Endpoint B Id */
+            endpoint_b_id: string;
+            /** Group Key */
+            group_key?: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Priority
+             * @default 100
+             */
+            priority: number;
+        };
+        /** PathDetail */
+        PathDetail: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Degraded Threshold Ms */
+            degraded_threshold_ms: number;
+            /** Description */
+            description: string | null;
+            /** Enabled */
+            enabled: boolean;
+            endpoint_a: components["schemas"]["PathEndpoint"];
+            endpoint_b: components["schemas"]["PathEndpoint"];
+            /** Group Key */
+            group_key: string | null;
+            /** Hops */
+            hops: components["schemas"]["PathHopOut"][];
+            /** Id */
+            id: string;
+            /** Last Change */
+            last_change: string | null;
+            /**
+             * Live State
+             * @enum {string}
+             */
+            live_state: "up" | "degraded" | "down" | "unknown";
+            /** Name */
+            name: string;
+            /** Priority */
+            priority: number;
+            /** Segments */
+            segments: number;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "up" | "degraded" | "down" | "unknown";
+            /** State Updated At */
+            state_updated_at: string | null;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** PathEndpoint */
+        PathEndpoint: {
+            /** Device Id */
+            device_id: string;
+            /** Name */
+            name: string;
+        };
+        /** PathGroup */
+        PathGroup: {
+            /** Group Key */
+            group_key: string;
+            /** Members */
+            members: components["schemas"]["PathGroupMember"][];
+            /** Protected */
+            protected: boolean;
+            /** Redundant */
+            redundant: boolean;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "outage" | "unprotected" | "protected" | "up";
+            /** Total */
+            total: number;
+            /** Usable */
+            usable: number;
+        };
+        /** PathGroupList */
+        PathGroupList: {
+            /** Items */
+            items: components["schemas"]["PathGroup"][];
+        };
+        /** PathGroupMember */
+        PathGroupMember: {
+            /** Name */
+            name: string;
+            /** Path Id */
+            path_id: string;
+            /** Priority */
+            priority: number;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "up" | "degraded" | "down" | "unknown";
+            /** Usable */
+            usable: boolean;
+        };
+        /** PathHopOut */
+        PathHopOut: {
+            link: components["schemas"]["LinkOut"];
+            /** Position */
+            position: number;
+            /** Reason */
+            reason: string | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "up" | "degraded" | "down" | "unknown";
+        };
+        /** PathList */
+        PathList: {
+            /** Items */
+            items: components["schemas"]["PathOut"][];
+        };
+        /** PathOut */
+        PathOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Description */
+            description: string | null;
+            /** Enabled */
+            enabled: boolean;
+            endpoint_a: components["schemas"]["PathEndpoint"];
+            endpoint_b: components["schemas"]["PathEndpoint"];
+            /** Group Key */
+            group_key: string | null;
+            /** Id */
+            id: string;
+            /** Last Change */
+            last_change: string | null;
+            /** Name */
+            name: string;
+            /** Priority */
+            priority: number;
+            /** Segments */
+            segments: number;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "up" | "degraded" | "down" | "unknown";
+            /** State Updated At */
+            state_updated_at: string | null;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** PathSegmentsIn */
+        PathSegmentsIn: {
+            /** Link Ids */
+            link_ids: string[];
+        };
+        /** PathUpdate */
+        PathUpdate: {
+            /** Description */
+            description?: string | null;
+            /** Enabled */
+            enabled?: boolean | null;
+            /** Group Key */
+            group_key?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Priority */
+            priority?: number | null;
         };
         /** PermissionItem */
         PermissionItem: {
@@ -7714,6 +7983,243 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MacroPreviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_paths_api_v1_paths_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PathList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_path_api_v1_paths_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PathCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PathDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    path_groups_api_v1_paths_groups_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PathGroupList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_path_api_v1_paths__path_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                path_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PathDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_path_api_v1_paths__path_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                path_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PathUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PathDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_path_api_v1_paths__path_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                path_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatusOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_segments_api_v1_paths__path_id__segments_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                path_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PathSegmentsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PathDetail"];
                 };
             };
             /** @description Validation Error */

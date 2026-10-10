@@ -17,6 +17,9 @@ from app.api.actions import router as actions_router
 from app.api.diagnostics import router as diagnostics_router
 from app.api.console import router as console_router
 from app.api.links import router as links_router
+from app.api.paths import router as paths_router
+from app.repositories import paths as path_repo
+from app.topology.path_service import render_metrics as render_path_metrics
 from app.api.auth import router as auth_router
 from app.api.dashboards import router as dashboards_router
 from app.api.device_access import router as device_access_router
@@ -80,7 +83,7 @@ app = FastAPI(
 # The client address is whatever a trusted proxy says it is, and never anything a client sends directly.
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=list(settings.trusted_proxies))
 
-for router in (auth_router, access_router, users_router, tokens_router, devices_router, vendors_router, device_access_router, device_groups_router, polling_router, schedule_router, device_models_router, mib_router, events_router, maintenance_router, traps_router, realtime_router, dashboards_router, actions_router, macros_router, registration_router, diagnostics_router, console_router, links_router):
+for router in (auth_router, access_router, users_router, tokens_router, devices_router, vendors_router, device_access_router, device_groups_router, polling_router, schedule_router, device_models_router, mib_router, events_router, maintenance_router, traps_router, realtime_router, dashboards_router, actions_router, macros_router, registration_router, diagnostics_router, console_router, links_router, paths_router):
     app.include_router(router)
 
 
@@ -122,7 +125,14 @@ async def ready(response: Response) -> dict[str, object]:
 @app.get("/metrics")
 async def metrics() -> Response:
     # Not proxied by Nginx: Prometheus scrapes this over the internal network only.
-    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+    body = generate_latest()
+    try:
+        async with app.state.pool.acquire() as conn:
+            rows = await path_repo.system_fresh_states(conn, settings.paths_state_metric_ttl_seconds)
+        body += render_path_metrics(rows).encode()
+    except Exception:  # noqa: BLE001 - the process metrics must still be served when the database is not
+        logger.exception("could not export path metrics")
+    return Response(body, media_type=CONTENT_TYPE_LATEST)
 
 
 @app.get(f"{settings.api_prefix}/health", response_model=schemas.HealthOut)

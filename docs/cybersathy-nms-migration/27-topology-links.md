@@ -1,6 +1,6 @@
 # Plan 27: Topology and Links
 
-> **Phase:** 7 · **Depends on:** 10 · **Status:** Partial (links, link state, scoped graph; paths, tree views and LLDP to do)
+> **Phase:** 7 · **Depends on:** 10 · **Status:** Partial (links, link state, scoped graph, paths with state, groups and metrics; tree views, LLDP, utilisation and frontend to do)
 
 ## Goal
 Build topology and link management.
@@ -101,10 +101,52 @@ Tests: 21 in `tests/test_links.py`. Mutation checks: 15, then 14. The first run 
 - the device filter was untested, so a test was added;
 - a second, redundant masking of hidden names in the graph, which was removed.
 
+### Built: transport paths (2026-10-10)
+
+**Tables** (migration `0029`): `paths`, `path_segments` (ordered, up to 64, a link at most once per path) and
+`path_states`, with legacy's columns.
+- The database refuses a path whose two endpoints are the same device.
+- Deleting an endpoint device deletes the path; deleting a link deletes the segment.
+
+**State** (`app/topology/paths.py`), ported from legacy's `StateCalculator`, with each hop also taking its link's state.
+- **Down:** the link is down, or either device is unreachable.
+- **Unknown:** the link is unknown, or either device is unmeasured.
+- **Degraded:** either device answers slower than `PATHS_DEGRADED_LATENCY_MS` (150; 0 turns it off).
+- **Path:** its worst hop, in the order down, unknown, degraded, up. A path with no hops is unknown.
+- **Groups:** an outage when no path is usable (up or degraded); unprotected when there is more than one path and not
+  all are usable; protected when all are; up for a single path.
+- So a hop whose interface is down is down even while both ends still answer pings; legacy would call it up.
+
+**Route check, new.** Setting a path's segments requires one unbroken route from endpoint A to endpoint B, walking each
+link either way round. Legacy never checked this. A broken route is refused and leaves the old segments in place.
+
+**Scheduler.** The `paths_state` job runs every minute, on by default, as legacy's `paths:calc-state` does.
+- It stores each enabled path's state.
+- `last_change` moves only when the state changes.
+- A disabled path loses its stored state, so it exports nothing and raises nothing.
+
+**Metrics.** The API's `/metrics` adds legacy's gauges, with the same names, labels and values, so the four path alarm
+rules already ported from legacy work unchanged:
+- `path_state` (1, 0.5, 0, -1) and `path_segments_down` for each path;
+- `path_group_protected`, `path_group_up_count` and `path_group_total` for each redundant group.
+
+A state older than `PATHS_STATE_METRIC_TTL_SEC` (300) is not exported, as with legacy's metric TTL, so a stopped job
+silences these alarms instead of freezing them. A database failure there is logged and the process metrics are still
+served.
+
+**API** (`app/api/paths.py`).
+- **Viewing** (`paths.view`): `GET /paths` (stored state), `GET /paths/{id}` (state computed now, with each hop shown
+  through the link masking), and `GET /paths/groups`.
+- **Changing** (`paths.edit`): `POST`, `PUT` and `DELETE /paths`, and `PUT /paths/{id}/segments`. All audited.
+- **Scope:** a path is visible when both endpoints are. A hop through a device outside the caller's scope shows its
+  state, but not the device. Changing segments needs every link fully in scope.
+- **Groups:** built from the paths the caller can see. Disabled paths neither protect a group nor count against it.
+
+Tests: 21 in `tests/test_paths.py`. Mutation checks: 21, all caught. The first run left one survivor, a disabled path
+still counted in its group, which is now tested.
+
 ### Still to do
 
-- Paths: segments, path state and group state as in legacy (the latency rule, kept), on top of link state, and the
-  four path alarm rules.
 - The upward tree and direction tree views.
 - LLDP neighbours through a bounded profile (BDCOM's LLDP MIB is in the repository) and external neighbour names.
 - Link utilisation (legacy computes it every two minutes for the `high_link_utilization` alarm).

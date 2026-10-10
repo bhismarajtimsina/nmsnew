@@ -193,6 +193,8 @@ DEFAULT_JOBS: list[tuple[str, str, dict, str, bool, str]] = [
     ("poll_olt_basic", "poll_group", {"profile": "olt_basic", "device_type": "olt"}, "*/5 * * * *", False, "Poll every OLT with the olt_basic profile"),
     # On by default: without it, an event a maintenance window held back would stay silent after the window ends.
     ("maintenance_release", "maintenance_release", {}, "* * * * *", True, "Announce still-open events held back by an ended maintenance window"),
+    # On by default, every minute, as legacy's paths_state_calculator: the path alarms read what it stores.
+    ("paths_state", "paths_state", {}, "* * * * *", True, "Recompute every enabled transport path's state"),
     # Off until Alertmanager is part of this stack (Plan 31) and ALERTMANAGER_URL points at it. Legacy only ever ran
     # `wca sync-active-alerts` by hand.
     ("sync_active_alerts", "sync_active_alerts", {}, "*/10 * * * *", False, "Close events whose alert Alertmanager no longer reports as active"),

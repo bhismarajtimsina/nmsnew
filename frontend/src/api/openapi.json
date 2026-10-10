@@ -4787,6 +4787,597 @@
         "title": "PasswordReset",
         "type": "object"
       },
+      "PathCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "endpoint_a_id": {
+            "pattern": "^[0-9a-fA-F-]{36}$",
+            "title": "Endpoint A Id",
+            "type": "string"
+          },
+          "endpoint_b_id": {
+            "pattern": "^[0-9a-fA-F-]{36}$",
+            "title": "Endpoint B Id",
+            "type": "string"
+          },
+          "group_key": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z0-9_.:-]{1,190}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group Key"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "priority": {
+            "default": 100,
+            "maximum": 100000.0,
+            "minimum": 0.0,
+            "title": "Priority",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "endpoint_a_id",
+          "endpoint_b_id"
+        ],
+        "title": "PathCreate",
+        "type": "object"
+      },
+      "PathDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "degraded_threshold_ms": {
+            "title": "Degraded Threshold Ms",
+            "type": "integer"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "endpoint_a": {
+            "$ref": "#/components/schemas/PathEndpoint"
+          },
+          "endpoint_b": {
+            "$ref": "#/components/schemas/PathEndpoint"
+          },
+          "group_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group Key"
+          },
+          "hops": {
+            "items": {
+              "$ref": "#/components/schemas/PathHopOut"
+            },
+            "title": "Hops",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "last_change": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Change"
+          },
+          "live_state": {
+            "enum": [
+              "up",
+              "degraded",
+              "down",
+              "unknown"
+            ],
+            "title": "Live State",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "priority": {
+            "title": "Priority",
+            "type": "integer"
+          },
+          "segments": {
+            "title": "Segments",
+            "type": "integer"
+          },
+          "state": {
+            "enum": [
+              "up",
+              "degraded",
+              "down",
+              "unknown"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "state_updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State Updated At"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "group_key",
+          "priority",
+          "endpoint_a",
+          "endpoint_b",
+          "enabled",
+          "description",
+          "segments",
+          "state",
+          "last_change",
+          "state_updated_at",
+          "created_at",
+          "updated_at",
+          "live_state",
+          "degraded_threshold_ms",
+          "hops"
+        ],
+        "title": "PathDetail",
+        "type": "object"
+      },
+      "PathEndpoint": {
+        "additionalProperties": false,
+        "properties": {
+          "device_id": {
+            "title": "Device Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "device_id",
+          "name"
+        ],
+        "title": "PathEndpoint",
+        "type": "object"
+      },
+      "PathGroup": {
+        "additionalProperties": false,
+        "properties": {
+          "group_key": {
+            "title": "Group Key",
+            "type": "string"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/PathGroupMember"
+            },
+            "title": "Members",
+            "type": "array"
+          },
+          "protected": {
+            "title": "Protected",
+            "type": "boolean"
+          },
+          "redundant": {
+            "title": "Redundant",
+            "type": "boolean"
+          },
+          "state": {
+            "enum": [
+              "outage",
+              "unprotected",
+              "protected",
+              "up"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          },
+          "usable": {
+            "title": "Usable",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "group_key",
+          "state",
+          "total",
+          "usable",
+          "redundant",
+          "protected",
+          "members"
+        ],
+        "title": "PathGroup",
+        "type": "object"
+      },
+      "PathGroupList": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PathGroup"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PathGroupList",
+        "type": "object"
+      },
+      "PathGroupMember": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "path_id": {
+            "title": "Path Id",
+            "type": "string"
+          },
+          "priority": {
+            "title": "Priority",
+            "type": "integer"
+          },
+          "state": {
+            "enum": [
+              "up",
+              "degraded",
+              "down",
+              "unknown"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "usable": {
+            "title": "Usable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "path_id",
+          "name",
+          "priority",
+          "state",
+          "usable"
+        ],
+        "title": "PathGroupMember",
+        "type": "object"
+      },
+      "PathHopOut": {
+        "additionalProperties": false,
+        "properties": {
+          "link": {
+            "$ref": "#/components/schemas/LinkOut"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "state": {
+            "enum": [
+              "up",
+              "degraded",
+              "down",
+              "unknown"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "position",
+          "state",
+          "reason",
+          "link"
+        ],
+        "title": "PathHopOut",
+        "type": "object"
+      },
+      "PathList": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PathOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PathList",
+        "type": "object"
+      },
+      "PathOut": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "endpoint_a": {
+            "$ref": "#/components/schemas/PathEndpoint"
+          },
+          "endpoint_b": {
+            "$ref": "#/components/schemas/PathEndpoint"
+          },
+          "group_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group Key"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "last_change": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Change"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "priority": {
+            "title": "Priority",
+            "type": "integer"
+          },
+          "segments": {
+            "title": "Segments",
+            "type": "integer"
+          },
+          "state": {
+            "enum": [
+              "up",
+              "degraded",
+              "down",
+              "unknown"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "state_updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State Updated At"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "group_key",
+          "priority",
+          "endpoint_a",
+          "endpoint_b",
+          "enabled",
+          "description",
+          "segments",
+          "state",
+          "last_change",
+          "state_updated_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "PathOut",
+        "type": "object"
+      },
+      "PathSegmentsIn": {
+        "additionalProperties": false,
+        "properties": {
+          "link_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 64,
+            "title": "Link Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "link_ids"
+        ],
+        "title": "PathSegmentsIn",
+        "type": "object"
+      },
+      "PathUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          },
+          "group_key": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z0-9_.:-]{1,190}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group Key"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "maximum": 100000.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          }
+        },
+        "title": "PathUpdate",
+        "type": "object"
+      },
       "PermissionItem": {
         "properties": {
           "code": {
@@ -14262,6 +14853,415 @@
         "summary": "Preview Onu Registration",
         "tags": [
           "onu-registration"
+        ]
+      }
+    },
+    "/api/v1/paths": {
+      "get": {
+        "operationId": "list_paths_api_v1_paths_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PathList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Paths",
+        "tags": [
+          "topology"
+        ]
+      },
+      "post": {
+        "operationId": "create_path_api_v1_paths_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PathCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PathDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Path",
+        "tags": [
+          "topology"
+        ]
+      }
+    },
+    "/api/v1/paths/groups": {
+      "get": {
+        "description": "Redundancy groups from the paths the caller may see, with their stored states.",
+        "operationId": "path_groups_api_v1_paths_groups_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PathGroupList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Path Groups",
+        "tags": [
+          "topology"
+        ]
+      }
+    },
+    "/api/v1/paths/{path_id}": {
+      "delete": {
+        "operationId": "delete_path_api_v1_paths__path_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "path_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Path Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Path",
+        "tags": [
+          "topology"
+        ]
+      },
+      "get": {
+        "operationId": "get_path_api_v1_paths__path_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "path_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Path Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PathDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Path",
+        "tags": [
+          "topology"
+        ]
+      },
+      "put": {
+        "operationId": "update_path_api_v1_paths__path_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "path_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Path Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PathUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PathDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Path",
+        "tags": [
+          "topology"
+        ]
+      }
+    },
+    "/api/v1/paths/{path_id}/segments": {
+      "put": {
+        "description": "Replace the path's hops with these links, in order. They must form one unbroken route from endpoint A to B.",
+        "operationId": "set_segments_api_v1_paths__path_id__segments_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "path_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Path Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PathSegmentsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PathDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Segments",
+        "tags": [
+          "topology"
         ]
       }
     },

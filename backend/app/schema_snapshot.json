@@ -2985,6 +2985,175 @@
       },
       "triggers": {}
     },
+    "path_segments": {
+      "columns": {
+        "link_id": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "path_id": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "position": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "int4"
+        }
+      },
+      "constraints": {
+        "ck_path_segments_position": "CHECK (((\"position\" >= 1) AND (\"position\" <= 64)))",
+        "path_segments_link_id_fkey": "FOREIGN KEY (link_id) REFERENCES links(id) ON DELETE CASCADE",
+        "path_segments_path_id_fkey": "FOREIGN KEY (path_id) REFERENCES paths(id) ON DELETE CASCADE",
+        "pk_path_segments": "PRIMARY KEY (path_id, \"position\")",
+        "uq_path_segments_link": "UNIQUE (path_id, link_id)"
+      },
+      "indexes": {
+        "pk_path_segments": "CREATE UNIQUE INDEX pk_path_segments ON public.path_segments USING btree (path_id, \"position\")",
+        "uq_path_segments_link": "CREATE UNIQUE INDEX uq_path_segments_link ON public.path_segments USING btree (path_id, link_id)"
+      },
+      "triggers": {}
+    },
+    "path_states": {
+      "columns": {
+        "detail": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "jsonb"
+        },
+        "last_change": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "timestamptz"
+        },
+        "path_id": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "state": {
+          "default": "'unknown'::character varying",
+          "length": 10,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "updated_at": {
+          "default": "now()",
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        }
+      },
+      "constraints": {
+        "ck_path_states_state": "CHECK (((state)::text = ANY ((ARRAY['up'::character varying, 'degraded'::character varying, 'down'::character varying, 'unknown'::character varying])::text[])))",
+        "path_states_path_id_fkey": "FOREIGN KEY (path_id) REFERENCES paths(id) ON DELETE CASCADE",
+        "path_states_pkey": "PRIMARY KEY (path_id)"
+      },
+      "indexes": {
+        "path_states_pkey": "CREATE UNIQUE INDEX path_states_pkey ON public.path_states USING btree (path_id)"
+      },
+      "triggers": {}
+    },
+    "paths": {
+      "columns": {
+        "created_at": {
+          "default": "now()",
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        "created_by": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "uuid"
+        },
+        "description": {
+          "default": null,
+          "length": 500,
+          "nullable": true,
+          "type": "varchar"
+        },
+        "enabled": {
+          "default": "true",
+          "length": null,
+          "nullable": false,
+          "type": "bool"
+        },
+        "endpoint_a_id": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "endpoint_b_id": {
+          "default": null,
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "group_key": {
+          "default": null,
+          "length": 190,
+          "nullable": true,
+          "type": "varchar"
+        },
+        "id": {
+          "default": "gen_random_uuid()",
+          "length": null,
+          "nullable": false,
+          "type": "uuid"
+        },
+        "legacy_id": {
+          "default": null,
+          "length": null,
+          "nullable": true,
+          "type": "int4"
+        },
+        "name": {
+          "default": null,
+          "length": 255,
+          "nullable": false,
+          "type": "varchar"
+        },
+        "priority": {
+          "default": "100",
+          "length": null,
+          "nullable": false,
+          "type": "int4"
+        },
+        "updated_at": {
+          "default": "now()",
+          "length": null,
+          "nullable": false,
+          "type": "timestamptz"
+        }
+      },
+      "constraints": {
+        "ck_paths_group_key": "CHECK (((group_key IS NULL) OR ((group_key)::text ~ '^[A-Za-z0-9_.:-]{1,190}$'::text)))",
+        "ck_paths_priority": "CHECK (((priority >= 0) AND (priority <= 100000)))",
+        "ck_paths_two_endpoints": "CHECK ((endpoint_a_id <> endpoint_b_id))",
+        "paths_created_by_fkey": "FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL",
+        "paths_endpoint_a_id_fkey": "FOREIGN KEY (endpoint_a_id) REFERENCES devices(id) ON DELETE CASCADE",
+        "paths_endpoint_b_id_fkey": "FOREIGN KEY (endpoint_b_id) REFERENCES devices(id) ON DELETE CASCADE",
+        "paths_legacy_id_key": "UNIQUE (legacy_id)",
+        "paths_pkey": "PRIMARY KEY (id)"
+      },
+      "indexes": {
+        "ix_paths_group_key": "CREATE INDEX ix_paths_group_key ON public.paths USING btree (group_key)",
+        "paths_legacy_id_key": "CREATE UNIQUE INDEX paths_legacy_id_key ON public.paths USING btree (legacy_id)",
+        "paths_pkey": "CREATE UNIQUE INDEX paths_pkey ON public.paths USING btree (id)"
+      },
+      "triggers": {}
+    },
     "permissions": {
       "columns": {
         "code": {
@@ -3380,7 +3549,7 @@
         "ck_schedule_jobs_misfire": "CHECK (((misfire_policy)::text = ANY ((ARRAY['skip'::character varying, 'run_once'::character varying, 'catch_up'::character varying])::text[])))",
         "ck_schedule_jobs_overlap": "CHECK (((overlap_policy)::text = ANY ((ARRAY['forbid'::character varying, 'allow'::character varying])::text[])))",
         "ck_schedule_jobs_runtime": "CHECK (((max_runtime_seconds >= 10) AND (max_runtime_seconds <= 3600)))",
-        "ck_schedule_jobs_type": "CHECK (((job_type)::text = ANY ((ARRAY['poll_group'::character varying, 'retention'::character varying, 'cleanup_sessions'::character varying, 'sync_active_alerts'::character varying, 'maintenance_release'::character varying])::text[])))",
+        "ck_schedule_jobs_type": "CHECK (((job_type)::text = ANY ((ARRAY['poll_group'::character varying, 'retention'::character varying, 'cleanup_sessions'::character varying, 'sync_active_alerts'::character varying, 'maintenance_release'::character varying, 'paths_state'::character varying])::text[])))",
         "schedule_jobs_key_key": "UNIQUE (key)",
         "schedule_jobs_pkey": "PRIMARY KEY (id)"
       },

@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class Strict(BaseModel):
@@ -971,3 +971,98 @@ class TopologyGraph(Strict):
     nodes: list[GraphNode]
     edges: list[GraphEdge]
     truncated: bool
+
+
+# --- Transport paths (Plan 27) ---
+
+class PathEndpoint(Strict):
+    device_id: str
+    name: str
+
+
+class PathOut(Strict):
+    id: str
+    name: str
+    group_key: str | None
+    priority: int
+    endpoint_a: PathEndpoint
+    endpoint_b: PathEndpoint
+    enabled: bool
+    description: str | None
+    segments: int
+    state: Literal["up", "degraded", "down", "unknown"]
+    last_change: datetime | None
+    state_updated_at: datetime | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class PathHopOut(Strict):
+    position: int
+    state: Literal["up", "degraded", "down", "unknown"]
+    reason: str | None
+    link: LinkOut
+
+
+class PathDetail(PathOut):
+    live_state: Literal["up", "degraded", "down", "unknown"]
+    degraded_threshold_ms: int
+    hops: list[PathHopOut]
+
+
+class PathList(Strict):
+    items: list[PathOut]
+
+
+_GROUP_KEY = r"^[A-Za-z0-9_.:-]{1,190}$"
+
+
+class PathCreate(Strict):
+    name: str = Field(min_length=1, max_length=255)
+    group_key: str | None = Field(default=None, pattern=_GROUP_KEY)
+    priority: int = Field(default=100, ge=0, le=100000)
+    endpoint_a_id: str = Field(pattern=_UUID)
+    endpoint_b_id: str = Field(pattern=_UUID)
+    enabled: bool = True
+    description: str | None = Field(default=None, max_length=500)
+
+
+class PathUpdate(Strict):
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    group_key: str | None = Field(default=None, pattern=_GROUP_KEY)
+    priority: int | None = Field(default=None, ge=0, le=100000)
+    enabled: bool | None = None
+    description: str | None = Field(default=None, max_length=500)
+
+
+class PathSegmentsIn(Strict):
+    link_ids: list[str] = Field(max_length=64)
+
+    @model_validator(mode="after")
+    def ids_look_right(self) -> "PathSegmentsIn":
+        import re as _re
+        if any(not _re.fullmatch(_UUID, i) for i in self.link_ids):
+            raise ValueError("every link id must be a UUID")
+        return self
+
+
+class PathGroupMember(Strict):
+    path_id: str
+    name: str
+    priority: int
+    state: Literal["up", "degraded", "down", "unknown"]
+    usable: bool
+
+
+class PathGroup(Strict):
+    group_key: str
+    state: Literal["outage", "unprotected", "protected", "up"]
+    total: int
+    usable: int
+    redundant: bool
+    protected: bool
+    members: list[PathGroupMember]
+
+
+class PathGroupList(Strict):
+    items: list[PathGroup]
