@@ -292,6 +292,11 @@ class AccessProfileOut(Strict):
     has_write_community: bool
     has_auth_secret: bool
     has_priv_secret: bool
+    cli_protocol: Literal["ssh", "telnet"] | None
+    cli_port: int | None
+    cli_username: str | None
+    has_cli_password: bool
+    has_cli_enable_password: bool
     legacy_id: int | None
     created_at: datetime
     updated_at: datetime

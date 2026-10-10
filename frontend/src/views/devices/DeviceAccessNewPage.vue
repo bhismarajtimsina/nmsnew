@@ -10,6 +10,7 @@ import { api } from '@/api/client';
 import { Main } from '../styled';
 import {
   AUTH_PROTOCOLS,
+  CLI_PROTOCOLS,
   PRIV_PROTOCOLS,
   emptyForm,
   errorMessage,
@@ -56,7 +57,7 @@ function openEdit(row: Profile) {
 }
 
 async function submit() {
-  const found = problems(form, editing.value !== null);
+  const found = problems(form, editing.value !== null, editing.value ?? undefined);
   if (found.length) {
     notification.error({ message: 'Check the form', description: found.join('. ') });
     return;
@@ -77,14 +78,24 @@ async function submit() {
   } finally {
     saving.value = false;
     // Typed secrets are not kept in memory once the dialog is done with them.
-    Object.assign(form, { community: '', write_community: '', v3_auth_secret: '', v3_priv_secret: '' });
+    Object.assign(form, {
+      community: '',
+      write_community: '',
+      v3_auth_secret: '',
+      v3_priv_secret: '',
+      cli_password: '',
+      cli_enable_password: '',
+      clear_cli: false,
+    });
   }
 }
 
 function confirmDelete(row: Profile) {
   Modal.confirm({
     title: `Delete access profile "${row.name}"?`,
-    content: row.devices_using ? `${row.devices_using} device(s) use it; the server will refuse until they are moved.` : undefined,
+    content: row.devices_using
+      ? `${row.devices_using} device(s) use it; the server will refuse until they are moved.`
+      : undefined,
     okText: 'Delete',
     okType: 'danger',
     onOk: async () => {
@@ -103,7 +114,13 @@ const set = (yes: boolean) => (yes ? 'set' : 'not set');
 </script>
 
 <template>
-  <sdPageHeader :routes="[{ path: '/', breadcrumbName: 'Dashboard' }, { path: '', breadcrumbName: 'Access management' }]" class="ninjadash-page-header-main" />
+  <sdPageHeader
+    :routes="[
+      { path: '/', breadcrumbName: 'Dashboard' },
+      { path: '', breadcrumbName: 'Access management' },
+    ]"
+    class="ninjadash-page-header-main"
+  />
   <Main>
     <a-row :gutter="25">
       <a-col :span="24" style="margin-bottom: 16px">
@@ -119,16 +136,30 @@ const set = (yes: boolean) => (yes ? 'set' : 'not set');
           <a-skeleton v-if="loading" active />
           <a-table v-else :data-source="visibleRows" row-key="id" size="small" :pagination="{ pageSize: 20 }">
             <a-table-column title="Name" data-index="name">
-              <template #default="{ record }"><strong>{{ record.name }}</strong></template>
+              <template #default="{ record }"
+                ><strong>{{ record.name }}</strong></template
+              >
             </a-table-column>
             <a-table-column title="SNMP" data-index="snmp_version" :width="80" />
             <a-table-column title="Credentials">
               <template #default="{ record }">
                 <span v-if="record.snmp_version === 'v3'">
-                  user {{ record.snmp_v3_username }} · {{ record.snmp_v3_auth_protocol }}/{{ record.snmp_v3_priv_protocol }} · auth secret
-                  {{ set(record.has_auth_secret) }}, privacy secret {{ set(record.has_priv_secret) }}
+                  user {{ record.snmp_v3_username }} · {{ record.snmp_v3_auth_protocol }}/{{
+                    record.snmp_v3_priv_protocol
+                  }}
+                  · auth secret {{ set(record.has_auth_secret) }}, privacy secret {{ set(record.has_priv_secret) }}
                 </span>
-                <span v-else>community {{ set(record.has_community) }}, write community {{ set(record.has_write_community) }}</span>
+                <span v-else
+                  >community {{ set(record.has_community) }}, write community
+                  {{ set(record.has_write_community) }}</span
+                >
+                <div v-if="record.cli_username || record.cli_protocol">
+                  CLI {{ record.cli_protocol || 'ssh'
+                  }}<template v-if="record.cli_port">:{{ record.cli_port }}</template>
+                  <template v-if="record.cli_username">
+                    · {{ record.cli_username }} · password {{ set(record.has_cli_password) }}</template
+                  >
+                </div>
               </template>
             </a-table-column>
             <a-table-column title="Timeout / retries" :width="140">
@@ -138,7 +169,9 @@ const set = (yes: boolean) => (yes ? 'set' : 'not set');
             <a-table-column title="" :width="100">
               <template #default="{ record }">
                 <a title="Edit" @click="openEdit(record)"><unicon name="edit"></unicon></a>
-                <a class="access-row__delete" title="Delete" @click="confirmDelete(record)"><unicon name="trash-alt"></unicon></a>
+                <a class="access-row__delete" title="Delete" @click="confirmDelete(record)"
+                  ><unicon name="trash-alt"></unicon
+                ></a>
               </template>
             </a-table-column>
           </a-table>
@@ -146,10 +179,17 @@ const set = (yes: boolean) => (yes ? 'set' : 'not set');
       </a-col>
     </a-row>
 
-    <a-modal v-model:visible="modalOpen" :title="editing ? 'Edit access profile' : 'Create access profile'" width="520px">
+    <a-modal
+      v-model:visible="modalOpen"
+      :title="editing ? 'Edit access profile' : 'Create access profile'"
+      width="520px"
+    >
       <a-form layout="vertical">
         <a-form-item label="Name"><a-input v-model:value="form.name" /></a-form-item>
-        <a-form-item label="SNMP version" :extra="editing ? 'The version cannot be changed; create a new profile instead.' : undefined">
+        <a-form-item
+          label="SNMP version"
+          :extra="editing ? 'The version cannot be changed; create a new profile instead.' : undefined"
+        >
           <a-radio-group v-model:value="form.snmp_version" :disabled="!!editing">
             <a-radio value="v1">v1</a-radio>
             <a-radio value="v2c">v2c</a-radio>
@@ -162,7 +202,11 @@ const set = (yes: boolean) => (yes ? 'set' : 'not set');
           </a-form-item>
           <a-form-item
             label="Write community (optional)"
-            :extra="editing ? 'Leave blank to keep the stored one. Used only by device actions.' : 'Used only by device actions. Polling never uses it.'"
+            :extra="
+              editing
+                ? 'Leave blank to keep the stored one. Used only by device actions.'
+                : 'Used only by device actions. Polling never uses it.'
+            "
           >
             <a-input-password v-model:value="form.write_community" autocomplete="new-password" />
           </a-form-item>
@@ -172,11 +216,17 @@ const set = (yes: boolean) => (yes ? 'set' : 'not set');
           <a-row :gutter="12">
             <a-col :span="10">
               <a-form-item label="Authentication">
-                <a-select v-model:value="form.v3_auth_protocol" :options="AUTH_PROTOCOLS.map((p) => ({ value: p, label: p }))" />
+                <a-select
+                  v-model:value="form.v3_auth_protocol"
+                  :options="AUTH_PROTOCOLS.map((p) => ({ value: p, label: p }))"
+                />
               </a-form-item>
             </a-col>
             <a-col :span="14">
-              <a-form-item label="Authentication secret" :extra="editing ? 'Leave blank to keep the stored secret.' : undefined">
+              <a-form-item
+                label="Authentication secret"
+                :extra="editing ? 'Leave blank to keep the stored secret.' : undefined"
+              >
                 <a-input-password v-model:value="form.v3_auth_secret" autocomplete="new-password" />
               </a-form-item>
             </a-col>
@@ -184,22 +234,74 @@ const set = (yes: boolean) => (yes ? 'set' : 'not set');
           <a-row :gutter="12">
             <a-col :span="10">
               <a-form-item label="Privacy">
-                <a-select v-model:value="form.v3_priv_protocol" :options="PRIV_PROTOCOLS.map((p) => ({ value: p, label: p }))" />
+                <a-select
+                  v-model:value="form.v3_priv_protocol"
+                  :options="PRIV_PROTOCOLS.map((p) => ({ value: p, label: p }))"
+                />
               </a-form-item>
             </a-col>
             <a-col :span="14">
-              <a-form-item label="Privacy secret" :extra="editing ? 'Leave blank to keep the stored secret.' : undefined">
+              <a-form-item
+                label="Privacy secret"
+                :extra="editing ? 'Leave blank to keep the stored secret.' : undefined"
+              >
                 <a-input-password v-model:value="form.v3_priv_secret" autocomplete="new-password" />
               </a-form-item>
             </a-col>
           </a-row>
         </template>
+        <a-divider orientation="left" plain>Console login (optional)</a-divider>
+        <a-checkbox v-if="editing" v-model:checked="form.clear_cli" class="access-clear-cli"
+          >Remove the CLI login from this profile</a-checkbox
+        >
+        <template v-if="!form.clear_cli">
+          <a-row :gutter="12">
+            <a-col :span="12">
+              <a-form-item label="Protocol">
+                <a-select v-model:value="form.cli_protocol">
+                  <a-select-option value="">Default (SSH)</a-select-option>
+                  <a-select-option v-for="p in CLI_PROTOCOLS" :key="p" :value="p">{{
+                    p.toUpperCase()
+                  }}</a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :span="12">
+              <a-form-item label="Port" extra="Blank: 22 for SSH, 23 for telnet.">
+                <a-input-number v-model:value="form.cli_port" :min="1" :max="65535" style="width: 100%" />
+              </a-form-item>
+            </a-col>
+          </a-row>
+          <a-form-item label="CLI username"
+            ><a-input v-model:value="form.cli_username" autocomplete="off"
+          /></a-form-item>
+          <a-form-item
+            label="CLI password"
+            :extra="editing?.has_cli_password ? 'Leave blank to keep the stored password.' : undefined"
+          >
+            <a-input-password v-model:value="form.cli_password" autocomplete="new-password" />
+          </a-form-item>
+          <a-form-item
+            label="Enable password"
+            :extra="
+              editing?.has_cli_enable_password
+                ? 'Leave blank to keep the stored one.'
+                : 'Only for devices that ask for one.'
+            "
+          >
+            <a-input-password v-model:value="form.cli_enable_password" autocomplete="new-password" />
+          </a-form-item>
+        </template>
         <a-row :gutter="12">
           <a-col :span="12">
-            <a-form-item label="Timeout (ms)"><a-input-number v-model:value="form.timeout_ms" :min="200" :max="10000" :step="100" style="width: 100%" /></a-form-item>
+            <a-form-item label="Timeout (ms)"
+              ><a-input-number v-model:value="form.timeout_ms" :min="200" :max="10000" :step="100" style="width: 100%"
+            /></a-form-item>
           </a-col>
           <a-col :span="12">
-            <a-form-item label="Retries"><a-input-number v-model:value="form.retries" :min="0" :max="3" style="width: 100%" /></a-form-item>
+            <a-form-item label="Retries"
+              ><a-input-number v-model:value="form.retries" :min="0" :max="3" style="width: 100%"
+            /></a-form-item>
           </a-col>
         </a-row>
       </a-form>
@@ -212,6 +314,9 @@ const set = (yes: boolean) => (yes ? 'set' : 'not set');
 </template>
 
 <style scoped>
+.access-clear-cli {
+  margin-bottom: 12px;
+}
 .access-filter-row {
   padding: 16px 16px 16px 0;
 }

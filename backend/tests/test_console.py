@@ -13,6 +13,7 @@ from app.console.session import (
 )
 from app.core.config import settings
 from tests.helpers import bearer, make_device, make_group, make_user
+from tests.polling_helpers import make_access_profile
 
 C = "/api/v1/console/sessions"
 SECRET = "hunter2-Sw!tch"
@@ -184,7 +185,7 @@ async def test_long_output_is_split_to_fit_the_transcript_column():
 
 async def test_the_default_shell_factory_refuses():
     with pytest.raises(ShellUnavailable):
-        await DisabledShellFactory().connect("10.0.0.1", username=None, password=None)
+        await DisabledShellFactory().connect("10.0.0.1", protocol="ssh", port=22, username=None, password=None, enable_password=None)
 
 
 # --- requesting a session ---
@@ -238,7 +239,12 @@ async def test_scope_and_permissions_are_enforced(app_client, db, enabled):
     assert (await app_client.post(C, headers=reseller, json={"device_id": visible, "auto_auth": True})).status_code == 403
     _, admin = await login(app_client, db, "adm", grant=("console.open_auto_auth",))
     refused = await app_client.post(C, headers=admin, json={"device_id": visible, "auto_auth": True})
-    assert refused.status_code == 501 and "credentials" in refused.json()["detail"]
+    assert refused.status_code == 409 and "CLI username and password" in refused.json()["detail"]  # no access profile at all
+    profile = await make_access_profile(db, "cli")
+    await db.execute("update devices set access_profile_id = $2::uuid where id = $1::uuid", visible, profile)
+    assert (await app_client.post(C, headers=admin, json={"device_id": visible, "auto_auth": True})).status_code == 409  # no login stored
+    await db.execute("update device_access_profiles set cli_username = 'netops', cli_password_enc = 'v1:k:x' where id = $1::uuid", profile)
+    assert (await app_client.post(C, headers=admin, json={"device_id": visible, "auto_auth": True})).status_code == 201
     user, nobody = await login(app_client, db, "nobody")
     await db.execute("delete from role_permissions where role_id = (select role_id from users where id = $1::uuid) "
                      "and permission_id = (select id from permissions where code = 'console.open')", user)

@@ -438,5 +438,51 @@ Each open session holds one database connection for its lifetime.
 
 Nothing here has been run against a device.
 
-Still to do: more drivers (OIDs from MIBs only; the BDCOM ONU actions wait on D-31), the rest of the console (transport,
-CLI credentials, browser terminal) and sensor devices.
+### CLI credentials for the console's automatic login (2026-10-10)
+
+**Legacy, for comparison.** `device_access` holds `login` and `password`, both encrypted, next to the communities.
+Console settings sit in a free-form `params` field.
+
+**Storage** (access profiles, migration `0027`). Five new fields: `cli_protocol` (ssh or telnet), `cli_port`,
+`cli_username`, `cli_password` and `cli_enable_password`.
+- **The two passwords:** encrypted with the profile id and field name as context, like the SNMP secrets. They are
+  never returned (the API reports `has_cli_password` and `has_cli_enable_password`), never written to the audit log
+  (only the names of rotated fields), and covered by key rotation.
+- **The username:** stored in plain text, unlike legacy, so operators can see which login a profile uses. D-32 records
+  this so the owner can overrule it.
+- **Rules:** a password needs a username, and an enable password needs the login password. The API refuses violations
+  in words, and the database refuses them as well.
+- **Updates:** the same as SNMP secrets: a blank secret keeps the stored one. `clear_cli` removes every CLI setting and
+  secret at once, and cannot be combined with new values.
+
+**Console.**
+- **Request:** an automatic-login request now needs a CLI username and password on the device's profile, otherwise 409.
+  The API process checks only that they exist; it never decrypts them.
+- **Gateway:** decrypts the login only for an automatic-login session, and only if the requester still holds
+  `console.open_auto_auth` when the ticket is redeemed. Otherwise the session ends with the reason.
+- **Manual sessions:** get the profile's protocol and port (SSH on 22 when none is set) but never the stored login. The
+  user types it, and the transcript hides it.
+- **Stored login:** goes to the shell factory only. A test confirms it appears in neither the transcript nor the audit
+  log.
+
+**Access-profile page.** A "Console login (optional)" section with protocol, port, username, and masked password
+fields that are never autofilled and are cleared after saving. Editing offers "Remove the CLI login". The list shows
+the CLI protocol, port and username, and whether a password is stored.
+
+**Data migration (Plan 32).** Legacy `device_access.login` and `password` map to `cli_username` and `cli_password`.
+Protocol and port come from `params` where set.
+
+Tests:
+- backend: 4 access-profile tests, the console request test extended, and 3 new gateway tests;
+- frontend: 4 new tests and the masked-input test extended.
+
+Mutation checks: 17 backend and 8 frontend. This round's first backend run was cut off by a time limit mid-mutant, and
+left one mutant in `app/console/gateway.py` (the auto-login permission check replaced with `if False:`).
+- A check that every mutated line was back to its original found it, and the line was restored before anything was
+  committed.
+- The harness now restores files when it is interrupted, not only when a mutant finishes.
+
+Not verified against a device.
+
+Still to do: more drivers (OIDs from MIBs only; the BDCOM ONU actions wait on D-31), the console's SSH or telnet
+transport and browser terminal, and sensor devices.

@@ -152,3 +152,68 @@ async def test_a_write_community_is_stored_encrypted_never_returned_and_refused_
     assert (await app_client.patch(f"/api/v1/device-access-profiles/{v3ok['id']}", headers=headers, json={"snmp_write_community": "x"})).status_code == 422
     audit = await db.fetch("select before::text b, after::text a, metadata::text m from audit_logs where action like 'access_profile.%'")
     assert not any("rw-secret-1" in (r["b"] or "") + (r["a"] or "") + r["m"] or "rw-2" in (r["b"] or "") + (r["a"] or "") + r["m"] for r in audit)
+
+
+CLI_PASS, CLI_ENABLE = "Cli-CANARY-pass-71", "Enable-CANARY-secret-72"
+P = "/api/v1/device-access-profiles"
+
+
+async def test_cli_credentials_are_stored_encrypted_never_returned_or_logged(app_client, db):
+    headers = await admin(app_client, db)
+    made = await app_client.post(P, headers=headers, json={
+        "name": "cli", "snmp_version": "v2c", "snmp_community": "ro", "cli_protocol": "telnet", "cli_port": 2323,
+        "cli_username": "netops", "cli_password": CLI_PASS, "cli_enable_password": CLI_ENABLE})
+    assert made.status_code == 201, made.text
+    body = made.json()
+    assert (body["cli_protocol"], body["cli_port"], body["cli_username"]) == ("telnet", 2323, "netops")
+    assert body["has_cli_password"] is True and body["has_cli_enable_password"] is True
+    assert CLI_PASS not in made.text and CLI_ENABLE not in made.text and "cli_password" not in body
+    row = await db.fetchrow("select id, cli_password_enc, cli_enable_password_enc from device_access_profiles")
+    enc = EncryptionService.from_settings()
+    assert enc.decrypt(row["cli_password_enc"], aad(str(row["id"]), "cli_password")) == CLI_PASS
+    assert enc.decrypt(row["cli_enable_password_enc"], aad(str(row["id"]), "cli_enable_password")) == CLI_ENABLE
+    with pytest.raises(DecryptionError):  # bound to its field: the login ciphertext does not open as the enable password
+        enc.decrypt(row["cli_password_enc"], aad(str(row["id"]), "cli_enable_password"))
+    everything = await db.fetchval("select string_agg(t::text, ' ') from audit_logs t")
+    assert CLI_PASS not in everything and CLI_ENABLE not in everything and "netops" in everything
+
+
+@pytest.mark.parametrize("body", [
+    {"cli_password": "x"},                                              # a password without a user
+    {"cli_username": "u", "cli_enable_password": "x"},                  # an enable password without the login
+    {"cli_username": "two words", "cli_password": "x"},
+    {"cli_protocol": "rlogin"},
+    {"cli_port": 70000},
+])
+async def test_incomplete_cli_settings_are_refused(app_client, db, body):
+    headers = await admin(app_client, db)
+    response = await app_client.post(P, headers=headers, json={"name": "c", "snmp_version": "v2c", "snmp_community": "ro", **body})
+    assert response.status_code == 422
+
+
+async def test_cli_settings_can_be_added_rotated_and_cleared(app_client, db):
+    headers = await admin(app_client, db)
+    pid = (await app_client.post(P, headers=headers, json={"name": "c", "snmp_version": "v2c", "snmp_community": "ro"})).json()["id"]
+    refused = await app_client.patch(f"{P}/{pid}", headers=headers, json={"cli_password": CLI_PASS})
+    assert refused.status_code == 422 and "username" in refused.json()["detail"]
+    refused = await app_client.patch(f"{P}/{pid}", headers=headers, json={"cli_username": "netops", "cli_enable_password": CLI_ENABLE})
+    assert refused.status_code == 422 and "login password" in refused.json()["detail"]
+    added = (await app_client.patch(f"{P}/{pid}", headers=headers, json={"cli_username": "netops", "cli_password": CLI_PASS})).json()
+    assert added["has_cli_password"] is True and added["cli_protocol"] is None  # ssh/22 is applied when the console connects
+    rotated = (await app_client.patch(f"{P}/{pid}", headers=headers, json={"cli_enable_password": CLI_ENABLE})).json()
+    assert rotated["has_cli_enable_password"] is True
+    audit = await db.fetchval("select metadata::text from audit_logs where action = 'access_profile.updated' order by occurred_at desc limit 1")
+    assert "cli_enable_password" in audit and CLI_ENABLE not in audit
+    assert (await app_client.patch(f"{P}/{pid}", headers=headers, json={"clear_cli": True, "cli_username": "x"})).status_code == 422
+    cleared = (await app_client.patch(f"{P}/{pid}", headers=headers, json={"clear_cli": True})).json()
+    assert (cleared["cli_username"], cleared["has_cli_password"], cleared["has_cli_enable_password"]) == (None, False, False)
+    assert await db.fetchval("select cli_password_enc is null and cli_enable_password_enc is null from device_access_profiles")
+
+
+async def test_the_database_refuses_a_cli_password_without_a_login(db):
+    with pytest.raises(asyncpg.CheckViolationError):
+        await db.execute("insert into device_access_profiles (name, snmp_version, snmp_community_enc, cli_password_enc) "
+                         "values ('x', 'v2c', 'v1:k:c', 'v1:k:p')")
+    with pytest.raises(asyncpg.CheckViolationError):
+        await db.execute("insert into device_access_profiles (name, snmp_version, snmp_community_enc, cli_username, cli_enable_password_enc) "
+                         "values ('y', 'v2c', 'v1:k:c', 'u', 'v1:k:e')")

@@ -1817,6 +1817,12 @@ export interface components {
     schemas: {
         /** AccessProfileOut */
         AccessProfileOut: {
+            /** Cli Port */
+            cli_port: number | null;
+            /** Cli Protocol */
+            cli_protocol: ("ssh" | "telnet") | null;
+            /** Cli Username */
+            cli_username: string | null;
             /**
              * Created At
              * Format: date-time
@@ -1826,6 +1832,10 @@ export interface components {
             devices_using: number;
             /** Has Auth Secret */
             has_auth_secret: boolean;
+            /** Has Cli Enable Password */
+            has_cli_enable_password: boolean;
+            /** Has Cli Password */
+            has_cli_password: boolean;
             /** Has Community */
             has_community: boolean;
             /** Has Priv Secret */
@@ -3351,6 +3361,16 @@ export interface components {
         };
         /** ProfileCreate */
         ProfileCreate: {
+            /** Cli Enable Password */
+            cli_enable_password?: string | null;
+            /** Cli Password */
+            cli_password?: string | null;
+            /** Cli Port */
+            cli_port?: number | null;
+            /** Cli Protocol */
+            cli_protocol?: ("ssh" | "telnet") | null;
+            /** Cli Username */
+            cli_username?: string | null;
             /** Name */
             name: string;
             /**
@@ -3385,6 +3405,18 @@ export interface components {
         };
         /** ProfileUpdate */
         ProfileUpdate: {
+            /** Clear Cli */
+            clear_cli?: boolean | null;
+            /** Cli Enable Password */
+            cli_enable_password?: string | null;
+            /** Cli Password */
+            cli_password?: string | null;
+            /** Cli Port */
+            cli_port?: number | null;
+            /** Cli Protocol */
+            cli_protocol?: ("ssh" | "telnet") | null;
+            /** Cli Username */
+            cli_username?: string | null;
             /** Name */
             name?: string | null;
             /** Retries */

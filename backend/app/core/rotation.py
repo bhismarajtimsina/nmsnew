@@ -41,6 +41,8 @@ ENCRYPTED_COLUMNS: tuple[EncryptedColumn, ...] = (
     EncryptedColumn("device_access_profiles", "snmp_write_community_enc", _profile_aad("snmp_write_community")),
     EncryptedColumn("device_access_profiles", "snmp_v3_auth_secret_enc", _profile_aad("snmp_v3_auth_secret")),
     EncryptedColumn("device_access_profiles", "snmp_v3_priv_secret_enc", _profile_aad("snmp_v3_priv_secret")),
+    EncryptedColumn("device_access_profiles", "cli_password_enc", _profile_aad("cli_password")),
+    EncryptedColumn("device_access_profiles", "cli_enable_password_enc", _profile_aad("cli_enable_password")),
     # app/api/auth.py encrypts the TOTP secret with the bare user id as its AAD.
     EncryptedColumn("users", "totp_secret_enc", lambda row_id: row_id),
 )

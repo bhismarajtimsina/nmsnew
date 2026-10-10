@@ -4,6 +4,43 @@
       "AccessProfileOut": {
         "additionalProperties": false,
         "properties": {
+          "cli_port": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Port"
+          },
+          "cli_protocol": {
+            "anyOf": [
+              {
+                "enum": [
+                  "ssh",
+                  "telnet"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Protocol"
+          },
+          "cli_username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Username"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
@@ -15,6 +52,14 @@
           },
           "has_auth_secret": {
             "title": "Has Auth Secret",
+            "type": "boolean"
+          },
+          "has_cli_enable_password": {
+            "title": "Has Cli Enable Password",
+            "type": "boolean"
+          },
+          "has_cli_password": {
+            "title": "Has Cli Password",
             "type": "boolean"
           },
           "has_community": {
@@ -112,6 +157,11 @@
           "has_write_community",
           "has_auth_secret",
           "has_priv_secret",
+          "cli_protocol",
+          "cli_port",
+          "cli_username",
+          "has_cli_password",
+          "has_cli_enable_password",
           "legacy_id",
           "created_at",
           "updated_at",
@@ -4861,6 +4911,78 @@
       },
       "ProfileCreate": {
         "properties": {
+          "cli_enable_password": {
+            "anyOf": [
+              {
+                "format": "password",
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string",
+                "writeOnly": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Enable Password"
+          },
+          "cli_password": {
+            "anyOf": [
+              {
+                "format": "password",
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string",
+                "writeOnly": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Password"
+          },
+          "cli_port": {
+            "anyOf": [
+              {
+                "maximum": 65535.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Port"
+          },
+          "cli_protocol": {
+            "anyOf": [
+              {
+                "enum": [
+                  "ssh",
+                  "telnet"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Protocol"
+          },
+          "cli_username": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "pattern": "^[^\\s]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Username"
+          },
           "name": {
             "maxLength": 120,
             "minLength": 1,
@@ -5008,6 +5130,89 @@
       },
       "ProfileUpdate": {
         "properties": {
+          "clear_cli": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clear Cli"
+          },
+          "cli_enable_password": {
+            "anyOf": [
+              {
+                "format": "password",
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string",
+                "writeOnly": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Enable Password"
+          },
+          "cli_password": {
+            "anyOf": [
+              {
+                "format": "password",
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string",
+                "writeOnly": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Password"
+          },
+          "cli_port": {
+            "anyOf": [
+              {
+                "maximum": 65535.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Port"
+          },
+          "cli_protocol": {
+            "anyOf": [
+              {
+                "enum": [
+                  "ssh",
+                  "telnet"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Protocol"
+          },
+          "cli_username": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "pattern": "^[^\\s]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Username"
+          },
           "name": {
             "anyOf": [
               {

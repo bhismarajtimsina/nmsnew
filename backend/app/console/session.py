@@ -36,13 +36,15 @@ class ShellUnavailable(Exception):
 
 
 class ShellFactory(Protocol):
-    async def connect(self, address: str, *, username: str | None, password: str | None) -> Shell: ...
+    async def connect(self, address: str, *, protocol: str, port: int, username: str | None, password: str | None,
+                      enable_password: str | None) -> Shell: ...
 
 
 class DisabledShellFactory:
     """The default: no interactive transport is part of this build yet, so nothing leaves the gateway."""
 
-    async def connect(self, address: str, *, username: str | None, password: str | None) -> Shell:
+    async def connect(self, address: str, *, protocol: str, port: int, username: str | None, password: str | None,
+                      enable_password: str | None) -> Shell:
         raise ShellUnavailable("interactive console transport is not available in this build")
 
 

@@ -21,6 +21,10 @@ Stack and principles: see [00-overview](00-overview.md#target-architecture).
 - Keep `legacy_id`; support **dry-run**, idempotent re-run and a **delta import** for the cutover window.
 - Re-encrypt credentials: decrypt with the legacy key, encrypt with the new key, verify by count and a test decrypt, never log plaintext.
 - Import users with their legacy password hash scheme; import long-lived keys as `api_tokens` hashed at import.
+- Device access: legacy `device_access.public_community` and `private_community` become the profile's SNMP community
+  and write community; `login` and `password` become `cli_username` and `cli_password` (Plan 38), protocol and port
+  from `params` where set. Each secret is decrypted with the legacy key and re-encrypted with ours at import, never
+  written in clear to any file.
 - Import history only for a bounded window (N months, set by the owner) and drop rows failing range checks.
 - Carry over the **results** of migrations 062–070: roles, alarm rules, role dashboards, BDCOM safe pollers.
 - Build the reverse export used for rollback ([cutover-runbook.md](cutover-runbook.md)).

@@ -42,10 +42,12 @@ class ScriptedShell:
 
 class Factory:
     def __init__(self, refuse=False):
-        self.refuse, self.shells, self.addresses = refuse, [], []
+        self.refuse, self.shells, self.addresses, self.logins = refuse, [], [], []
 
-    async def connect(self, address, *, username, password):
+    async def connect(self, address, *, protocol, port, username, password, enable_password):
         self.addresses.append((address, username, password))
+        self.logins.append({"protocol": protocol, "port": port, "username": username, "password": password,
+                            "enable_password": enable_password})
         if self.refuse:
             raise ShellUnavailable("no transport")
         shell = ScriptedShell()
@@ -57,7 +59,10 @@ def _run(coro):
     return asyncio.run(coro)
 
 
-async def _setup(*, revoke: str | None = None, deactivate=False) -> tuple[str, str, str]:
+CLI_PASS, CLI_ENABLE = "Stored-CANARY-login-5", "Stored-CANARY-enable-6"
+
+
+async def _setup(*, revoke: str | None = None, deactivate=False, auto_auth=False, cli=False) -> tuple[str, str, str]:
     """A user, a device and a ticket for it, straight through the broker. Returns (ticket, session_id, user_id)."""
     conn = await asyncpg.connect(settings.postgres_dsn)
     try:
@@ -67,9 +72,18 @@ async def _setup(*, revoke: str | None = None, deactivate=False) -> tuple[str, s
             "values ($1, 'op', 'Op', 'x', 'argon2', true) returning id", role["id"]))
         device = str(await conn.fetchval(
             "insert into devices (name, management_ip, device_type) values ('core-sw', '10.40.0.1', 'switch') returning id"))
+        if cli:
+            from app.core.crypto import EncryptionService
+            from app.repositories import access_profiles as profiles
+
+            enc = EncryptionService.from_settings()
+            pid = await profiles.create_profile(conn, enc, {
+                "name": "cli", "snmp_version": "v2c", "snmp_community": "ro", "timeout_ms": 2000, "retries": 1, "cli_protocol": "telnet",
+                "cli_port": 2323, "cli_username": "netops", "cli_password": CLI_PASS, "cli_enable_password": CLI_ENABLE})
+            await conn.execute("update devices set access_profile_id = $2::uuid where id = $1::uuid", device, pid)
         actor = CurrentUser(user, "op", "Op", None, role["name"], str(role["id"]), role["scope_mode"],
-                            frozenset({"console.open", "devices.view"}))
-        out = await broker.request_session(conn, actor, device, auto_auth=False)
+                            frozenset({"console.open", "console.open_auto_auth", "devices.view"}))
+        out = await broker.request_session(conn, actor, device, auto_auth=auto_auth)
         if revoke:
             await conn.execute("delete from role_permissions where role_id = $1 and permission_id = (select id from permissions where code = $2)",
                                role["id"], revoke)
@@ -166,3 +180,43 @@ def test_switched_off_the_gateway_refuses_even_a_valid_ticket(clean, monkeypatch
     with TestClient(create_app(Factory())) as client:
         _refused(client, f"/console/ws?ticket={ticket}", UNAVAILABLE)
     assert _run(_fetch("select status from console_sessions where id = $1::uuid", sid))[0]["status"] == "pending"
+
+
+def _drive(client, ticket):
+    with client.websocket_connect(f"/console/ws?ticket={ticket}") as ws:
+        ws.receive_text()
+        ws.receive_text()
+        ws.send_text("exit\r")
+        ws.receive_text()
+
+
+def test_a_manual_session_uses_the_profiles_protocol_and_port_but_never_its_stored_login(clean, enabled):
+    ticket, _, _ = _run(_setup(cli=True))
+    factory = Factory()
+    with TestClient(create_app(factory)) as client:
+        _drive(client, ticket)
+    assert factory.logins == [{"protocol": "telnet", "port": 2323, "username": None, "password": None, "enable_password": None}]
+
+
+def test_an_automatic_login_hands_the_decrypted_login_to_the_shell_and_never_to_the_transcript(clean, enabled):
+    ticket, sid, _ = _run(_setup(cli=True, auto_auth=True))
+    factory = Factory()
+    with TestClient(create_app(factory)) as client:
+        _drive(client, ticket)
+    assert factory.logins == [{"protocol": "telnet", "port": 2323, "username": "netops", "password": CLI_PASS, "enable_password": CLI_ENABLE}]
+    stored = " ".join(r["data"] for r in _run(_fetch("select data from console_history where session_id = $1::uuid", sid)))
+    audit = " ".join(str(dict(r)) for r in _run(_fetch("select * from audit_logs")))
+    assert CLI_PASS not in stored + audit and CLI_ENABLE not in stored + audit
+
+
+def test_an_automatic_login_is_refused_when_the_permission_was_withdrawn_after_the_request(clean, enabled):
+    ticket, sid, _ = _run(_setup(cli=True, auto_auth=True, revoke="console.open_auto_auth"))
+    factory = Factory()
+    with TestClient(create_app(factory)) as client:
+        with pytest.raises(WebSocketDisconnect) as exc:
+            with client.websocket_connect(f"/console/ws?ticket={ticket}") as ws:
+                assert "may no longer log in automatically" in ws.receive_text()
+                ws.receive_text()
+        assert exc.value.code == UNAVAILABLE
+    assert factory.logins == []
+    assert "may no longer log in automatically" in _run(_fetch("select close_reason from console_sessions where id = $1::uuid", sid))[0]["close_reason"]

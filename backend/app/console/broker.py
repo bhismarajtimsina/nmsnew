@@ -18,6 +18,7 @@ import asyncpg
 from app.core.audit import write_audit
 from app.core.config import settings
 from app.core.security import CurrentUser
+from app.repositories import access_profiles as profile_repo
 from app.repositories import devices as device_repo
 
 TICKET_TTL_SECONDS = 30
@@ -44,12 +45,12 @@ class NotFound(ConsoleError):
     status = 404
 
 
-class NotAvailable(ConsoleError):
-    status = 501
-
-
 class TooMany(ConsoleError):
     status = 429
+
+
+class NoCredentials(ConsoleError):
+    status = 409
 
 
 def _hash(ticket: str) -> str:
@@ -70,7 +71,9 @@ async def request_session(conn: asyncpg.Connection, user: CurrentUser, device_id
     if device is None:
         raise NotFound("Not found")
     if auto_auth:
-        raise NotAvailable("automatic login is not available yet: device CLI credentials are not stored in this build")
+        login = await profile_repo.cli_login(conn, None, device_id)  # no key here: only whether a login is stored
+        if login is None or not (login["username"] and login["has_password"]):
+            raise NoCredentials("automatic login needs a CLI username and password on the device's access profile")
     stale = settings.console_max_seconds + STALE_MARGIN_SECONDS
     async with conn.transaction():
         # Serialise requests for one device, so two at once cannot both slip under the limit.

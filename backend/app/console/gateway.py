@@ -20,6 +20,8 @@ from app.console.session import DisabledShellFactory, ShellFactory, ShellUnavail
 from app.core.audit import write_audit
 from app.core.config import settings
 from app.core.database import create_pool
+from app.core.crypto import EncryptionNotConfigured, EncryptionService
+from app.repositories import access_profiles as profile_repo
 from app.repositories import devices as device_repo
 
 logger = logging.getLogger("cybersathy.console")
@@ -40,6 +42,29 @@ class WebSocketClient:
 
     async def send(self, data: str) -> None:
         await self.websocket.send_text(data)
+
+
+async def _login(conn: Any, device_id: str, *, auto_auth: bool, actor: Any) -> dict[str, Any]:
+    """Protocol and port from the device's access profile (ssh/22 when it names none). The stored login is decrypted only
+    for an automatic-login session whose requester still holds `console.open_auto_auth`; otherwise the user types it,
+    and the transcript hides what is typed at the password prompt."""
+    if auto_auth and not actor.has_permission("console.open_auto_auth"):
+        raise ShellUnavailable("the requester may no longer log in automatically")
+    want_secrets = auto_auth
+    if want_secrets:
+        try:
+            enc = EncryptionService.from_settings()
+        except EncryptionNotConfigured as exc:
+            raise ShellUnavailable("stored credentials cannot be read: encryption is not configured") from exc
+    else:
+        enc = None
+    login = await profile_repo.cli_login(conn, enc, device_id)
+    if login is None:
+        return {"protocol": "ssh", "port": 22, "username": None, "password": None, "enable_password": None}
+    if want_secrets and not (login["username"] and login["password"]):
+        raise ShellUnavailable("the device's access profile no longer holds a CLI login")
+    return {"protocol": login["protocol"], "port": login["port"], "username": login["username"] if want_secrets else None,
+            "password": login["password"], "enable_password": login["enable_password"]}
 
 
 def create_app(shell_factory: ShellFactory | None = None, *, pool: Any = None) -> FastAPI:
@@ -82,7 +107,8 @@ def create_app(shell_factory: ShellFactory | None = None, *, pool: Any = None) -
                               resource_id=str(session["device_id"]), metadata={"session_id": sid})
             client = WebSocketClient(websocket)
             try:
-                shell = await factory.connect(str(device["management_ip"]), username=None, password=None)
+                login = await _login(conn, str(session["device_id"]), auto_auth=session["auto_auth"], actor=actor)
+                shell = await factory.connect(str(device["management_ip"]), **login)
             except ShellUnavailable as exc:
                 reason = f"not opened: {exc}"
                 await client.send(f"[{reason}]\r\n")

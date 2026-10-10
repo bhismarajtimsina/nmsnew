@@ -29,6 +29,11 @@ const V2: Profile = {
   has_write_community: false,
   has_auth_secret: false,
   has_priv_secret: false,
+  cli_protocol: null,
+  cli_port: null,
+  cli_username: null,
+  has_cli_password: false,
+  has_cli_enable_password: false,
   legacy_id: null,
   created_at: 't',
   updated_at: 't',
@@ -193,14 +198,28 @@ describe('routing and the page', () => {
 
   it('secret inputs are masked, never autofilled, and cleared after saving', () => {
     const page = readFileSync(resolve(__dirname, 'DeviceAccessNewPage.vue'), 'utf8');
-    for (const field of ['form.community', 'form.write_community', 'form.v3_auth_secret', 'form.v3_priv_secret']) {
+    for (const field of [
+      'form.community',
+      'form.write_community',
+      'form.v3_auth_secret',
+      'form.v3_priv_secret',
+      'form.cli_password',
+      'form.cli_enable_password',
+    ]) {
       expect(page).toMatch(
         new RegExp(`<a-input-password v-model:value="${field.replace('.', '\\.')}" autocomplete="new-password" />`),
       );
     }
-    expect(page).toMatch(
-      /Object\.assign\(form, \{ community: '', write_community: '', v3_auth_secret: '', v3_priv_secret: '' \}\);/,
-    );
+    const cleared = page.match(/Object\.assign\(form, \{([^}]*)\}\);/)?.[1] ?? '';
+    for (const field of [
+      'community',
+      'write_community',
+      'v3_auth_secret',
+      'v3_priv_secret',
+      'cli_password',
+      'cli_enable_password',
+    ])
+      expect(cleared).toMatch(new RegExp(`\\b${field}: ''`));
     expect(page).not.toMatch(/DataService|wsClient/);
   });
 });
@@ -214,5 +233,68 @@ describe('write community', () => {
     expect(updateBody({ ...formFor(V2), write_community: typed }, V2)).toEqual({ snmp_write_community: typed });
     expect(updateBody(formFor(V2), V2)).toEqual({});
     expect('snmp_write_community' in createBody({ ...form, snmp_version: 'v3', write_community: typed })).toBe(false);
+  });
+});
+
+describe('CLI login', () => {
+  const pass = ['cli-', 'pass'].join('');
+  const enable = ['en-', 'able'].join('');
+  const WITH_CLI: Profile = {
+    ...V2,
+    cli_protocol: 'telnet',
+    cli_port: 2323,
+    cli_username: 'netops',
+    has_cli_password: true,
+  };
+
+  it('is sent on create only when filled in', () => {
+    const form = { ...emptyForm(), name: 'core', community: 'ro' };
+    expect(Object.keys(createBody(form)).filter((k) => k.startsWith('cli_'))).toEqual([]);
+    expect(
+      createBody({ ...form, cli_protocol: 'ssh', cli_port: 2222, cli_username: ' netops ', cli_password: pass }),
+    ).toMatchObject({
+      cli_protocol: 'ssh',
+      cli_port: 2222,
+      cli_username: 'netops',
+      cli_password: pass,
+    });
+  });
+
+  it('keeps stored passwords unless typed, and sends only what changed', () => {
+    expect(formFor(WITH_CLI)).toMatchObject({
+      cli_protocol: 'telnet',
+      cli_port: 2323,
+      cli_username: 'netops',
+      cli_password: '',
+    });
+    expect(updateBody(formFor(WITH_CLI), WITH_CLI)).toEqual({});
+    expect(updateBody({ ...formFor(WITH_CLI), cli_enable_password: enable }, WITH_CLI)).toEqual({
+      cli_enable_password: enable,
+    });
+    expect(updateBody({ ...formFor(WITH_CLI), cli_protocol: 'ssh', cli_port: 22 }, WITH_CLI)).toEqual({
+      cli_protocol: 'ssh',
+      cli_port: 22,
+    });
+  });
+
+  it('can be removed at once, and removing nothing sends nothing', () => {
+    expect(updateBody({ ...formFor(WITH_CLI), clear_cli: true, cli_password: pass }, WITH_CLI)).toEqual({
+      clear_cli: true,
+    });
+    expect(updateBody({ ...formFor(V2), clear_cli: true }, V2)).toEqual({});
+  });
+
+  it('refuses a password without a user and an enable password without a login', () => {
+    const form = { ...emptyForm(), name: 'core', community: 'ro' };
+    expect(problems({ ...form, cli_password: pass }, false)).toEqual(['A CLI password needs a CLI username']);
+    expect(problems({ ...form, cli_username: 'u', cli_enable_password: enable }, false)).toEqual([
+      'An enable password needs the CLI login password too',
+    ]);
+    expect(problems({ ...formFor(WITH_CLI), cli_enable_password: enable }, true, WITH_CLI)).toEqual([]);
+    expect(problems({ ...form, cli_username: 'two words' }, false)).toEqual(['CLI username cannot contain spaces']);
+    expect(problems({ ...form, cli_port: 0 }, false)).toEqual(['CLI port must be between 1 and 65535']);
+    expect(
+      problems({ ...formFor(WITH_CLI), clear_cli: true, cli_password: pass, cli_username: '' }, true, WITH_CLI),
+    ).toEqual([]);
   });
 });

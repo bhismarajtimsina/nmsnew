@@ -19,6 +19,14 @@ router = APIRouter(prefix=f"{settings.api_prefix}/device-access-profiles", tags=
 
 AUTH_PROTOCOLS = Literal["MD5", "SHA", "SHA224", "SHA256", "SHA384", "SHA512"]
 PRIV_PROTOCOLS = Literal["DES", "AES", "AES192", "AES256"]
+CLI_PROTOCOLS = Literal["ssh", "telnet"]
+
+
+def _check_cli(username: str | None, password: Any, enable: Any) -> None:
+    if password is not None and username is None:
+        raise ValueError("a CLI password needs a CLI username")
+    if enable is not None and password is None:
+        raise ValueError("an enable password needs the CLI login password too")
 
 
 def _enc() -> EncryptionService:
@@ -41,9 +49,16 @@ class ProfileCreate(BaseModel):
     snmp_v3_priv_secret: SecretStr | None = Field(default=None, min_length=8, max_length=256)
     timeout_ms: int = Field(default=2000, ge=200, le=10000)
     retries: int = Field(default=1, ge=0, le=3)
+    # CLI access for the console (Plan 38). Optional; the password and enable password are write-only.
+    cli_protocol: CLI_PROTOCOLS | None = None
+    cli_port: int | None = Field(default=None, ge=1, le=65535)
+    cli_username: str | None = Field(default=None, min_length=1, max_length=120, pattern=r"^[^\s]+$")
+    cli_password: SecretStr | None = Field(default=None, min_length=1, max_length=256)
+    cli_enable_password: SecretStr | None = Field(default=None, min_length=1, max_length=256)
 
     @model_validator(mode="after")
     def complete_for_version(self) -> "ProfileCreate":
+        _check_cli(self.cli_username, self.cli_password, self.cli_enable_password)
         if self.snmp_version in ("v1", "v2c"):
             if self.snmp_community is None or not self.snmp_community.get_secret_value().strip():
                 raise ValueError("a community is required for SNMP v1 and v2c")
@@ -68,6 +83,19 @@ class ProfileUpdate(BaseModel):
     snmp_v3_auth_secret: SecretStr | None = Field(default=None, min_length=8, max_length=256)
     snmp_v3_priv_protocol: PRIV_PROTOCOLS | None = None
     snmp_v3_priv_secret: SecretStr | None = Field(default=None, min_length=8, max_length=256)
+    cli_protocol: CLI_PROTOCOLS | None = None
+    cli_port: int | None = Field(default=None, ge=1, le=65535)
+    cli_username: str | None = Field(default=None, min_length=1, max_length=120, pattern=r"^[^\s]+$")
+    cli_password: SecretStr | None = Field(default=None, min_length=1, max_length=256)
+    cli_enable_password: SecretStr | None = Field(default=None, min_length=1, max_length=256)
+    clear_cli: bool | None = None  # remove every CLI setting and secret from the profile
+
+    @model_validator(mode="after")
+    def clear_alone(self) -> "ProfileUpdate":
+        if self.clear_cli and any(getattr(self, f) is not None for f in ("cli_protocol", "cli_port", "cli_username", "cli_password",
+                                                                         "cli_enable_password")):
+            raise ValueError("clear_cli cannot be combined with new CLI settings")
+        return self
 
 
 def _plain(model: BaseModel, **kwargs: Any) -> dict[str, Any]:
@@ -88,7 +116,8 @@ def _uuid(value: str) -> str:
 def _safe_view(profile: dict[str, Any]) -> dict[str, Any]:
     """What may be written to the audit log: shape and settings, never a secret or even its length."""
     keys = ("name", "snmp_version", "timeout_ms", "retries", "snmp_v3_username", "snmp_v3_auth_protocol", "snmp_v3_priv_protocol",
-            "has_community", "has_write_community", "has_auth_secret", "has_priv_secret")
+            "has_community", "has_write_community", "has_auth_secret", "has_priv_secret", "cli_protocol", "cli_port", "cli_username",
+            "has_cli_password", "has_cli_enable_password")
     return {k: profile.get(k) for k in keys}
 
 
@@ -151,13 +180,20 @@ async def update_profile(
         "select exists(select 1 from device_access_profiles where name = $1)", changes["name"]
     ):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A profile with this name already exists")
+    # The database refuses a password without a username; say so in words instead of a 500.
+    username = changes.get("cli_username", before["cli_username"])
+    if username is None and "cli_password" in changes:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="A CLI password needs a CLI username")
+    if "cli_enable_password" in changes and not (before["has_cli_password"] or "cli_password" in changes):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="An enable password needs the CLI login password too")
     enc = _enc() if any(k in repo.SECRET_FIELDS for k in changes) else None
     async with conn.transaction():
         await repo.update_profile(conn, enc, pid, changes)
         after = await repo.get_profile(conn, pid)
         await write_audit(conn, action="access_profile.updated", actor_user_id=user.id, resource_type="access_profile", resource_id=pid,
                           ip=user.client_ip, user_agent=request.headers.get("user-agent"), before=_safe_view(before), after=_safe_view(after),
-                          metadata={"rotated_fields": sorted(k for k in changes if k in repo.SECRET_FIELDS)})  # names only, never values
+                          metadata={"rotated_fields": sorted(k for k in changes if k in repo.SECRET_FIELDS),  # names only, never values
+                                    "cli_cleared": bool(changes.get("clear_cli"))})
     return after
 
 

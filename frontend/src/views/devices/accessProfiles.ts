@@ -6,8 +6,10 @@
  * blank means "keep the stored one", and only the secrets actually typed are sent. The SNMP version cannot be changed
  * after creation (the API does not accept it), so switching a device between v2c and v3 means a new profile.
  *
- * The legacy page (community plus CLI login and console settings) stays on the legacy build; the router picks one or
- * the other.
+ * CLI access for the console (Plan 38) sits on the same profile: protocol, port and username are plain settings, the
+ * login and enable passwords are write-only like the SNMP secrets. "Remove CLI login" clears all of it at once.
+ *
+ * The legacy page stays on the legacy build; the router picks one or the other.
  */
 import { ApiError, type ApiClient } from '@/api/client';
 import type { components } from '@/api/schema';
@@ -18,6 +20,8 @@ export const AUTH_PROTOCOLS = ['MD5', 'SHA', 'SHA224', 'SHA256', 'SHA384', 'SHA5
 export const PRIV_PROTOCOLS = ['DES', 'AES', 'AES192', 'AES256'] as const;
 type AuthProtocol = (typeof AUTH_PROTOCOLS)[number];
 type PrivProtocol = (typeof PRIV_PROTOCOLS)[number];
+export const CLI_PROTOCOLS = ['ssh', 'telnet'] as const;
+type CliProtocol = (typeof CLI_PROTOCOLS)[number];
 
 export interface ProfileForm {
   name: string;
@@ -32,6 +36,14 @@ export interface ProfileForm {
   v3_auth_secret: string;
   v3_priv_protocol: PrivProtocol | '';
   v3_priv_secret: string;
+  cli_protocol: CliProtocol | '';
+  /** Blank means the protocol's default (22 for SSH, 23 for telnet). */
+  cli_port: number | null;
+  cli_username: string;
+  cli_password: string;
+  cli_enable_password: string;
+  /** Editing only: remove every CLI setting and secret from the profile. */
+  clear_cli: boolean;
 }
 
 export function emptyForm(): ProfileForm {
@@ -47,6 +59,12 @@ export function emptyForm(): ProfileForm {
     v3_auth_secret: '',
     v3_priv_protocol: 'AES',
     v3_priv_secret: '',
+    cli_protocol: '',
+    cli_port: null,
+    cli_username: '',
+    cli_password: '',
+    cli_enable_password: '',
+    clear_cli: false,
   };
 }
 
@@ -61,11 +79,14 @@ export function formFor(profile: Profile): ProfileForm {
     v3_username: profile.snmp_v3_username ?? '',
     v3_auth_protocol: (profile.snmp_v3_auth_protocol as AuthProtocol | null) ?? 'SHA',
     v3_priv_protocol: (profile.snmp_v3_priv_protocol as PrivProtocol | null) ?? 'AES',
+    cli_protocol: profile.cli_protocol ?? '',
+    cli_port: profile.cli_port,
+    cli_username: profile.cli_username ?? '',
   };
 }
 
 /** What is wrong with the form before anything is sent, in the user's terms. Empty means it can be sent. */
-export function problems(form: ProfileForm, editing: boolean): string[] {
+export function problems(form: ProfileForm, editing: boolean, before?: Profile): string[] {
   const found: string[] = [];
   if (!form.name.trim()) found.push('Name is required');
   if (form.snmp_version === 'v3') {
@@ -83,7 +104,30 @@ export function problems(form: ProfileForm, editing: boolean): string[] {
   } else if (!editing && !form.community.trim()) {
     found.push('Community is required');
   }
+  found.push(...cliProblems(form, before));
   return found;
+}
+
+function cliProblems(form: ProfileForm, before?: Profile): string[] {
+  if (form.clear_cli) return [];
+  const found: string[] = [];
+  if (/\s/.test(form.cli_username.trim())) found.push('CLI username cannot contain spaces');
+  if (form.cli_password && !form.cli_username.trim()) found.push('A CLI password needs a CLI username');
+  if (form.cli_enable_password && !form.cli_password && !before?.has_cli_password)
+    found.push('An enable password needs the CLI login password too');
+  if (form.cli_port !== null && (form.cli_port < 1 || form.cli_port > 65535))
+    found.push('CLI port must be between 1 and 65535');
+  return found;
+}
+
+function cliCreate(form: ProfileForm): Partial<CreateBody> {
+  const out: Partial<CreateBody> = {};
+  if (form.cli_protocol) out.cli_protocol = form.cli_protocol;
+  if (form.cli_port !== null) out.cli_port = form.cli_port;
+  if (form.cli_username.trim()) out.cli_username = form.cli_username.trim();
+  if (form.cli_password) out.cli_password = form.cli_password;
+  if (form.cli_enable_password) out.cli_enable_password = form.cli_enable_password;
+  return out;
 }
 
 export type CreateBody = components['schemas']['ProfileCreate'];
@@ -98,11 +142,12 @@ export function createBody(form: ProfileForm): CreateBody {
   };
   if (form.snmp_version !== 'v3') {
     return form.write_community
-      ? { ...base, snmp_community: form.community, snmp_write_community: form.write_community }
-      : { ...base, snmp_community: form.community };
+      ? { ...base, ...cliCreate(form), snmp_community: form.community, snmp_write_community: form.write_community }
+      : { ...base, ...cliCreate(form), snmp_community: form.community };
   }
   return {
     ...base,
+    ...cliCreate(form),
     snmp_v3_username: form.v3_username.trim(),
     snmp_v3_auth_protocol: form.v3_auth_protocol || null,
     snmp_v3_auth_secret: form.v3_auth_secret,
@@ -129,6 +174,17 @@ export function updateBody(form: ProfileForm, before: Profile): UpdateBody {
     if (form.community) body.snmp_community = form.community;
     if (form.write_community) body.snmp_write_community = form.write_community;
   }
+  if (form.clear_cli) {
+    if (before.cli_username || before.cli_protocol || before.cli_port !== null || before.has_cli_password)
+      body.clear_cli = true;
+    return body;
+  }
+  if (form.cli_protocol && form.cli_protocol !== before.cli_protocol) body.cli_protocol = form.cli_protocol;
+  if (form.cli_port !== null && form.cli_port !== before.cli_port) body.cli_port = form.cli_port;
+  if (form.cli_username.trim() && form.cli_username.trim() !== (before.cli_username ?? ''))
+    body.cli_username = form.cli_username.trim();
+  if (form.cli_password) body.cli_password = form.cli_password;
+  if (form.cli_enable_password) body.cli_enable_password = form.cli_enable_password;
   return body;
 }
 
