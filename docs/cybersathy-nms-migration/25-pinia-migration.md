@@ -368,4 +368,28 @@ form routes. The legacy build is unchanged. The rules live in `src/views/devices
 
 Tests: 15 vitest tests. 7 mutations checked, all caught. 121 frontend tests in total. Not checked in a browser (R-09).
 
+### Links page for the new login (2026-10-10)
+
+The links page keeps one page for both logins. As with the groups page, `src/views/links/linksList.ts` gives it one
+row shape and its operations: list, periods, devices, interfaces, create and delete. Under the new login:
+
+- **Rows:** every link comes from `GET /links` in one call, and utilisation from `GET /topology/links/utilization`
+  is merged in. The device filter (a link matches when either end is a chosen device) and paging happen in the
+  browser.
+- **Out-of-scope ends:** an end outside the viewer's scope reads "Outside your scope", never a name. The link can
+  only be deleted when both ends are in scope, which is the API's own rule.
+- **State:** each link's state is shown. Legacy's list had none.
+- **Period:** the utilisation period is the server's setting (`LINKS_UTILIZATION_CALCULATE_PERIOD`), so it is shown
+  but not offered as a choice.
+- **High utilisation:** "Only high utilization" keeps links with an open `high_link_utilization` alarm, which is what
+  legacy's filter did.
+- **Paging:** devices and interfaces for the add-link form are read page by page (the API's pages hold 200), up to
+  5,000.
+- **Live updates:** the new API publishes no link notices yet, so the page reloads after its own changes. Legacy's
+  live updates are unchanged; a pushed row now goes through the same mapping as a loaded one.
+
+Tests: 12 vitest tests. 23 mutations checked, all caught. A 24th mutant was equivalent: a filter on alarm labels that
+an absent label could never pass anyway. The filter was removed. 188 frontend tests in total. Not checked in a
+browser (R-09).
+
 Still not done in this plan: the remaining pages on the typed client.
