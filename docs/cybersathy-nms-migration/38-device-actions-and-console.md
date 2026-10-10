@@ -533,5 +533,46 @@ Tests: 6 new. Mutation checks: 11, all caught.
 
 Not tried in a browser against stored sessions.
 
+### Sensor devices: Equicom Ping3 logic, no profile (2026-10-10)
+
+**Legacy, for comparison.** The SensorDevices component supports one model, the Equicom Ping3.
+- **What it covers:** power outputs, digital and analog lines, a power sensor and a knock (tamper) sensor, all over
+  SNMP through switcher-core.
+- **Controls:** setting an output's mode (on, off, under the ping watchdog, or under an analog line), a digital line's
+  level and direction, and names.
+
+**Blocked on the MIB.** The repository has no Equicom MIB (enterprise 35160), so neither the read OIDs nor the writable
+values can be checked offline (K-25). There is therefore no Ping3 polling profile and no Ping3 action driver.
+
+**Built** (`app/vendors/equicom_ping3.py`, the same pattern as Plan 17's vendor logic).
+- **Value maps:** taken from legacy's own OID file; a test compares them with it. An unlisted code is reported as
+  unknown, never as a healthy state.
+- **Rows:** assembled from the name column, as legacy does.
+- **Analog lines:** keep the raw value beside legacy's tenths. The unit is unknown.
+- **Control impact:** for the confirmation flow, high impact means a typed acknowledgement:
+  - turning a power output off, or handing it to the ping watchdog or an analog line, cuts or may later cut power to
+    whatever is plugged in, so it is high impact;
+  - turning an output on is normal;
+  - changing a digital line's level or direction drives what is wired to it, so it is high impact;
+  - renaming is normal.
+- **Permissions:** every electrical change needs `sensors.switch_mode`; renaming needs `sensors.configure`.
+
+**Legacy findings** (recorded, not ported).
+- **Configure grants toggling.** In legacy `rules.yml`, `sensor_devices_configure`'s pattern `^(PUT):/<id>/.*$` also
+  matches the toggle route, so "configure" silently grants switching power. Here they are separate.
+- **Short device ids only.** Legacy's routes accept device ids of at most 5 digits.
+- **A test alarm left enabled.** Legacy's sensor migration seeds `sensor_test_alert` (`device_sensor{name="Temperature"}
+  > 18` for 10 minutes, "High temperature"), enabled. Most equipment rooms are above 18 °C, so it fires nearly all the
+  time. The alarm-rule seed (Plan 20) ported it as legacy has it, enabled. It cannot fire here yet: nothing produces
+  `device_sensor` until a Ping3 profile exists. An operator should disable or fix it before sensors are polled.
+- **Battery alarm units.** `sensors_low_battery_level` compares `device_sensor{name="Battery"}` with 44. Whether that
+  series is raw (44 = 4.4 after scaling) or scaled cannot be told from the code. Check it against a device or the MIB
+  before relying on it.
+
+Tests: 18 in `tests/test_equicom_ping3.py`. Mutation checks: 12, all caught.
+
+Not verified against a device.
+
 Still to do: more drivers (OIDs from MIBs only; the BDCOM ONU actions wait on D-31), the console's SSH or telnet
-transport (the owner's call, like D-17), and sensor devices.
+transport (the owner's call, like D-17), and the Ping3 profile and drivers once an Equicom MIB or fixture is
+supplied.
