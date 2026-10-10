@@ -7338,6 +7338,48 @@
         "title": "TopologyGraph",
         "type": "object"
       },
+      "TopologyTree": {
+        "additionalProperties": false,
+        "properties": {
+          "build_from": {
+            "title": "Build From",
+            "type": "string"
+          },
+          "direction": {
+            "enum": [
+              "down",
+              "up"
+            ],
+            "title": "Direction",
+            "type": "string"
+          },
+          "is_top": {
+            "title": "Is Top",
+            "type": "boolean"
+          },
+          "searched_device": {
+            "title": "Searched Device",
+            "type": "string"
+          },
+          "tree": {
+            "$ref": "#/components/schemas/TreeNode"
+          },
+          "truncated": {
+            "title": "Truncated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "direction",
+          "searched_device",
+          "build_from",
+          "is_top",
+          "truncated",
+          "tree"
+        ],
+        "title": "TopologyTree",
+        "type": "object"
+      },
       "TotpDisable": {
         "properties": {
           "password": {
@@ -7578,6 +7620,128 @@
         "title": "TrapProfileOut",
         "type": "object"
       },
+      "TreeNode": {
+        "additionalProperties": false,
+        "properties": {
+          "downlink_interface": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Downlink Interface"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip"
+          },
+          "link_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link Id"
+          },
+          "link_state": {
+            "anyOf": [
+              {
+                "enum": [
+                  "up",
+                  "down",
+                  "unknown"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link State"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/TreeNode"
+            },
+            "title": "Nodes",
+            "type": "array"
+          },
+          "repeat": {
+            "default": false,
+            "title": "Repeat",
+            "type": "boolean"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "enum": [
+                  "up",
+                  "down",
+                  "unknown"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State"
+          },
+          "uplink_interface": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uplink Interface"
+          },
+          "visible": {
+            "title": "Visible",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "ip",
+          "visible",
+          "state",
+          "nodes"
+        ],
+        "title": "TreeNode",
+        "type": "object"
+      },
       "TwoFactorEnabled": {
         "additionalProperties": false,
         "properties": {
@@ -7599,6 +7763,142 @@
           "recovery_codes"
         ],
         "title": "TwoFactorEnabled",
+        "type": "object"
+      },
+      "UplinkChain": {
+        "additionalProperties": false,
+        "properties": {
+          "device_id": {
+            "title": "Device Id",
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/UplinkStep"
+            },
+            "title": "Steps",
+            "type": "array"
+          }
+        },
+        "required": [
+          "device_id",
+          "steps"
+        ],
+        "title": "UplinkChain",
+        "type": "object"
+      },
+      "UplinkStep": {
+        "additionalProperties": false,
+        "properties": {
+          "depth": {
+            "title": "Depth",
+            "type": "integer"
+          },
+          "downlink_interface": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Downlink Interface"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip"
+          },
+          "link_id": {
+            "title": "Link Id",
+            "type": "string"
+          },
+          "link_state": {
+            "enum": [
+              "up",
+              "down",
+              "unknown"
+            ],
+            "title": "Link State",
+            "type": "string"
+          },
+          "loop": {
+            "title": "Loop",
+            "type": "boolean"
+          },
+          "multiple_parents": {
+            "title": "Multiple Parents",
+            "type": "boolean"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "enum": [
+                  "up",
+                  "down",
+                  "unknown"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State"
+          },
+          "uplink_interface": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uplink Interface"
+          },
+          "visible": {
+            "title": "Visible",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "ip",
+          "visible",
+          "state",
+          "depth",
+          "link_id",
+          "link_state",
+          "downlink_interface",
+          "uplink_interface",
+          "multiple_parents",
+          "loop"
+        ],
+        "title": "UplinkStep",
         "type": "object"
       },
       "UserActivity": {
@@ -15788,6 +16088,137 @@
           }
         },
         "summary": "Topology Graph",
+        "tags": [
+          "topology"
+        ]
+      }
+    },
+    "/api/v1/topology/tree/{device_id}": {
+      "get": {
+        "description": "The tree below a device (`down`), or below the highest device above it that the caller may see (`up`; legacy's\n\"core\" device). A device with nothing above it is its own top.",
+        "operationId": "topology_tree_api_v1_topology_tree__device_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Device Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "direction",
+            "required": false,
+            "schema": {
+              "default": "down",
+              "pattern": "^(down|up)$",
+              "title": "Direction",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopologyTree"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Topology Tree",
+        "tags": [
+          "topology"
+        ]
+      }
+    },
+    "/api/v1/topology/upward/{device_id}": {
+      "get": {
+        "description": "The chain of upstream devices from a device to its top, nearest first.",
+        "operationId": "topology_upward_api_v1_topology_upward__device_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Device Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UplinkChain"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Topology Upward",
         "tags": [
           "topology"
         ]

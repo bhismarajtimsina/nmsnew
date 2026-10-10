@@ -1066,3 +1066,46 @@ class PathGroup(Strict):
 
 class PathGroupList(Strict):
     items: list[PathGroup]
+
+
+class TreeNode(Strict):
+    id: str
+    name: str | None
+    ip: str | None
+    visible: bool
+    state: Literal["up", "down", "unknown"] | None
+    link_id: str | None = None
+    link_state: Literal["up", "down", "unknown"] | None = None
+    uplink_interface: str | None = None
+    downlink_interface: str | None = None
+    repeat: bool = False
+    nodes: list["TreeNode"]
+
+
+class TopologyTree(Strict):
+    direction: Literal["down", "up"]
+    searched_device: str
+    build_from: str
+    is_top: bool
+    truncated: bool
+    tree: TreeNode
+
+
+class UplinkStep(Strict):
+    id: str
+    name: str | None
+    ip: str | None
+    visible: bool
+    state: Literal["up", "down", "unknown"] | None
+    depth: int
+    link_id: str
+    link_state: Literal["up", "down", "unknown"]
+    downlink_interface: str | None
+    uplink_interface: str | None
+    multiple_parents: bool
+    loop: bool
+
+
+class UplinkChain(Strict):
+    device_id: str
+    steps: list[UplinkStep]

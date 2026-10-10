@@ -1,6 +1,6 @@
 # Plan 27: Topology and Links
 
-> **Phase:** 7 · **Depends on:** 10 · **Status:** Partial (links, link state, scoped graph, paths with state, groups and metrics; tree views, LLDP, utilisation and frontend to do)
+> **Phase:** 7 · **Depends on:** 10 · **Status:** Partial (links, link state, scoped graph, paths with state, groups and metrics; tree views; LLDP, utilisation and frontend to do)
 
 ## Goal
 Build topology and link management.
@@ -145,9 +145,34 @@ served.
 Tests: 21 in `tests/test_paths.py`. Mutation checks: 21, all caught. The first run left one survivor, a disabled path
 still counted in its group, which is now tested.
 
+### Built: tree views (2026-10-10)
+
+**Port.** `app/topology/tree.py` ports legacy's `buildDownArray`, `getUplinkTree` and `getCoreByDevice`, keeping its
+convention that a link's source is upstream.
+- `GET /topology/tree/{device_id}?direction=down`: the tree below a device.
+- `?direction=up`: the tree below the highest device above it that the caller may see (legacy's "core"). A device with
+  nothing above it is its own top (`is_top`).
+- `GET /topology/upward/{device_id}`: the chain of upstream devices, nearest first.
+- All of them need `links.view` and the device in scope. The depth limit is legacy's 15, and a cut tree says
+  `truncated`.
+
+**Legacy bugs not carried over.**
+- **Rings.** Legacy has no visited set, so a ring repeats its devices down to depth 15. Here each device is expanded
+  once; meeting it again gives a leaf marked `repeat`, and an upward walk round a loop stops with `loop`.
+- **Unpinged devices.** Legacy's tree query inner-joins the pinger table, so a device never pinged disappears with
+  everything below it. Here it stays.
+- **Several parents.** With more than one upstream link, legacy follows whichever chain the database returns longest.
+  Here the first in a fixed order is followed (upstream name, then link id), and `multiple_parents` says so.
+
+**Scope.** A device outside the caller's scope is shown as a placeholder, never expanded, and never walked through, so
+a reseller's "up" tree starts at their own highest device (`is_top: false`). Two guards do this: placeholders unique
+per link, and an explicit visibility check. Either alone suffices; both are kept on purpose.
+
+Tests: 7 in `tests/test_topology_tree.py`. Mutation checks: 14. Three are equivalent, by design: they remove one of the
+two guards, or merge the placeholders the other guard already makes harmless.
+
 ### Still to do
 
-- The upward tree and direction tree views.
 - LLDP neighbours through a bounded profile (BDCOM's LLDP MIB is in the repository) and external neighbour names.
 - Link utilisation (legacy computes it every two minutes for the `high_link_utilization` alarm).
 - The topology frontend.

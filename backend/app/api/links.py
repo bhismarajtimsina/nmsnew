@@ -12,7 +12,9 @@ from app.core.config import settings
 from app.core.database import get_conn
 from app.core.security import CurrentUser, require
 from app.repositories import links as repo
+from app.repositories import devices as device_repo
 from app.topology import links as topology
+from app.topology import tree as trees
 
 router = APIRouter(prefix=settings.api_prefix, tags=["topology"])
 LinkId = Annotated[str, Path(pattern=r"^[0-9a-fA-F-]{36}$")]
@@ -96,3 +98,28 @@ async def topology_graph(user: View, conn: Conn) -> dict[str, Any]:
     """Every link the caller may see, as nodes and edges with their state."""
     rows = await repo.list_links(conn, user)
     return {**topology.graph([topology.present(r) for r in rows]), "truncated": len(rows) >= repo.MAX_LINKS}
+
+
+async def _visible_links(conn: asyncpg.Connection, user: CurrentUser, device_id: str) -> list[dict[str, Any]]:
+    if await device_repo.get_device(conn, user, device_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    return [topology.present(r) for r in await repo.list_links(conn, user)]
+
+
+@router.get("/topology/tree/{device_id}", response_model=schemas.TopologyTree)
+async def topology_tree(device_id: LinkId, user: View, conn: Conn,
+                        direction: Annotated[str, Query(pattern="^(down|up)$")] = "down") -> dict[str, Any]:
+    """The tree below a device (`down`), or below the highest device above it that the caller may see (`up`; legacy's
+    "core" device). A device with nothing above it is its own top."""
+    links = await _visible_links(conn, user, device_id)
+    start = trees.top_of(device_id, links) if direction == "up" else device_id
+    tree, truncated = trees.down_tree(start, links)
+    return {"direction": direction, "searched_device": device_id, "build_from": start,
+            "is_top": not trees.upward_chain(start, links), "truncated": truncated, "tree": tree}
+
+
+@router.get("/topology/upward/{device_id}", response_model=schemas.UplinkChain)
+async def topology_upward(device_id: LinkId, user: View, conn: Conn) -> dict[str, Any]:
+    """The chain of upstream devices from a device to its top, nearest first."""
+    links = await _visible_links(conn, user, device_id)
+    return {"device_id": device_id, "steps": trees.upward_chain(device_id, links)}

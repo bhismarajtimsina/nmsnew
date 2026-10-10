@@ -1687,6 +1687,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/topology/tree/{device_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Topology Tree
+         * @description The tree below a device (`down`), or below the highest device above it that the caller may see (`up`; legacy's
+         *     "core" device). A device with nothing above it is its own top.
+         */
+        get: operations["topology_tree_api_v1_topology_tree__device_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/topology/upward/{device_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Topology Upward
+         * @description The chain of upstream devices from a device to its top, nearest first.
+         */
+        get: operations["topology_upward_api_v1_topology_upward__device_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/trap-history": {
         parameters: {
             query?: never;
@@ -4183,6 +4224,23 @@ export interface components {
             /** Truncated */
             truncated: boolean;
         };
+        /** TopologyTree */
+        TopologyTree: {
+            /** Build From */
+            build_from: string;
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "down" | "up";
+            /** Is Top */
+            is_top: boolean;
+            /** Searched Device */
+            searched_device: string;
+            tree: components["schemas"]["TreeNode"];
+            /** Truncated */
+            truncated: boolean;
+        };
         /** TotpDisable */
         TotpDisable: {
             /** Password */
@@ -4260,6 +4318,34 @@ export interface components {
             /** Vendor */
             vendor: string;
         };
+        /** TreeNode */
+        TreeNode: {
+            /** Downlink Interface */
+            downlink_interface?: string | null;
+            /** Id */
+            id: string;
+            /** Ip */
+            ip: string | null;
+            /** Link Id */
+            link_id?: string | null;
+            /** Link State */
+            link_state?: ("up" | "down" | "unknown") | null;
+            /** Name */
+            name: string | null;
+            /** Nodes */
+            nodes: components["schemas"]["TreeNode"][];
+            /**
+             * Repeat
+             * @default false
+             */
+            repeat: boolean;
+            /** State */
+            state: ("up" | "down" | "unknown") | null;
+            /** Uplink Interface */
+            uplink_interface?: string | null;
+            /** Visible */
+            visible: boolean;
+        };
         /** TwoFactorEnabled */
         TwoFactorEnabled: {
             /** Recovery Codes */
@@ -4269,6 +4355,43 @@ export interface components {
              * @constant
              */
             status: "enabled";
+        };
+        /** UplinkChain */
+        UplinkChain: {
+            /** Device Id */
+            device_id: string;
+            /** Steps */
+            steps: components["schemas"]["UplinkStep"][];
+        };
+        /** UplinkStep */
+        UplinkStep: {
+            /** Depth */
+            depth: number;
+            /** Downlink Interface */
+            downlink_interface: string | null;
+            /** Id */
+            id: string;
+            /** Ip */
+            ip: string | null;
+            /** Link Id */
+            link_id: string;
+            /**
+             * Link State
+             * @enum {string}
+             */
+            link_state: "up" | "down" | "unknown";
+            /** Loop */
+            loop: boolean;
+            /** Multiple Parents */
+            multiple_parents: boolean;
+            /** Name */
+            name: string | null;
+            /** State */
+            state: ("up" | "down" | "unknown") | null;
+            /** Uplink Interface */
+            uplink_interface: string | null;
+            /** Visible */
+            visible: boolean;
         };
         /** UserActivity */
         UserActivity: {
@@ -8521,6 +8644,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TopologyGraph"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    topology_tree_api_v1_topology_tree__device_id__get: {
+        parameters: {
+            query?: {
+                direction?: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                device_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TopologyTree"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    topology_upward_api_v1_topology_upward__device_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                device_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UplinkChain"];
                 };
             };
             /** @description Validation Error */
