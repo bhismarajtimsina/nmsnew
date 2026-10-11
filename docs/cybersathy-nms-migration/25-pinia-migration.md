@@ -415,4 +415,34 @@ all caught; the first run's three survivors were closed with new cases (an ONU's
 badges, and a hidden device never matching "nothing to highlight"). 200 frontend tests in total. Not checked in a
 browser (R-09).
 
+### Topology graph page for the new login (2026-10-11)
+
+The graph page (1,244 lines of drawing, tooltips and drawers) is built around legacy's topology shape. So
+`src/views/links/topologyGraph.ts` hands back that same shape from the new API, and the page's drawing code stays
+shared. The page itself only changed where it fetched or navigated.
+
+Under the new login:
+- **Data:** links come from `GET /links`, utilisation from `GET /topology/links/utilization`, and devices from
+  `GET /devices/overview`. The overview supplies ping status, model, group and interface counts, plus `device_type`,
+  newly added to it for the node icon.
+- **Out-of-scope ends:** each is its own placeholder per link (`hidden:<link>:<side>`), as the API draws them.
+  Placeholders are never named, never opened as a device page and never fetched, and a device id is never trusted on
+  a hidden end. A link with a hidden end offers no delete.
+- **Filters:** legacy's rules (Topology.php) are applied in the browser:
+  - links busier than the threshold;
+  - devices deeper than N levels below a root hidden, while devices no root reaches stay, as legacy keeps them;
+  - devices without links hidden;
+  - node size from the number of downstream links, with legacy's steps.
+- **Link colour:** also follows the link's own state, so a device-to-device link without interfaces is coloured too.
+- **Not yet offered:** optical readings, error counters and CPU/memory are not in the new API, so those tooltip and
+  drawer lines are absent. External LLDP neighbours are not drawn on the graph; their names are set through
+  `PUT /topology/lldp/external-names/{id}`.
+
+Legacy is unchanged.
+
+Tests: 19 vitest tests, including the page's wiring (no device page for a placeholder, delete only when editable). 29
+mutations checked (25 on the module, 4 on the page), all caught. A 30th was equivalent: in the level walk, `-1` versus
+`<= 0`, since only roots have level 0 and nothing links into a root. 219 frontend tests in total. Not checked in a
+browser (R-09).
+
 Still not done in this plan: the remaining pages on the typed client.

@@ -90,6 +90,7 @@ class DeviceOverviewOut(Strict):
     id: str
     name: str
     management_ip: str
+    device_type: str
     polling_enabled: bool
     group: OverviewGroup | None
     model: OverviewModel | None

@@ -2636,6 +2636,8 @@ export interface components {
         };
         /** DeviceOverviewOut */
         DeviceOverviewOut: {
+            /** Device Type */
+            device_type: string;
             group: components["schemas"]["OverviewGroup"] | null;
             /** Id */
             id: string;

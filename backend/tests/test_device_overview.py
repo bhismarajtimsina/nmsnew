@@ -38,6 +38,7 @@ async def test_each_device_carries_its_group_model_ping_and_interface_counts(app
 
     item = (await overview(app_client, headers))["items"][0]
     assert item["name"] == "sw-core" and item["management_ip"] == "10.0.0.2" and item["polling_enabled"] is True
+    assert item["device_type"] == "switch"  # the topology graph picks the node icon from it
     assert item["group"] == {"id": core, "name": "Core"}
     assert item["model"]["id"] == str(model) and item["model"]["name"] == "BDCOM S5612" and item["model"]["vendor"] == "bdcom"
     assert item["ping"]["status"] == "up" and item["ping"]["latency_ms"] == 1.5 and item["ping"]["last_checked_at"]

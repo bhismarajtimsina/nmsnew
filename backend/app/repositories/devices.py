@@ -55,7 +55,7 @@ async def device_overview(
             f"and ($4::uuid is null or d.id = $4::uuid)"
     rows = await conn.fetch(
         f"""{GRANTED_GROUPS_CTE}
-        select d.id, d.name, host(d.management_ip) as management_ip, d.polling_enabled,
+        select d.id, d.name, host(d.management_ip) as management_ip, d.device_type, d.polling_enabled,
                g.id as group_id, g.name as group_name,
                m.id as model_id, m.model_name, m.vendor as model_vendor, m.icon as model_icon,
                p.status as ping_status, p.latency_ms, p.last_checked_at,
@@ -88,6 +88,7 @@ def _overview_item(r: asyncpg.Record) -> dict[str, Any]:
         "id": str(r["id"]),
         "name": r["name"],
         "management_ip": r["management_ip"],
+        "device_type": r["device_type"],
         "polling_enabled": r["polling_enabled"],
         "group": {"id": str(r["group_id"]), "name": r["group_name"]} if r["group_id"] else None,
         "model": {"id": str(r["model_id"]), "name": r["model_name"], "vendor": r["model_vendor"], "icon": r["model_icon"]}

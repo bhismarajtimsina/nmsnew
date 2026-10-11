@@ -1624,6 +1624,10 @@
       "DeviceOverviewOut": {
         "additionalProperties": false,
         "properties": {
+          "device_type": {
+            "title": "Device Type",
+            "type": "string"
+          },
           "group": {
             "anyOf": [
               {
@@ -1678,6 +1682,7 @@
           "id",
           "name",
           "management_ip",
+          "device_type",
           "polling_enabled",
           "group",
           "model",

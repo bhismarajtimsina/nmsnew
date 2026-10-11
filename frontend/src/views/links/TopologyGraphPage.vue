@@ -2,6 +2,8 @@
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { DataService } from '@/config/dataService/dataService';
+import { api } from '@/api/client';
+import { authBackend } from '@/auth/session';
 import { Modal, notification } from 'ant-design-vue';
 import { Network } from 'vis-network';
 // The library's own stylesheet was never imported anywhere in this project
@@ -16,6 +18,11 @@ import { DataSet } from 'vis-data';
 import { Main } from '../styled';
 import { deviceStatusColor, ifaceStatusColor, statusIconUri } from '@/utility/deviceTypeIcons';
 import { signalColor, loadColor, tempColor } from '@/utility/opticalColors';
+import { isExternal, isPlaceholder, legacySource, newApiSource } from './topologyGraph';
+
+// With the new login the page reads the new API (src/views/links/topologyGraph.ts), which hands back legacy's topology
+// shape so the drawing code below is shared; legacy is unchanged.
+const source = authBackend() === 'cybersathy' ? newApiSource(api) : legacySource(DataService as any);
 
 const router = useRouter();
 const loading = ref(true);
@@ -77,23 +84,7 @@ const wireOptical = computed(() => pickOptical(opticalSrc.value, opticalDest.val
 // whole row once (from=store, never live) means the wire hover/click and
 // the device hover/click can each pull out whatever piece they need
 // without re-requesting it.
-const ifaceRowCache = new Map<string, any>();
-async function fetchIfaceRow(deviceId: number | string | undefined, ifaceName: string | undefined) {
-  // External-neighbor pseudo-devices (string ids) have no real interfaces
-  // endpoint behind them — skip rather than firing a request that can only 404.
-  if (!deviceId || typeof deviceId !== 'number' || !ifaceName) return null;
-  const key = `${deviceId}:${ifaceName}`;
-  if (ifaceRowCache.has(key)) return ifaceRowCache.get(key);
-  try {
-    const { data } = await DataService.get(`/component/switches/interfaces/${deviceId}`, { from: 'store' });
-    const rows = data.data || [];
-    const row = rows.find((r: any) => r.interface?.name === ifaceName) || null;
-    ifaceRowCache.set(key, row);
-    return row;
-  } catch {
-    return null;
-  }
-}
+const fetchIfaceRow = (deviceId: number | string | undefined, ifaceName: string | undefined) => source.ifaceRow(deviceId, ifaceName);
 function hasErrors(row: any): boolean {
   const c = row?.counters;
   return !!c && ((Number(c.in_errors) || 0) > 0 || (Number(c.out_errors) || 0) > 0);
@@ -104,19 +95,7 @@ function hasErrors(row: any): boolean {
 // down counts (from `/device/{id}`, same call the click-drawer already
 // makes) — both `from=store`/cached, only fetched the first time a given
 // node is actually hovered or clicked.
-const resourcesCache = new Map<number | string, any>();
-async function fetchResources(deviceId: number | string) {
-  if (isExternalId(deviceId)) return null;
-  if (resourcesCache.has(deviceId)) return resourcesCache.get(deviceId);
-  try {
-    const { data } = await DataService.get(`/component/switches/resources/${deviceId}`, { from: 'store' });
-    resourcesCache.set(deviceId, data.data);
-    return data.data;
-  } catch {
-    resourcesCache.set(deviceId, null);
-    return null;
-  }
-}
+const fetchResources = (deviceId: number | string) => source.resources(deviceId);
 
 function confirmDeleteLink(lnk: any) {
   Modal.confirm({
@@ -125,11 +104,11 @@ function confirmDeleteLink(lnk: any) {
     okType: 'danger',
     onOk: async () => {
       try {
-        await DataService.delete(`/component/links/${lnk.id}`);
+        await source.removeLink(lnk.id);
         notification.success({ message: 'Link deleted' });
         loadGraph();
-      } catch (err: any) {
-        notification.error({ message: 'Could not delete link', description: err?.response?.data?.error?.description || 'Please try again.' });
+      } catch (err) {
+        notification.error({ message: 'Could not delete link', description: source.errorMessage(err) });
       }
     },
   });
@@ -168,19 +147,7 @@ const deviceDrawerOpen = ref(false);
 const selectedDevice = ref<any>(null);
 const deviceExtra = ref<any>(null);
 const deviceExtraLoading = ref(false);
-const deviceCache = new Map<number | string, any>();
-
-async function fetchDeviceExtra(id: number | string) {
-  if (isExternalId(id)) return null;
-  if (deviceCache.has(id)) return deviceCache.get(id);
-  try {
-    const { data } = await DataService.get(`/device/${id}`);
-    deviceCache.set(id, data.data);
-    return data.data;
-  } catch {
-    return null;
-  }
-}
+const fetchDeviceExtra = (id: number | string) => source.deviceExtra(id);
 
 const deviceNeighborLinks = computed(() => {
   if (!selectedDevice.value) return [];
@@ -215,17 +182,17 @@ function goToSelectedDevice() {
 const externalNameDraft = ref('');
 const externalNameSaving = ref(false);
 async function saveExternalName() {
-  if (!selectedDevice.value || !isExternalId(selectedDevice.value.id)) return;
+  if (!selectedDevice.value || !isExternalId(selectedDevice.value.id) || !source.saveExternalName) return;
   externalNameSaving.value = true;
   try {
     const name = externalNameDraft.value.trim();
-    await DataService.put('/component/links/external-neighbor-name', { id: selectedDevice.value.id, name });
+    await source.saveExternalName(selectedDevice.value.id, name);
     notification.success({ message: name ? 'Name saved' : 'Name cleared' });
     await loadGraph();
     const refreshed = devicesById.get(selectedDevice.value.id);
     if (refreshed) selectedDevice.value = refreshed;
-  } catch (err: any) {
-    notification.error({ message: 'Could not save name', description: err?.response?.data?.error?.description || 'Please try again.' });
+  } catch (err) {
+    notification.error({ message: 'Could not save name', description: source.errorMessage(err) });
   } finally {
     externalNameSaving.value = false;
   }
@@ -249,9 +216,7 @@ function deviceType(deviceId: number | string | undefined): string | undefined {
 // real Device/interfaces-info/resources endpoint behind one of these, so
 // every fetch that takes a device id needs to skip them rather than firing
 // a request that can only ever 404.
-function isExternalId(id: number | string | undefined | null): boolean {
-  return typeof id === 'string' && id.startsWith('ext:');
-}
+const isExternalId = isExternal;
 function otherSideOf(link: any, deviceId: number) {
   return link.src_device?.id === deviceId
     ? { device: link.dest_device, iface: link.src_iface, otherIface: link.dest_iface }
@@ -278,8 +243,9 @@ const statusColor = deviceStatusColor;
 // up/down distinction (from the one side we DO have real status for).
 function linkStatusColor(l: any) {
   const statuses = [l.src_iface?.status, l.dest_iface?.status].filter(Boolean);
-  const down = statuses.some((s) => s === 'Down');
-  const up = statuses.length > 0 && statuses.every((s) => s === 'Up');
+  // The new API also gives the link's own state, which covers a device-to-device link with no interfaces.
+  const down = l.state === 'down' || statuses.some((s) => s === 'Down');
+  const up = !down && (l.state === 'up' || (statuses.length > 0 && statuses.every((s) => s === 'Up')));
   if (l.external) {
     if (down) return '#ea580c';
     if (up) return '#0891b2';
@@ -290,7 +256,7 @@ function linkStatusColor(l: any) {
   return '#c1c4d6';
 }
 function linkIsDown(l: any) {
-  return [l.src_iface?.status, l.dest_iface?.status].some((s) => s === 'Down');
+  return l.state === 'down' || [l.src_iface?.status, l.dest_iface?.status].some((s) => s === 'Down');
 }
 
 function el(tag: string, className: string, text?: string) {
@@ -409,13 +375,7 @@ function linkTooltip(l: any, srcRow?: any, destRow?: any) {
 async function loadGraph() {
   loading.value = true;
   try {
-    const { data } = await DataService.get('/component/links/topology-tree', {
-      period: '10m',
-      utilization: settings.utilization,
-      hide_levels_above: settings.hideLevelsAbove,
-      hide_without_links: settings.hideWithoutLinks ? 'true' : 'false',
-    });
-    const topo = data.data || { devices: [], links: [] };
+    const topo = await source.topology(settings);
 
     stats.devices = (topo.devices || []).length;
     stats.up = (topo.devices || []).filter((d: any) => d.pinger?.status === 'Up').length;
@@ -489,7 +449,8 @@ async function loadGraph() {
     network.on('doubleClick', (params) => {
       // External-neighbor pseudo-nodes (string ids like "ext:25:AABBCC...")
       // have no real device page to jump to.
-      if (params.nodes?.length && !isExternalId(params.nodes[0])) {
+      // Out-of-scope placeholders (new API) have no device page either.
+      if (params.nodes?.length && !isPlaceholder(params.nodes[0])) {
         router.push({ name: 'device-detail', params: { id: params.nodes[0] } });
       }
     });
@@ -545,8 +506,8 @@ async function loadGraph() {
         refreshLiveTooltip(newTitle);
       }
     });
-  } catch (err: any) {
-    notification.error({ message: 'Could not load topology', description: err?.response?.data?.error?.description || 'Please try again.' });
+  } catch (err) {
+    notification.error({ message: 'Could not load topology', description: source.errorMessage(err) });
   } finally {
     loading.value = false;
   }
@@ -668,14 +629,18 @@ onBeforeUnmount(() => {
     <a-drawer :visible="linkDrawerOpen" title="Link details" placement="right" width="440" @close="linkDrawerOpen = false">
       <template v-if="selectedLink">
         <div class="link-detail__header">
-          <router-link :to="{ name: 'device-detail', params: { id: selectedLink.src_device?.id } }" class="link-detail__device">
+          <span v-if="isPlaceholder(selectedLink.src_device?.id)" class="link-detail__device link-detail__device--external">
+            <img class="link-detail__icon" :src="statusIconUri('UNKNOWN', '#c1c4d6')" />
+            {{ selectedLink.src_device?.name }}
+          </span>
+          <router-link v-else :to="{ name: 'device-detail', params: { id: selectedLink.src_device?.id } }" class="link-detail__device">
             <img class="link-detail__icon" :src="statusIconUri(deviceType(selectedLink.src_device?.id), statusColor(deviceStatus(selectedLink.src_device?.id)))" />
             {{ selectedLink.src_device?.name || selectedLink.src_device?.ip }}
           </router-link>
           <unicon name="arrow-right" width="16" height="16"></unicon>
           <!-- External-neighbor pseudo-devices have no real device page to link to. -->
-          <span v-if="isExternalId(selectedLink.dest_device?.id)" class="link-detail__device link-detail__device--external">
-            <img class="link-detail__icon" :src="statusIconUri('EXTERNAL', '#c1c4d6')" />
+          <span v-if="isPlaceholder(selectedLink.dest_device?.id)" class="link-detail__device link-detail__device--external">
+            <img class="link-detail__icon" :src="statusIconUri(isExternalId(selectedLink.dest_device?.id) ? 'EXTERNAL' : 'UNKNOWN', '#c1c4d6')" />
             {{ selectedLink.dest_device?.name }}
           </span>
           <router-link v-else :to="{ name: 'device-detail', params: { id: selectedLink.dest_device?.id } }" class="link-detail__device">
@@ -757,7 +722,7 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
-        <a-button danger block style="margin-top: 20px" @click="linkDrawerOpen = false; confirmDeleteLink(selectedLink)">Delete this link</a-button>
+        <a-button v-if="selectedLink.editable !== false" danger block style="margin-top: 20px" @click="linkDrawerOpen = false; confirmDeleteLink(selectedLink)">Delete this link</a-button>
       </template>
     </a-drawer>
 
@@ -833,7 +798,7 @@ onBeforeUnmount(() => {
           </ul>
         </div>
 
-        <a-button v-if="!isExternalId(selectedDevice.id)" type="primary" block style="margin-top: 20px" @click="goToSelectedDevice">View full device page →</a-button>
+        <a-button v-if="!isPlaceholder(selectedDevice.id)" type="primary" block style="margin-top: 20px" @click="goToSelectedDevice">View full device page →</a-button>
       </template>
     </a-drawer>
   </Main>
