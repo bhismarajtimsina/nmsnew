@@ -229,3 +229,71 @@ async def test_the_table_refuses_a_sample_without_counters_or_with_a_negative_on
             async with db.transaction():
                 await db.execute("insert into interface_counter_samples (interface_id, in_octets, out_octets, speed_bps) "
                                  "values ($1::uuid, $2, $3, $4)", iface, *values)
+
+
+# The "Busiest links" dashboard widget (legacy HighUtilization).
+
+W = "/api/v1/dashboards/widgets/high-link-utilization"
+
+
+async def alarm(db, link, resolved=False, key="k"):
+    await db.execute("insert into events (name, dedup_key, labels, severity, resolved_at) "
+                     "values ('high_link_utilization', $1, jsonb_build_object('link_id', $2::text), 'warning', case when $3 then now() end)",
+                     f"{key}-{link}", link, resolved)
+
+
+async def test_the_widget_ranks_the_busiest_measured_links_and_respects_the_limit(app_client, db):
+    a, b, ai, bi, busy = await linked(db)
+    c = await make_device(db, "acc-2")
+    ci = await make_interface(db, c, "Gi0/2", 2)
+    bi2 = await make_interface(db, b, "Gi0/23", 23)
+    calm = str(await db.fetchval("insert into links (src_device_id, src_interface_id, dest_device_id, dest_interface_id) "
+                                 "values ($1::uuid, $2::uuid, $3::uuid, $4::uuid) returning id", b, bi2, c, ci))
+    d = await make_device(db, "acc-3")
+    di = await make_interface(db, d, "Gi0/3", 3)
+    bi3 = await make_interface(db, b, "Gi0/22", 22)
+    unknown_speed = str(await db.fetchval("insert into links (src_device_id, src_interface_id, dest_device_id, dest_interface_id) "
+                                          "values ($1::uuid, $2::uuid, $3::uuid, $4::uuid) returning id", b, bi3, d, di))
+    for iface, octets, speed in ((ai, 600_000_000, 100_000_000), (ci, 75_000_000, 100_000_000), (di, 900_000_000, None)):
+        await sample(db, iface, 120, 0, 0, speed)
+        await sample(db, iface, 60, octets, 0, speed)
+    headers = await login(app_client, db)
+    body = (await app_client.get(W, headers=headers)).json()
+    assert [i["link_id"] for i in body["items"]] == [busy, calm]  # the link of unknown speed has no percent to rank by
+    assert unknown_speed not in [i["link_id"] for i in body["items"]]
+    assert body["items"][0]["percent"] == 80.0 and body["items"][0]["src"] == {"device_id": a, "name": "acc-1", "ip": body["items"][0]["src"]["ip"],
+                                                                               "interface": "Gi0/1", "visible": True}
+    assert body["minutes"] == 15 and body["alarmed"] == 0
+    assert [i["link_id"] for i in (await app_client.get(W, headers=headers, params={"limit": 1})).json()["items"]] == [busy]
+    listed = (await app_client.get("/api/v1/dashboards", headers=headers)).json()["dashboards"]
+    widget = next(w for d in listed for w in d["widgets"] if w["key"] == "high_link_utilization")
+    assert widget["state"] == "live" and widget["endpoint"] == W
+
+
+async def test_the_alarm_count_is_legacys_open_alarms_on_links_wholly_in_scope(app_client, db):
+    mine, theirs = await make_group(db, "mine"), await make_group(db, "theirs")
+    a, b, ai, bi, inside = await linked(db, mine, mine)
+    c = await make_device(db, "far", theirs)
+    across = str(await db.fetchval("insert into links (src_device_id, dest_device_id) values ($1::uuid, $2::uuid) returning id", b, c))
+    await alarm(db, inside)
+    await alarm(db, inside, key="again")  # two open alarms on one link count once
+    await alarm(db, across)
+    quiet = str(await db.fetchval("insert into links (src_device_id, dest_device_id) values ($1::uuid, $2::uuid) returning id", a, b))
+    await alarm(db, quiet, resolved=True, key="old")  # a resolved alarm on a link of its own counts for nothing
+    await alarm(db, "00000000-0000-0000-0000-000000000000")  # a link since deleted
+    admin = await login(app_client, db)
+    assert (await app_client.get(W, headers=admin)).json()["alarmed"] == 2
+    reseller = await login(app_client, db, "res", "Reseller Operator", mine)
+    assert (await app_client.get(W, headers=reseller)).json()["alarmed"] == 1  # the link into another scope is not counted
+
+
+async def test_a_reseller_sees_the_far_end_masked_and_the_figure_from_its_own_end(app_client, db):
+    mine, theirs = await make_group(db, "mine"), await make_group(db, "theirs")
+    a, b, ai, bi, link = await linked(db, mine, theirs)
+    for iface, octets in ((ai, 75_000_000), (bi, 600_000_000)):
+        await sample(db, iface, 120, 0, 0, 100_000_000)
+        await sample(db, iface, 60, octets, 0, 100_000_000)
+    reseller = await login(app_client, db, "res", "Reseller Operator", mine)
+    (item,) = (await app_client.get(W, headers=reseller)).json()["items"]
+    assert item["percent"] == 10.0
+    assert item["dest"] == {"device_id": None, "name": None, "ip": None, "interface": None, "visible": False}

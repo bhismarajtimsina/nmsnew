@@ -616,6 +616,112 @@
         "title": "AuthUser",
         "type": "object"
       },
+      "BusyLink": {
+        "additionalProperties": false,
+        "properties": {
+          "dest": {
+            "$ref": "#/components/schemas/BusyLinkEnd"
+          },
+          "link_id": {
+            "title": "Link Id",
+            "type": "string"
+          },
+          "mbps": {
+            "title": "Mbps",
+            "type": "number"
+          },
+          "percent": {
+            "title": "Percent",
+            "type": "number"
+          },
+          "speed_mbps": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speed Mbps"
+          },
+          "src": {
+            "$ref": "#/components/schemas/BusyLinkEnd"
+          }
+        },
+        "required": [
+          "link_id",
+          "percent",
+          "mbps",
+          "speed_mbps",
+          "src",
+          "dest"
+        ],
+        "title": "BusyLink",
+        "type": "object"
+      },
+      "BusyLinkEnd": {
+        "additionalProperties": false,
+        "properties": {
+          "device_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Id"
+          },
+          "interface": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interface"
+          },
+          "ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "visible": {
+            "title": "Visible",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "device_id",
+          "name",
+          "ip",
+          "interface",
+          "visible"
+        ],
+        "title": "BusyLinkEnd",
+        "type": "object"
+      },
       "CapabilityOut": {
         "additionalProperties": false,
         "properties": {
@@ -3542,6 +3648,33 @@
           "items"
         ],
         "title": "LinkUtilizationList",
+        "type": "object"
+      },
+      "LinkUtilizationWidget": {
+        "additionalProperties": false,
+        "properties": {
+          "alarmed": {
+            "title": "Alarmed",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BusyLink"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "minutes": {
+            "title": "Minutes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "alarmed",
+          "minutes",
+          "items"
+        ],
+        "title": "LinkUtilizationWidget",
         "type": "object"
       },
       "LldpNeighbourList": {
@@ -10853,6 +10986,67 @@
           }
         },
         "summary": "Events By Severity",
+        "tags": [
+          "dashboards"
+        ]
+      }
+    },
+    "/api/v1/dashboards/widgets/high-link-utilization": {
+      "get": {
+        "operationId": "high_link_utilization_api_v1_dashboards_widgets_high_link_utilization_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkUtilizationWidget"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "High Link Utilization",
         "tags": [
           "dashboards"
         ]

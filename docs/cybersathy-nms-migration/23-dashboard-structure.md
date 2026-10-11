@@ -78,7 +78,17 @@ fragments, so a reseller's numbers count only their scope:
 - last user activity.
 
 **Pending widgets** are listed with their reason and no endpoint, rather than left off. Seven ONU widgets wait for
-OLT/ONU storage (Plan 14), and busiest links waits for Plan 27.
+OLT/ONU storage (Plan 14).
+
+**Busiest links** (live since 2026-10-11, once Plan 27 built utilisation):
+`GET /dashboards/widgets/high-link-utilization`, needing `links.view`. It returns two things:
+- `alarmed`: legacy's HighUtilization count. These are links with an open `high_link_utilization` alarm, counted once
+  each and only when both ends are inside the caller's scope.
+- `items`: the busiest links the caller may see over the utilisation period, measured at their own ends. Ends outside
+  their scope are masked. A link with nothing measured, or of unknown speed, has no percent to rank by and is left out.
+
+  Tests: 3, in `tests/test_link_utilization.py`. 10 mutations checked, all caught. The first run's survivor (a
+  resolved alarm sharing a link with an open one) was closed with a resolved alarm on a link of its own.
 
 **Legacy parity.** Every legacy widget and every `/dashboard/widget/*` endpoint maps to a native widget; none is
 removed. A test checks Plan 23's parity list.

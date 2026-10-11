@@ -504,6 +504,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/dashboards/widgets/high-link-utilization": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** High Link Utilization */
+        get: operations["high_link_utilization_api_v1_dashboards_widgets_high_link_utilization_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/dashboards/widgets/last-user-activity": {
         parameters: {
             query?: never;
@@ -2317,6 +2334,32 @@ export interface components {
             /** Username */
             username: string;
         };
+        /** BusyLink */
+        BusyLink: {
+            dest: components["schemas"]["BusyLinkEnd"];
+            /** Link Id */
+            link_id: string;
+            /** Mbps */
+            mbps: number;
+            /** Percent */
+            percent: number;
+            /** Speed Mbps */
+            speed_mbps: number | null;
+            src: components["schemas"]["BusyLinkEnd"];
+        };
+        /** BusyLinkEnd */
+        BusyLinkEnd: {
+            /** Device Id */
+            device_id: string | null;
+            /** Interface */
+            interface: string | null;
+            /** Ip */
+            ip: string | null;
+            /** Name */
+            name: string | null;
+            /** Visible */
+            visible: boolean;
+        };
         /** CapabilityOut */
         CapabilityOut: {
             /** Code */
@@ -3185,6 +3228,15 @@ export interface components {
         LinkUtilizationList: {
             /** Items */
             items: components["schemas"]["LinkUtilization"][];
+            /** Minutes */
+            minutes: number;
+        };
+        /** LinkUtilizationWidget */
+        LinkUtilizationWidget: {
+            /** Alarmed */
+            alarmed: number;
+            /** Items */
+            items: components["schemas"]["BusyLink"][];
             /** Minutes */
             minutes: number;
         };
@@ -5842,6 +5894,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EventCountsWidget"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    high_link_utilization_api_v1_dashboards_widgets_high_link_utilization_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkUtilizationWidget"];
                 };
             };
             /** @description Validation Error */

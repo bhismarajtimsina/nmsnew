@@ -1150,6 +1150,29 @@ class LldpSuggestionList(Strict):
     items: list[LldpSuggestion]
 
 
+class BusyLinkEnd(Strict):
+    device_id: str | None
+    name: str | None
+    ip: str | None
+    interface: str | None
+    visible: bool
+
+
+class BusyLink(Strict):
+    link_id: str
+    percent: float
+    mbps: float
+    speed_mbps: float | None
+    src: BusyLinkEnd
+    dest: BusyLinkEnd
+
+
+class LinkUtilizationWidget(Strict):
+    alarmed: int
+    minutes: int
+    items: list[BusyLink]
+
+
 class LinkUtilization(Strict):
     link_id: str
     percent: float | None

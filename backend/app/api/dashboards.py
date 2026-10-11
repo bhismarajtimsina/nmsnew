@@ -30,6 +30,7 @@ ENDPOINTS = {
     "system_stat": f"{_BASE}/system-stat",
     "latest_system_actions": f"{_BASE}/latest-system-actions",
     "last_user_activity": f"{_BASE}/last-user-activity",
+    "high_link_utilization": f"{_BASE}/high-link-utilization",
 }
 
 
@@ -123,3 +124,10 @@ async def last_user_activity(_: Annotated[CurrentUser, Depends(_for("last_user_a
                              conn: Annotated[asyncpg.Connection, Depends(get_conn)],
                              limit: Annotated[int, Query(ge=1, le=50)] = 10) -> dict[str, Any]:
     return {"items": await repo.last_user_activity(conn, limit)}
+
+
+@router.get("/dashboards/widgets/high-link-utilization", response_model=schemas.LinkUtilizationWidget)
+async def high_link_utilization(user: Annotated[CurrentUser, Depends(_for("high_link_utilization"))],
+                                conn: Annotated[asyncpg.Connection, Depends(get_conn)],
+                                limit: Annotated[int, Query(ge=1, le=50)] = 10) -> dict[str, Any]:
+    return await repo.link_utilization(conn, user, settings.links_utilization_minutes, limit)

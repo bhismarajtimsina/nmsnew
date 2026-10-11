@@ -40,7 +40,7 @@ WIDGETS: dict[str, Widget] = {w.key: w for w in [
     Widget("system_stat", "System summary", "portal.view"),
     Widget("latest_system_actions", "Latest system actions", "logs.actions.view", noc_wide=True),
     Widget("last_user_activity", "Last user activity", "users.view", noc_wide=True),
-    Widget("high_link_utilization", "Busiest links", "links.view", pending="links and traffic history (Plan 27)"),
+    Widget("high_link_utilization", "Busiest links", "links.view"),
     Widget("ont_statuses", "ONU statuses", "olts.view", pending=_ONU_PENDING),
     Widget("ont_offline_split", "Offline ONUs by reason", "olts.view", pending=_ONU_PENDING),
     Widget("pon_ports", "PON ports and capacity", "olts.view", pending=_ONU_PENDING),

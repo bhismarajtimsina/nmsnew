@@ -154,3 +154,33 @@ async def last_user_activity(conn: asyncpg.Connection, limit: int) -> list[dict[
         limit,
     )
     return [{**dict(r), "id": str(r["id"])} for r in rows]
+
+
+async def link_utilization(conn: asyncpg.Connection, user: CurrentUser, minutes: int, limit: int) -> dict[str, Any]:
+    """Busiest links. `alarmed` is legacy's HighUtilization count: links with an open `high_link_utilization` alarm,
+    counted only when both ends are inside the caller's scope. `items` are the busiest links the caller may see over the
+    utilisation period, measured at their own ends only (app/repositories/links.py utilization_of); a link with nothing
+    measured is left out, and so is one whose speed is unknown, since it has no percent to rank by."""
+    from app.repositories import links as link_repo
+    from app.topology.links import present
+
+    dest_visible = DEVICE_VISIBLE.replace("d.id", "t.id").replace("d.group_id", "t.group_id")
+    alarmed = await conn.fetchval(
+        f"""{GRANTED_GROUPS_CTE}
+        select count(distinct l.id) from events e
+        join links l on l.id::text = e.labels->>'link_id'
+        join devices d on d.id = l.src_device_id
+        join devices t on t.id = l.dest_device_id
+        where e.name = 'high_link_utilization' and e.resolved_at is null and {DEVICE_VISIBLE} and {dest_visible}""",
+        user.id, user.scope_all,
+    )
+    rows = await link_repo.list_links(conn, user)
+    figures = await link_repo.utilization_of(conn, rows, minutes, visible_only=True)
+    ranked = sorted(((figures[str(r["id"])], r) for r in rows if (figures.get(str(r["id"])) or {}).get("percent") is not None),
+                    key=lambda pair: (-pair[0]["percent"], str(pair[1]["id"])))
+    items = []
+    for figure, row in ranked[:limit]:
+        link = present(row)
+        items.append({"link_id": str(row["id"]), "percent": figure["percent"], "mbps": figure["mbps"], "speed_mbps": figure["speed_mbps"],
+                      **{side: {k: link[side][k] for k in ("device_id", "name", "ip", "interface", "visible")} for side in ("src", "dest")}})
+    return {"alarmed": alarmed, "minutes": minutes, "items": items}
