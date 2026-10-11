@@ -392,4 +392,27 @@ Tests: 12 vitest tests. 23 mutations checked, all caught. A 24th mutant was equi
 an absent label could never pass anyway. The filter was removed. 188 frontend tests in total. Not checked in a
 browser (R-09).
 
+### Topology tree page for the new login (2026-10-11)
+
+`src/views/links/topologyTree.ts` turns both legacy's tree and the new API's (`GET /topology/tree/{device_id}`) into
+one node shape. The page and its recursive row, `TopologyTreeNode.vue`, now render only that shape.
+
+Under the new login:
+- **Out-of-scope devices:** a device outside the viewer's scope reads "Outside your scope". It has no name and no
+  link, and is never expanded; its placeholder id is never used as a device id.
+- **Rings:** a device met a second time in a ring is a leaf marked "repeat".
+- **Badges:** the tree carries each link's state rather than each interface's status, so both interface badges show
+  the link state (grey when unknown).
+- **From core device:** this always answers, because a device with nothing above it is its own top. A tree cut at
+  legacy's 15-level depth says so.
+- **Link info:** the popover reads the link and its utilisation, measured at the viewer's own end.
+
+Legacy is unchanged, including its handling of a missing core device: legacy answers 400 or 500, and the page still
+shows a message for it.
+
+Tests: 12 vitest tests, including a check that the row links and names only visible devices. 25 mutations checked,
+all caught; the first run's three survivors were closed with new cases (an ONU's "Online" status, a root without
+badges, and a hidden device never matching "nothing to highlight"). 200 frontend tests in total. Not checked in a
+browser (R-09).
+
 Still not done in this plan: the remaining pages on the typed client.

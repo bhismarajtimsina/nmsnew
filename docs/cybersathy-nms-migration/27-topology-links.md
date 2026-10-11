@@ -1,6 +1,6 @@
 # Plan 27: Topology and Links
 
-> **Phase:** 7 · **Depends on:** 10 · **Status:** Partial (links, link state, scoped graph, paths with state, groups and metrics; tree views, LLDP neighbours and link suggestions, link utilisation, links page; graph and tree pages to do)
+> **Phase:** 7 · **Depends on:** 10 · **Status:** Partial (links, link state, scoped graph, paths with state, groups and metrics; tree views, LLDP neighbours and link suggestions, link utilisation, links and tree pages; graph page to do)
 
 ## Goal
 Build topology and link management.
@@ -292,5 +292,5 @@ disabled one (D-17).
 
 ### Still to do
 
-- The topology frontend: the links page is on the new API (see Plan 25). The graph and tree pages still call
+- The topology frontend: the links and tree pages are on the new API (see Plan 25). The graph page still calls
   legacy's endpoints.

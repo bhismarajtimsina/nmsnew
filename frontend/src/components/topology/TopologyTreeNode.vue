@@ -1,99 +1,66 @@
 <!--
-  Recursive tree row for Topology (tree view) — matches the real production
-  app's own TreeNode component field-for-field (reverse-engineered from its
-  compiled bundle, then confirmed live against `GET /component/links/view/tree`):
-  each node carries device_id/device_ip/name/latency/nodes[], plus (for every
-  node except the root) the link and interface pair that connects it to its
-  parent — src/dest iface name+status, coloured green when Up/Online.
+  Recursive tree row for Topology (tree view). The node shape comes from src/views/links/topologyTree.ts, which maps
+  both legacy's tree (matched field-for-field to the production app's own TreeNode) and the new API's onto it: each
+  node has its device, its state, and (except the root) the link and the interface pair joining it to its parent.
+  Under the new API a device outside the viewer's scope is a placeholder and a device met again in a ring is a repeat;
+  neither is expanded.
 -->
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { DataService } from '@/config/dataService/dataService';
+import { containsDevice, countBelow, type IfaceBadge, type LinkInfo, type TreeView } from '@/views/links/topologyTree';
+import type { Id } from '@/views/links/linksList';
 
-interface TreeNode {
-  device_id: number;
-  device_ip: string;
-  name: string;
-  model_name?: string;
-  location?: string;
-  latency: number;
-  nodes: TreeNode[];
-  link_id?: number | null;
-  src_iface_name?: string;
-  src_iface_description?: string;
-  src_iface_status?: string;
-  dest_iface_name?: string;
-  dest_iface_description?: string;
-  dest_iface_status?: string;
-}
-
-const props = withDefaults(defineProps<{ node: TreeNode; highlightDeviceId?: number | null; depth?: number }>(), {
-  highlightDeviceId: null,
-  depth: 0,
-});
+const props = withDefaults(
+  defineProps<{
+    node: TreeView;
+    loadLinkInfo: (linkId: Id) => Promise<LinkInfo | null>;
+    highlightDeviceId?: Id | null;
+    depth?: number;
+  }>(),
+  { highlightDeviceId: null, depth: 0 },
+);
 
 const expanded = ref(false);
 const linkPopoverOpen = ref(false);
-const linkInfo = ref<any>(null);
+const linkInfo = ref<LinkInfo | null>(null);
 const linkInfoLoading = ref(false);
 
-const isHighlighted = computed(() => props.node.device_id === props.highlightDeviceId);
-const isUp = computed(() => props.node.latency > 0);
-
-function countNodes(node: TreeNode, onlyOnline = false): number {
-  if (!node.nodes || !node.nodes.length) return 0;
-  let count = onlyOnline ? node.nodes.filter((n) => n.latency > 0).length : node.nodes.length;
-  for (const child of node.nodes) count += countNodes(child, onlyOnline);
-  return count;
-}
-const totalCount = computed(() => countNodes(props.node));
-const onlineCount = computed(() => countNodes(props.node, true));
-
-function containsHighlighted(node: TreeNode): boolean {
-  if (!node.nodes) return false;
-  for (const child of node.nodes) {
-    if (child.device_id === props.highlightDeviceId || containsHighlighted(child)) return true;
-  }
-  return false;
-}
-
-function ifaceStatusOk(status?: string) {
-  return status === 'Up' || status === 'Online';
-}
+const isHighlighted = computed(
+  () => props.node.deviceId != null && String(props.node.deviceId) === String(props.highlightDeviceId),
+);
+const totalCount = computed(() => countBelow(props.node));
+const onlineCount = computed(() => countBelow(props.node, true));
+const badgeClass = (badge: IfaceBadge) =>
+  badge.state === 'up' ? 'is-up' : badge.state === 'down' ? 'is-down' : 'is-unknown';
+const badgeTitle = (badge: IfaceBadge) => (badge.description ? `${badge.name} - ${badge.description}` : badge.name);
 
 async function openLinkInfo() {
-  if (!props.node.link_id) return;
+  if (!props.node.linkId) return;
   linkPopoverOpen.value = true;
   linkInfoLoading.value = true;
-  try {
-    const { data } = await DataService.get(`/component/links/${props.node.link_id}`, { with_stat: 'yes' });
-    linkInfo.value = data.data;
-  } catch {
-    linkInfo.value = null;
-  } finally {
-    linkInfoLoading.value = false;
-  }
+  linkInfo.value = await props.loadLinkInfo(props.node.linkId);
+  linkInfoLoading.value = false;
 }
 
 onMounted(() => {
-  if (containsHighlighted(props.node)) expanded.value = true;
+  if (containsDevice(props.node, props.highlightDeviceId)) expanded.value = true;
 });
 </script>
 
 <template>
   <li :class="`tree-depth-${depth}`">
     <div class="topo-node" :class="{ 'topo-node--highlight': isHighlighted }">
-      <a v-if="node.link_id" class="topo-node__info" title="Link info" @click.prevent="openLinkInfo">
+      <a v-if="node.linkId" class="topo-node__info" title="Link info" @click.prevent="openLinkInfo">
         <unicon name="info-circle"></unicon>
       </a>
-      <a-popover v-if="node.link_id" v-model:visible="linkPopoverOpen" trigger="click" placement="top">
+      <a-popover v-if="node.linkId" v-model:visible="linkPopoverOpen" trigger="click" placement="top">
         <template #content>
           <div class="topo-link-info">
             <a-skeleton v-if="linkInfoLoading" active :paragraph="{ rows: 2 }" />
             <template v-else-if="linkInfo">
               <p><strong>Utilization:</strong> {{ linkInfo.utilization != null ? linkInfo.utilization + '%' : '—' }}</p>
               <p><strong>Speed:</strong> {{ linkInfo.speed ?? '—' }}</p>
-              <p><strong>Created:</strong> {{ linkInfo.created_at ?? '—' }}</p>
+              <p><strong>Created:</strong> {{ linkInfo.createdAt ?? '—' }}</p>
             </template>
             <p v-else>Could not load link info.</p>
           </div>
@@ -102,50 +69,71 @@ onMounted(() => {
       </a-popover>
 
       <span
-        v-if="node.src_iface_name"
+        v-if="node.parentIface"
         class="topo-node__iface topo-node__iface--src"
-        :class="ifaceStatusOk(node.src_iface_status) ? 'is-up' : 'is-down'"
-        :title="`${node.src_iface_name} - ${node.src_iface_description || ''}`"
+        :class="badgeClass(node.parentIface)"
+        :title="badgeTitle(node.parentIface)"
       >
-        {{ node.src_iface_name }}
+        {{ node.parentIface.name }}
       </span>
       <span v-else-if="depth !== 0" class="topo-node__iface topo-node__iface--src is-down" title="n/a">n/a</span>
       <span v-else class="topo-node__iface topo-node__iface--src is-root">S</span>
 
       <span
-        v-if="node.dest_iface_name"
+        v-if="node.ownIface"
         class="topo-node__iface topo-node__iface--dest"
-        :class="ifaceStatusOk(node.dest_iface_status) ? 'is-up' : 'is-down'"
-        :title="`${node.dest_iface_name} - ${node.dest_iface_description || ''}`"
+        :class="badgeClass(node.ownIface)"
+        :title="badgeTitle(node.ownIface)"
       >
-        {{ node.dest_iface_name }}
+        {{ node.ownIface.name }}
       </span>
       <span v-else-if="depth !== 0" class="topo-node__iface topo-node__iface--dest is-down" title="n/a">n/a</span>
 
       <router-link
-        :to="{ name: 'device-detail', params: { id: node.device_id } }"
+        v-if="node.visible"
+        :to="{ name: 'device-detail', params: { id: node.deviceId } }"
         target="_blank"
         class="topo-node__ip"
-        :class="isUp ? 'is-up' : 'is-down'"
-        :title="node.model_name"
+        :class="`is-${node.state}`"
+        :title="node.title ?? undefined"
       >
-        {{ node.device_ip }}
+        {{ node.ip }}
       </router-link>
+      <span v-else class="topo-node__ip" :class="`is-${node.state}`">Outside your scope</span>
 
-      <a v-if="node.nodes?.length" class="topo-node__arrow" href="javascript:void(0)" @click.prevent="expanded = !expanded">
+      <a
+        v-if="node.nodes.length"
+        class="topo-node__arrow"
+        href="javascript:void(0)"
+        @click.prevent="expanded = !expanded"
+      >
         {{ expanded ? '▼' : '►' }}
       </a>
       <span v-else class="topo-node__arrow-spacer"></span>
 
-      <span class="topo-node__name">{{ node.name || 'Name not set' }}</span>
+      <span v-if="node.visible" class="topo-node__name">{{ node.name || 'Name not set' }}</span>
+      <span v-if="node.repeat" class="topo-node__repeat" title="Already shown elsewhere in this tree (a ring)"
+        >repeat</span
+      >
 
-      <span v-if="totalCount !== 0" class="topo-node__stat" :class="{ 'is-empty': onlineCount === 0, 'is-partial': onlineCount !== totalCount && onlineCount !== 0 }">
+      <span
+        v-if="totalCount !== 0"
+        class="topo-node__stat"
+        :class="{ 'is-empty': onlineCount === 0, 'is-partial': onlineCount !== totalCount && onlineCount !== 0 }"
+      >
         {{ onlineCount }} / {{ totalCount }}
       </span>
     </div>
 
-    <ul v-if="node.nodes?.length" v-show="expanded" class="topo-node__children">
-      <TopologyTreeNode v-for="(child, idx) in node.nodes" :key="child.device_ip + '-' + idx" :node="child" :highlight-device-id="highlightDeviceId" :depth="depth + 1" />
+    <ul v-if="node.nodes.length" v-show="expanded" class="topo-node__children">
+      <TopologyTreeNode
+        v-for="(child, idx) in node.nodes"
+        :key="`${child.linkId ?? child.deviceId}-${idx}`"
+        :node="child"
+        :load-link-info="loadLinkInfo"
+        :highlight-device-id="highlightDeviceId"
+        :depth="depth + 1"
+      />
     </ul>
   </li>
 </template>
@@ -200,6 +188,15 @@ onMounted(() => {
 }
 .topo-node__ip.is-down {
   background: rgb(255, 80, 80);
+}
+.topo-node__ip.is-unknown,
+.topo-node__iface.is-unknown {
+  background: #b5b9c9;
+}
+.topo-node__repeat {
+  font-size: 11px;
+  color: #8c90a4;
+  font-style: italic;
 }
 .topo-node__arrow {
   color: #5a5f7d;

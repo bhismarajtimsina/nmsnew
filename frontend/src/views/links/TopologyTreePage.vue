@@ -1,23 +1,34 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { DataService } from '@/config/dataService/dataService';
 import { notification } from 'ant-design-vue';
+import { api } from '@/api/client';
+import { authBackend } from '@/auth/session';
 import { Main } from '../styled';
 import TopologyTreeNode from '@/components/topology/TopologyTreeNode.vue';
+import { legacySource, newApiSource, type DeviceOption, type TreeView } from './topologyTree';
+import type { Id } from './linksList';
+
+// With the new login the page reads the new API (src/views/links/topologyTree.ts); legacy is unchanged.
+const source = authBackend() === 'cybersathy' ? newApiSource(api) : legacySource(DataService as any);
 
 const route = useRoute();
 const router = useRouter();
 const loading = ref(false);
-const deviceOptions = ref<{ id: number; display_name: string }[]>([]);
-const selectedDevice = ref<number | undefined>(undefined);
+const deviceOptions = ref<DeviceOption[]>([]);
+const selectedDevice = ref<Id | undefined>(undefined);
 const mode = ref<'none' | 'up' | 'down'>('none');
-const tree = ref<any>(null);
+const tree = ref<TreeView | null>(null);
 const rootNotFound = ref(false);
+const truncated = ref(false);
 
 async function loadDevices() {
-  const { data } = await DataService.get('/device/options');
-  deviceOptions.value = data.data || [];
+  try {
+    deviceOptions.value = await source.devices();
+  } catch (err) {
+    notification.error({ message: 'Could not load devices', description: source.errorMessage(err) });
+  }
 }
 
 async function go(direction: 'up' | 'down') {
@@ -31,20 +42,12 @@ async function go(direction: 'up' | 'down') {
   loading.value = true;
   router.replace({ query: { device_id: String(selectedDevice.value), direction } });
   try {
-    const { data } = await DataService.get('/component/links/view/tree', { device_id: selectedDevice.value, direction });
-    tree.value = data.data;
-  } catch (err: any) {
-    // The backend has a real bug here — it means to respond 400 with a
-    // structured ROOT_DEVICE_NOT_FOUND error (per its own frontend's error
-    // handling) when a device has no core/root device above it, but that
-    // exception currently escapes uncaught as a raw 500. Detected here so
-    // "From core device" still degrades to a clear message instead of a
-    // blank/broken page.
-    if (direction === 'up' && (err?.response?.status === 400 || err?.response?.status === 500)) {
-      rootNotFound.value = true;
-    } else {
-      notification.error({ message: 'Could not load topology', description: err?.response?.data?.error?.description || 'Please try again.' });
-    }
+    const result = await source.tree(selectedDevice.value, direction);
+    tree.value = result.tree;
+    rootNotFound.value = result.rootNotFound;
+    truncated.value = result.truncated;
+  } catch (err) {
+    notification.error({ message: 'Could not load topology', description: source.errorMessage(err) });
   } finally {
     loading.value = false;
   }
@@ -52,16 +55,21 @@ async function go(direction: 'up' | 'down') {
 
 onMounted(async () => {
   await loadDevices();
-  if (route.query.device_id) {
-    selectedDevice.value = Number(route.query.device_id);
-    const direction = route.query.direction === 'up' ? 'up' : 'down';
-    go(direction);
+  if (typeof route.query.device_id === 'string' && route.query.device_id) {
+    selectedDevice.value = source.parseId(route.query.device_id);
+    go(route.query.direction === 'up' ? 'up' : 'down');
   }
 });
 </script>
 
 <template>
-  <sdPageHeader :routes="[{ path: '/', breadcrumbName: 'Dashboard' }, { path: '', breadcrumbName: 'Topology (tree view)' }]" class="ninjadash-page-header-main" />
+  <sdPageHeader
+    :routes="[
+      { path: '/', breadcrumbName: 'Dashboard' },
+      { path: '', breadcrumbName: 'Topology (tree view)' },
+    ]"
+    class="ninjadash-page-header-main"
+  />
   <Main>
     <a-row :gutter="25">
       <a-col :span="24">
@@ -76,14 +84,18 @@ onMounted(async () => {
                 placeholder="Choose device"
                 style="width: 100%"
                 :filter-option="(input: string, opt: any) => opt.label.toLowerCase().includes(input.toLowerCase())"
-                :options="deviceOptions.map((d: any) => ({ value: d.id, label: d.display_name }))"
+                :options="deviceOptions.map((d) => ({ value: d.id, label: d.label }))"
               />
             </a-col>
             <a-col :xs="12" :md="5" style="margin-bottom: 12px">
-              <sdButton type="primary" block @click="go('up')"><unicon name="angle-double-up"></unicon> From core device</sdButton>
+              <sdButton type="primary" block @click="go('up')"
+                ><unicon name="angle-double-up"></unicon> From core device</sdButton
+              >
             </a-col>
             <a-col :xs="12" :md="5" style="margin-bottom: 12px">
-              <sdButton type="primary" block @click="go('down')"><unicon name="angle-double-down"></unicon> From device</sdButton>
+              <sdButton type="primary" block @click="go('down')"
+                ><unicon name="angle-double-down"></unicon> From device</sdButton
+              >
             </a-col>
           </a-row>
         </sdCards>
@@ -97,8 +109,20 @@ onMounted(async () => {
           </div>
           <a-empty v-else-if="!tree" description="No data" />
           <div v-else class="topo-tree-wrap">
+            <a-alert
+              v-if="truncated"
+              type="warning"
+              show-icon
+              style="margin-bottom: 12px"
+              message="The tree is deeper than 15 levels; the deepest devices are not shown."
+            />
             <ul class="topo-tree-root">
-              <TopologyTreeNode :node="tree.tree" :highlight-device-id="selectedDevice" :depth="0" />
+              <TopologyTreeNode
+                :node="tree"
+                :load-link-info="source.linkInfo"
+                :highlight-device-id="selectedDevice"
+                :depth="0"
+              />
             </ul>
           </div>
         </sdCards>
