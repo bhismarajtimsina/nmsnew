@@ -47,9 +47,9 @@ Legacy names appear in exactly one place: the compatibility shim ([Plan 41](41-l
   capability needed at all, not even `CAP_NET_RAW`; that flag exists only for a kernel whose `ping_group_range`
   disallows the unprivileged path.
 - Targets: devices with `polling_enabled` and `polling_owner = cybersathy` (Plan 11).
-- Current implementation checks targets one at a time in a plain loop, not a concurrent batch. A global
-  packets-per-second cap, batching and jitter are a deferred performance refinement (Plan 12), not a correctness
-  requirement of the debounce or the gauge below.
+- A pass pings concurrently (`PINGER_CONCURRENCY`, 64) under one global packets-per-second cap (`PINGER_MAX_PPS`,
+  500), a token bucket that lives for the whole process (`app/pinger/pacing.py`). Pacing spreads sends evenly, so no
+  separate jitter. Results are recorded one after another, so the debounce below is unchanged (Plan 12).
 - State machine per device: `up` → `down` after N consecutive misses (default 3), `down` → `up` after 1 reply (both
   configurable, `app/pinger/check.py`). Only a real transition writes to the `device_ping_history` hypertable; every
   check updates `device_ping_status` and the gauge below.

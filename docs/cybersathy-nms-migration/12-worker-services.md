@@ -76,7 +76,34 @@ against `notifications` directly (poll, idle 3 seconds when nothing is due) exac
 capped at 20 in flight - the direct equivalent of legacy's `COUNT_PROCS = 20` forked OS processes, without forking a
 process per message. See [29-notifications.md](29-notifications.md) for the full port.
 
-Not done: the report worker (Plan 30). Worker metrics await Plan 31. The pinger's own packets-per-second cap and
-concurrent batching are also not built - see own-components.md §3.1. The notification sender has no real channel to
+Not done: the report worker (Plan 30). Worker metrics await Plan 31. The notification sender has no real channel to
 hand a notification to yet (Telegram/email, `29-notifications.md`) - every send today fails cleanly and is recorded
 that way rather than delivering anything.
+
+## Implementation notes (2026-10-17): the pinger's packet cap and concurrent passes
+
+A pass now pings its targets concurrently, and never faster than a global packets-per-second cap.
+
+- **Cap** (`app/pinger/pacing.py`):
+  - Each probe reserves its `PINGER_COUNT` packets from a token bucket (the trap receiver's own `TokenBucket`)
+    before sending.
+  - One bucket lives for the whole process, so the cap holds across passes too.
+  - Probes are served one at a time, in order, so two probes waiting together cannot both send on one wait.
+  - Pacing spreads the sends evenly, which is what jitter was for, so no separate jitter is added.
+- **Concurrency:** at most `PINGER_CONCURRENCY` pings are in flight. Only the pings run concurrently. Results are
+  recorded one after another on the pass's connection, as a single asyncpg connection requires. So the debounce,
+  history and the once-per-pass change notice behave exactly as before.
+- **Settings:** `PINGER_CONCURRENCY` (64), `PINGER_MAX_PPS` (500, about 0.3 Mbit/s of echoes) and `PINGER_PPS_BURST`
+  (100). A burst smaller than `PINGER_COUNT` refuses to start. Not yet tuned against a real fleet; legacy's Go pinger
+  documented no cap to copy.
+- **Found while testing:** the first version re-checked the bucket in a loop after each wait. A rounding shortfall
+  then asked for a sleep too small for the clock to register, and the loop never ended (on a real clock it would spin).
+  The pacer now waits once and carries any shortfall to the next probe, and a test holds it to that.
+- **A dead host's latency:** icmplib reports 0 for a dead host; it is stored as no latency, now with a test.
+
+Tests: 17 in `tests/test_pinger_pacing.py` (the pacer on a fake clock, passes with a fake `async_ping`, so nothing is
+sent anywhere). 15 mutations checked, all caught. The first run left four survivors:
+- three were closed with new cases: a part-full bucket, probes waiting at the same time, and a dead host's zero
+  latency;
+- one was equivalent, a refill straight after the wait that the next refill already covers, so that line was
+  removed.

@@ -6,14 +6,14 @@ Targets: devices with `polling_enabled` and `polling_owner = 'cybersathy'` (own-
 ownership switch the SNMP polling engine already uses, so the legacy pinger keeps pinging everything else until an
 operator hands a device group over.
 
-No rate limiting or concurrent fan-out yet: devices are checked one at a time, in a plain loop. own-components.md's
-design calls for a global packets-per-second cap and jitter across a concurrent batch; that is a performance and
-safety-margin refinement on top of a correct sequential pass, not a correctness requirement of the debounce or the
-gauge, and is left for a follow-up round (the same kind of deliberately-deferred gap as the trap receiver's rate
-limiting, Plan 21).
+A pass pings its targets concurrently, at most `concurrency` at once and never faster than the pacer's global
+packets-per-second cap (app/pinger/pacing.py). Only the pings run concurrently: their results are then recorded one
+after another on the pass's connection, which a single asyncpg connection requires anyway, so the debounce, history
+and the once-per-pass change notice behave exactly as in a sequential pass.
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 from dataclasses import dataclass
 from typing import Awaitable, Callable
@@ -23,6 +23,7 @@ from icmplib import async_ping
 from prometheus_client import Gauge
 
 from app.pinger.check import PingState, apply_result
+from app.pinger.pacing import PacketPacer
 
 logger = logging.getLogger("cybersathy.pinger")
 
@@ -61,14 +62,22 @@ async def _check(
     conn: asyncpg.Connection, target: Target, *, count: int, timeout: float, misses_for_down: int, privileged: bool
 ) -> tuple[bool, bool]:
     """check_one's work; also returns whether the target's up/down status changed."""
+    alive, latency_ms = await _ping(target, count=count, timeout=timeout, privileged=privileged)
+    return await _record(conn, target, alive, latency_ms, misses_for_down=misses_for_down)
+
+
+async def _ping(target: Target, *, count: int, timeout: float, privileged: bool) -> tuple[bool, float | None]:
     try:
         host = await async_ping(target.ip, count=count, timeout=timeout, privileged=privileged)
-        alive = host.is_alive
-        latency_ms = host.avg_rtt if alive else None
+        return host.is_alive, (host.avg_rtt if host.is_alive else None)
     except Exception:  # noqa: BLE001 - a resolution failure or socket error is just "no reply", not a crash
         logger.exception("ping failed for %s (%s)", target.name, target.ip)
-        alive, latency_ms = False, None
+        return False, None
 
+
+async def _record(
+    conn: asyncpg.Connection, target: Target, alive: bool, latency_ms: float | None, *, misses_for_down: int
+) -> tuple[bool, bool]:
     row = await conn.fetchrow("select status, consecutive_misses from device_ping_status where device_id = $1::uuid", target.device_id)
     if row is None:
         await conn.execute("insert into device_ping_status (device_id) values ($1::uuid) on conflict do nothing", target.device_id)
@@ -94,14 +103,25 @@ async def _check(
 
 async def run_cycle(
     conn: asyncpg.Connection, *, count: int = 3, timeout: float = 1.0, misses_for_down: int = 3, privileged: bool = False,
-    on_change: Callable[[], Awaitable[None]] | None = None,
+    on_change: Callable[[], Awaitable[None]] | None = None, concurrency: int = 1, pacer: PacketPacer | None = None,
 ) -> dict[str, int]:
     """One pass over every current target. `on_change` is awaited once at the end of a pass in which any target
     went up or down (not once per target, so a site-wide outage is one notice, not thousands)."""
+    if concurrency < 1:
+        raise ValueError("the pinger needs a concurrency of at least 1")
     targets = await list_targets(conn)
+    slots = asyncio.Semaphore(concurrency)
+
+    async def probe(target: Target) -> tuple[bool, float | None]:
+        async with slots:
+            if pacer is not None:
+                await pacer.acquire(count)
+            return await _ping(target, count=count, timeout=timeout, privileged=privileged)
+
+    results = await asyncio.gather(*(probe(t) for t in targets))
     up = down = changed = 0
-    for target in targets:
-        alive, flipped = await _check(conn, target, count=count, timeout=timeout, misses_for_down=misses_for_down, privileged=privileged)
+    for target, (alive, latency_ms) in zip(targets, results):
+        _, flipped = await _record(conn, target, alive, latency_ms, misses_for_down=misses_for_down)
         up, down = (up + 1, down) if alive else (up, down + 1)
         changed += flipped
     if changed and on_change is not None:

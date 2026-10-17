@@ -115,6 +115,9 @@ class Settings:
     pinger_misses_for_down: int
     pinger_privileged: bool
     pinger_metrics_port: int
+    pinger_concurrency: int
+    pinger_max_pps: float
+    pinger_pps_burst: float
 
     # Notification sender. See docs/cybersathy-nms-migration/29-notifications.md and 12-worker-services.md.
     notification_sender_idle_seconds: int
@@ -224,6 +227,12 @@ def load_settings() -> Settings:
         # sockets. Set true only where the kernel's ping_group_range disallows it.
         pinger_privileged=_bool("PINGER_PRIVILEGED", False),
         pinger_metrics_port=int(os.getenv("PINGER_METRICS_PORT", "9101")),
+        # How many devices are pinged at once, and the global cap on ICMP echo requests per second across all of them
+        # (own-components.md §3.1). 500 packets a second of 64-byte echoes is about 0.3 Mbit/s. Not yet tuned against
+        # a real fleet: legacy's Go pinger had no documented cap to copy.
+        pinger_concurrency=int(os.getenv("PINGER_CONCURRENCY", "64")),
+        pinger_max_pps=float(os.getenv("PINGER_MAX_PPS", "500")),
+        pinger_pps_burst=float(os.getenv("PINGER_PPS_BURST", "100")),
         # 3 seconds and 20, matching NotificationSenderService.php's sleep(3) and COUNT_PROCS exactly.
         notification_sender_idle_seconds=int(os.getenv("NOTIFICATION_SENDER_IDLE_SECONDS", "3")),
         notification_sender_max_concurrent=int(os.getenv("NOTIFICATION_SENDER_MAX_CONCURRENT", "20")),

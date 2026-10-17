@@ -16,6 +16,7 @@ from redis.asyncio import Redis
 from app.core.config import settings
 from app.core.database import create_pool
 from app.core.logging import configure_logging
+from app.pinger.pacing import PacketPacer
 from app.pinger.service import run_cycle
 from app.realtime.bus import notify_devices_changed
 
@@ -23,6 +24,10 @@ from app.realtime.bus import notify_devices_changed
 async def run() -> int:
     configure_logging()
     log = logging.getLogger("cybersathy.pinger")
+    # One pacer for the life of the process, so the cap holds across passes as well as within one.
+    pacer = PacketPacer(settings.pinger_max_pps, settings.pinger_pps_burst)
+    if settings.pinger_count > pacer.burst:
+        raise SystemExit("PINGER_PPS_BURST must be at least PINGER_COUNT: a probe sends PINGER_COUNT packets at once")
     pool = await create_pool()
     redis = Redis.from_url(settings.redis_dsn)
     start_http_server(settings.pinger_metrics_port)
@@ -39,6 +44,7 @@ async def run() -> int:
                     misses_for_down=settings.pinger_misses_for_down, privileged=settings.pinger_privileged,
                     # Open device pages reload their online state; the notice carries no device data (risk K-24).
                     on_change=lambda: notify_devices_changed(redis, "status"),
+                    concurrency=settings.pinger_concurrency, pacer=pacer,
                 )
             log.info("cycle: %s", summary)
             try:
