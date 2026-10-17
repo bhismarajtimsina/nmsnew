@@ -2,8 +2,8 @@
 no signed-in caller, so there is no scope to check - the same reason app/polling/engine.py, not
 app/repositories/polling.py, writes device_poll_state and polling_results.
 
-Nothing calls this yet: no OID profile decodes a poll result into an interface row (Plans 11 and 13-19 build that).
-It is tested directly against the schema it writes to.
+The interface_basic poll calls it through app/services/interface_poll.py, only when a polled status differs from the
+stored one.
 """
 from __future__ import annotations
 

@@ -64,9 +64,35 @@ permission at all for it, but every role that operates rather than only reads th
 
 Missing: parent/child relation resolution for PON, ONU, VLAN and LACP interfaces (needs vendor-specific parsing -
 ifStackTable equivalents - not built until Plans 13-19 have fixtures); the daily-uptime aggregate (deferred rather
-than guessed at, since there is no real flap data yet to validate it against); nothing calls
-`record_interface_status` yet, because no OID profile decodes a poll result into an interface row (that is Plan
-11's and Plans 13-19's job) - the writer is tested directly against the schema instead.
+than guessed at, since there is no real flap data yet to validate it against). ~~Nothing calls
+`record_interface_status`.~~ Done 2026-10-17; see the next section.
+
+## Implementation notes (2026-10-17): interfaces from the interface_basic poll
+
+The polling sink now decodes the RFC 1213 interface table (`app/services/interface_poll.py`) and brings the device's
+interfaces in line with it. The inventory is written first, so an interface new on a poll gets its first traffic
+sample on that same poll (Plan 27).
+
+- **New rows:** an ifIndex the inventory lacks becomes an interface named by its ifDescr. A row without one is not
+  created, since it would have no name.
+- **Known rows:** a known interface takes the polled name, type, speed and MAC address. A value missing from the
+  poll, or not readable, keeps the stored one. So does a speed at ifSpeed's ceiling, since the real speed of such a
+  port is in ifHighSpeed, which is not read yet.
+- **Status:** goes through `record_interface_status`, only when it differs. The history gets one row per real change,
+  and a poll that read one status keeps the other.
+- **Absent interfaces:** an interface the poll did not return is left alone. A walk can be cut at its row cap, and
+  history and marks hang off the row.
+- **Never touched:** alias, the protected flag and the legacy id.
+- **Names:** ifType and status names come from `RFC1213-MIB.my` in this repository, and a test re-reads the file:
+  - RFC 2863's four extra operational states (unknown, dormant, notPresent, lowerLayerDown) are written from the RFC,
+    because IF-MIB is not in the repository. They use the names link state already reads.
+  - ifType codes beyond RFC 1213's 32 are kept as their number, because IANAifType-MIB is not in the repository either.
+
+With this, link state (Plan 27) follows real interface status once polling runs.
+
+Tests: 9 in `tests/test_interface_poll.py`. 25 mutations checked, all caught; the first run's survivor (an unknown
+operational-status code) was closed with a new case. Not verified against a device: the build's SNMP transport is the
+disabled one (D-17).
 
 Tests: 14 (`test_interface_inventory.py`). 6 mutations checked (the dedup/change-detection in
 `record_interface_status`, `set_favorite`'s scope guard, tag sanitization, the `interfaces.mark` permission gate,

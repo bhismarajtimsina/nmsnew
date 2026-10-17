@@ -151,7 +151,7 @@ async def test_the_sink_stores_a_sample_per_known_interface_and_leaves_other_pol
 
     idle = ReadingSink(Refusing())  # type: ignore[arg-type]
     await idle.write(device, "system_basic", [Reading("system.sys_name", "1.3.6.1.2.1.1.5", "sw-1")])
-    await idle.write(device, "interface_basic", [_walk("interface.if_speed", SPEED, [(1, 100_000_000)])])
+    await idle.write(device, "interface_basic", [_walk("interface.if_mtu", "1.3.6.1.2.1.2.2.1.4", [(1, 1500)])])  # read by no one
     assert await db.fetchval("select count(*) from interface_counter_samples") == 1
 
 
