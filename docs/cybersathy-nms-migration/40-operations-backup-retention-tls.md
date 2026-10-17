@@ -75,6 +75,40 @@ Not done: backups and restore drill, TLS, capacity model, retention for other ta
 
 Tests: 7 in `tests/test_retention.py`. 11 mutations checked, all caught.
 
-Still not done: backups and a restore drill, TLS, the capacity model, platform alerts, runbooks, and periods for the
-six tables above.
+## Implementation notes (2026-10-17): backup and restore drill
+
+- **`python -m app.cli backup create --out DIR`** writes `cybersathy-<timestamp>.dump` (`pg_dump`, custom format) and
+  a manifest beside it, holding:
+  - the schema revision;
+  - the exact row count of every table;
+  - the dump's SHA-256 and size;
+  - how long the dump took.
+- **`python -m app.cli backup drill FILE`** proves a dump restores (Plan 40 step 2):
+  - it refuses a dump that does not match its manifest's SHA-256, before restoring anything;
+  - it restores into a new scratch database, with TimescaleDB's own pre- and post-restore steps;
+  - it checks the schema revision and every table's row count against the manifest, and that an active user with a
+    role that sees everything exists, so the restored system could be administered;
+  - it records the time to restore, and drops the scratch database whatever the result. It exits non-zero on any
+    problem, so a scheduler can alert on it.
+- **Secrets:** the database password reaches `pg_dump` and `pg_restore` through the environment, never the command
+  line.
+- **Rehearsed here** against the development database: 64 tables, a 2.3-second dump, a 1.2-second restore, every
+  check passed. A rehearsal at production volume, recording time-to-restore, is still the operator's.
+
+What it is not:
+- **Not continuous WAL archiving** (step 1), which needs a separate host or volume for the archive; that belongs to
+  the deployment.
+- **Not encrypted.** The dump holds device credentials only in their encrypted form, because the key lives in the
+  environment, never in the database (D-09). It must still be stored encrypted and access-controlled, and never
+  beside the key.
+- **Not in the backend image.** The image has no PostgreSQL client tools, and Debian's own `pg_dump` is version 15,
+  which cannot dump a version 16 server. The command says so plainly when the tools are missing. Run it where the
+  version 16 client tools are installed, such as the database container. Adding them to an image was not done here,
+  because an image build could not be tested in this environment.
+
+Tests: 6 in `tests/test_backup.py`, which run `pg_dump` and `pg_restore` against the test server. 10 mutations checked,
+all caught. One left a scratch database behind, as that mutant was meant to show; it was dropped by hand.
+
+Still not done: WAL archiving and the 14-daily/8-weekly rotation, backup encryption, TLS, the capacity model,
+platform alerts (including backup age), runbooks, and periods for the six tables above.
 

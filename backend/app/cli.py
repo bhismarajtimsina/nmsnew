@@ -271,6 +271,30 @@ async def _crypto_reencrypt(apply: bool) -> int:
 OPENAPI_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "src", "api", "openapi.json")
 
 
+async def _backup(command: str, out: str | None, dump: str | None) -> int:
+    from pathlib import Path
+
+    import shutil
+
+    from app.operations import backup
+
+    missing = [tool for tool in ("pg_dump", "pg_restore") if shutil.which(tool) is None]
+    if missing:
+        print(f"{' and '.join(missing)} not found: run this where the PostgreSQL 16 client tools are installed "
+              "(the backend image does not include them)")
+        return 2
+    if command == "create":
+        path, manifest = await backup.create(settings, Path(out))  # type: ignore[arg-type]
+        print(f"wrote {path} ({manifest['bytes']} bytes, {len(manifest['tables'])} tables, revision {manifest['revision']}, "
+              f"{manifest['dump_seconds']} s)")
+        return 0
+    result = await backup.drill(settings, Path(dump))  # type: ignore[arg-type]
+    for problem in result.problems:
+        print(f"FAIL {problem}")
+    print(f"{'PASS' if result.ok else 'FAIL'}: restored in {result.restore_seconds} s, {result.tables_checked} tables checked")
+    return 0 if result.ok else 1
+
+
 async def _retention_report() -> int:
     from app.operations.retention import render, report
 
@@ -339,6 +363,9 @@ def main(argv: list[str] | None = None) -> int:
     reenc = crypto.add_parser("reencrypt")
     reenc.add_argument("--apply", action="store_true", help="write the re-encrypted values (default is a dry run)")
 
+    backup = sub.add_parser("backup").add_subparsers(dest="command", required=True)
+    backup.add_parser("create", help="pg_dump plus a manifest of row counts").add_argument("--out", required=True)
+    backup.add_parser("drill", help="restore a dump into a scratch database and check it").add_argument("dump")
     sub.add_parser("retention").add_subparsers(dest="command", required=True).add_parser(
         "report", help="what keeps each history table from growing forever; deletes nothing")
     openapi = sub.add_parser("openapi")
@@ -363,6 +390,8 @@ def main(argv: list[str] | None = None) -> int:
         return asyncio.run(_sessions_cleanup())
     if args.group == "openapi":
         return _openapi(args.write)
+    if args.group == "backup":
+        return asyncio.run(_backup(args.command, getattr(args, "out", None), getattr(args, "dump", None)))
     if args.group == "retention":
         return asyncio.run(_retention_report())
     if args.group == "crypto":
