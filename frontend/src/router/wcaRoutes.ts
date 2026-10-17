@@ -32,7 +32,8 @@ const wcaRouteDefs: WcaRoute[] = [
       'GET /dashboard/latest-system-actions',
       'GET /component/events/severity-stat',
     ],
-    component: () => import('@/views/DashboardPage.vue'),
+    // The new login gets the role dashboards on the new API (Plans 23 and 25); the legacy build keeps the legacy page.
+    component: () => (authBackend() === 'cybersathy' ? import('@/views/DashboardNewPage.vue') : import('@/views/DashboardPage.vue')),
   },
 
   // Devices

@@ -445,4 +445,24 @@ mutations checked (25 on the module, 4 on the page), all caught. A 30th was equi
 `<= 0`, since only roots have level 0 and nothing links into a root. 219 frontend tests in total. Not checked in a
 browser (R-09).
 
+### Dashboard page for the new login (2026-10-17)
+
+Under the new login the dashboard route serves `DashboardNewPage.vue`, built from Plan 23's role dashboards. The legacy
+build keeps its own page.
+
+- **Server decides access:** the page asks `GET /dashboards` which dashboards and widgets the viewer has, and opens
+  the server's default or the one named in the address. A viewer with several dashboards gets a switch between them.
+- **Data:** each live widget is read from its own scoped endpoint by `src/views/dashboards.ts`. Each is turned into
+  one of three display shapes (a row of figures, bars, or a table with an optional note), so every widget renders
+  the same way.
+- **Pending widgets** (the seven ONU widgets, Plan 14) show the server's reason, and nothing is fetched for them.
+- **Failures:** a widget the viewer may not read, or one that fails, says so on its own card; the rest of the page
+  still loads.
+- **Never invented:** the system summary shows users and roles only when the server returns them, so absent is not
+  zero. Busiest links never names an end outside the viewer's scope.
+
+Tests: 13 vitest tests, including the router wiring and that only live widgets are fetched. 17 mutations checked, all
+caught. The first run's survivor was a redundant `instanceof` check, which was removed and given a case. 232 frontend
+tests in total. Not checked in a browser (R-09).
+
 Still not done in this plan: the remaining pages on the typed client.

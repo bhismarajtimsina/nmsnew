@@ -1,6 +1,6 @@
 # Plan 23: Dashboard Structure
 
-> **Phase:** 7 · **Depends on:** 4, 10, 20 · **Status:** Partial (backend built; frontend page and latency measurement to do)
+> **Phase:** 7 · **Depends on:** 4, 10, 20 · **Status:** Partial (backend and the new-login page built; latency measurement to do)
 
 ## Goal
 Create role-based dashboard structure for ISP and reseller workflows.
@@ -100,7 +100,7 @@ Tests: 21 (`tests/test_dashboards.py`). 18 mutations checked, all caught (one ne
 
 Still to do:
 
-- the dashboard page in the new frontend, reading `GET /api/v1/dashboards`;
+- ~~the dashboard page in the new frontend, reading `GET /api/v1/dashboards`~~ built 2026-10-17 (`DashboardNewPage.vue`, see Plan 25);
 - the p95 latency comparison against legacy, at production data volume;
 - continuous aggregates behind the heavier widgets (Plan 40);
 - the ONU widgets once Plan 14's storage exists.
