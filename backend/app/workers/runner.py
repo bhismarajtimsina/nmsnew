@@ -12,6 +12,7 @@ from app.polling.engine import Context, Sink
 from app.polling.transport import DisabledTransport
 from app.workers import handlers, heartbeat
 from app.scheduling.scheduler import Scheduler
+from app.diagnostics.mac import MAC_STREAM
 from app.diagnostics.ping import DIAG_STREAM, DisabledProber, Prober
 from app.workers.queue import JobQueue, Message, Permanent, RetryLater, Skipped, verify
 
@@ -60,6 +61,8 @@ class Worker:
             found.append((POLL_STREAM, lambda m: handlers.handle_poll(self.ctx, m, self.sink)))
         if "actions" in self.kinds:
             found.append((ACTION_STREAM, lambda m: handlers.handle_action(self.ctx, m)))
+        if "diagnostics" in self.kinds:  # MAC lookups are SNMP, so they also need the transport
+            found.append((MAC_STREAM, lambda m: handlers.handle_mac_lookup(self.ctx, m)))
         return found
 
     def status(self) -> str:

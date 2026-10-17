@@ -86,3 +86,14 @@ async def run_subscriber(redis: Redis, manager: ConnectionManager, *, stop: asyn
     finally:
         await pubsub.unsubscribe(REALTIME_CHANNEL)
         await pubsub.aclose()
+
+
+MAC_LOOKUP_FINISHED = "search.mac_finished"
+
+
+async def notify_mac_lookup_finished(redis: Redis, request_id: str) -> None:
+    """Tells the requester's page its MAC lookup has a result. Only the request id; never raises."""
+    try:
+        await publish(redis, MAC_LOOKUP_FINISHED, {"request_id": request_id})
+    except Exception:  # noqa: BLE001 - Redis being down must not fail a lookup that already ran
+        logger.warning("could not publish %s (%s)", MAC_LOOKUP_FINISHED, request_id, exc_info=True)

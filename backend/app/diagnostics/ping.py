@@ -115,11 +115,11 @@ class RateLimited(Exception):
     pass
 
 
-async def check_rate(redis: Redis, user_id: str, device_id: str) -> None:
+async def check_rate(redis: Redis, user_id: str, device_id: str, *, kind: str = "diag") -> None:
     """Fixed one-minute windows, per user and per device. The device limit holds across users, so several operators
-    cannot together flood one device's management address."""
-    for key, limit, who in ((f"cs:ratelimit:diag:user:{user_id}", PER_USER_PER_MINUTE, "you"),
-                            (f"cs:ratelimit:diag:device:{device_id}", PER_DEVICE_PER_MINUTE, "this device")):
+    cannot together flood one device's management address. Each kind of request has its own windows."""
+    for key, limit, who in ((f"cs:ratelimit:{kind}:user:{user_id}", PER_USER_PER_MINUTE, "you"),
+                            (f"cs:ratelimit:{kind}:device:{device_id}", PER_DEVICE_PER_MINUTE, "this device")):
         count = await redis.incr(key)
         if count == 1:
             await redis.expire(key, 60)

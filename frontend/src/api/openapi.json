@@ -4074,6 +4074,138 @@
         "title": "LoginResponse",
         "type": "object"
       },
+      "MacLocationOut": {
+        "additionalProperties": false,
+        "properties": {
+          "bridge_port": {
+            "title": "Bridge Port",
+            "type": "integer"
+          },
+          "vlan": {
+            "title": "Vlan",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "vlan",
+          "bridge_port"
+        ],
+        "title": "MacLocationOut",
+        "type": "object"
+      },
+      "MacLookupOut": {
+        "additionalProperties": false,
+        "properties": {
+          "device_id": {
+            "title": "Device Id",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "mac": {
+            "title": "Mac",
+            "type": "string"
+          },
+          "request_id": {
+            "title": "Request Id",
+            "type": "string"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MacLookupResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "succeeded",
+              "failed",
+              "refused"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "vlans": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Vlans",
+            "type": "array"
+          }
+        },
+        "required": [
+          "request_id",
+          "device_id",
+          "mac",
+          "vlans",
+          "status"
+        ],
+        "title": "MacLookupOut",
+        "type": "object"
+      },
+      "MacLookupRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "device_id": {
+            "pattern": "^[0-9a-fA-F-]{36}$",
+            "title": "Device Id",
+            "type": "string"
+          },
+          "mac": {
+            "maxLength": 17,
+            "minLength": 12,
+            "title": "Mac",
+            "type": "string"
+          },
+          "vlans": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "Vlans",
+            "type": "array"
+          }
+        },
+        "required": [
+          "device_id",
+          "mac",
+          "vlans"
+        ],
+        "title": "MacLookupRequest",
+        "type": "object"
+      },
+      "MacLookupResult": {
+        "additionalProperties": false,
+        "properties": {
+          "found": {
+            "items": {
+              "$ref": "#/components/schemas/MacLocationOut"
+            },
+            "title": "Found",
+            "type": "array"
+          }
+        },
+        "required": [
+          "found"
+        ],
+        "title": "MacLookupResult",
+        "type": "object"
+      },
       "MacroDraftPreviewIn": {
         "additionalProperties": false,
         "properties": {
@@ -16386,6 +16518,126 @@
         "summary": "Assign Reseller Users",
         "tags": [
           "users"
+        ]
+      }
+    },
+    "/api/v1/search/mac": {
+      "post": {
+        "description": "Queue a lookup of where one MAC is learned on one switch, in the VLANs named (at most 32). A miss means \"not\nlearned in these VLANs\", not \"not on this switch\".",
+        "operationId": "request_mac_lookup_api_v1_search_mac_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MacLookupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MacLookupOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Request Mac Lookup",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/v1/search/mac/{request_id}": {
+      "get": {
+        "description": "A lookup's status and result, for the user who asked; 404 for anyone else, and once it has expired.",
+        "operationId": "mac_lookup_result_api_v1_search_mac__request_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-fA-F-]{36}$",
+              "title": "Request Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MacLookupOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Mac Lookup Result",
+        "tags": [
+          "search"
         ]
       }
     },

@@ -104,7 +104,6 @@ engine (`scalar_instance`); see STATUS.md "Found and fixed".
 
 Still to do:
 
-- an API endpoint for the MAC lookup: `search.mac`, scoped, rate-limited, audited, run through the worker;
 - value transforms for the SFP readings: scale, plus the legacy "no reading" sentinel -65535 and the < -40 dBm
   cut-off, which need a fixture;
 - parsers and storage for LLDP neighbours and SFP readings, and the switch detail page;
@@ -114,3 +113,34 @@ Still to do:
 
 Tests: 39 for the profile, 18 for the MAC lookup. 13 mutations checked, all caught. One, seeding the profile as
 active, is also refused by the database's own immutability trigger.
+
+## Implementation notes (2026-10-17): the MAC lookup endpoint
+
+`POST /search/mac` takes a device, a MAC and the VLANs to look in (1 to 32). `GET /search/mac/{request_id}` returns
+the result to the requester only. It is built the same way as the on-demand ping (Plan 38).
+
+- **API** (`app/api/mac_lookup.py`):
+  - needs `search.mac` and the device inside the caller's scope;
+  - checks the MAC and the VLANs as the worker will (range 1 to 4094, at most 32, duplicates folded);
+  - rate-limited per user and per device, in windows of its own: running out of pings does not block lookups;
+  - audited, and queues a signed job that names the request, never an address.
+- **Transport off:** while `SNMP_TRANSPORT` is `disabled` (D-17), the API refuses with 503 and queues nothing, so no
+  job waits for a transport that cannot send.
+- **Worker** (`handle_mac_lookup`, consumed by `diagnostics` workers only when there is a transport):
+  - checks the requester again with fresh data: account active, permission held, device still in scope;
+  - applies polling's guards: owned by this system, an access profile, vendor not switched off, circuit breaker not
+    open. "Polling switched off" alone does not stop a one-off lookup.
+  - sends the one bounded GET, with the address and credentials from the database;
+  - writes the result to the request record, scrubbing credentials from any device error, and audits it;
+  - announces a finished request on its own notice channel, `search.mac_finished`, which only `search.mac` holders
+    may subscribe to.
+  - A redelivered job never asks the switch twice.
+- **Reading a result:** a hit names a bridge port, not always an ifIndex. A miss means "not learned in these VLANs".
+
+Tests: 22 in `tests/test_mac_lookup_api.py`, against the fake transport. 22 mutations checked, all caught. The first
+run's three survivors were closed:
+- the rate-limit test now fills the requester's own ping window;
+- the worker-kind test now runs before the transport is disabled;
+- one redundant scope condition was removed.
+
+Not verified against a device.

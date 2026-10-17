@@ -863,6 +863,31 @@ class DiagnosticOut(Strict):
     error: str | None = None
 
 
+class MacLookupRequest(Strict):
+    device_id: str = Field(pattern=r"^[0-9a-fA-F-]{36}$")
+    mac: str = Field(min_length=12, max_length=17)
+    vlans: list[int] = Field(min_length=1, max_length=32)
+
+
+class MacLocationOut(Strict):
+    vlan: int
+    bridge_port: int
+
+
+class MacLookupResult(Strict):
+    found: list[MacLocationOut]
+
+
+class MacLookupOut(Strict):
+    request_id: str
+    device_id: str
+    mac: str
+    vlans: list[int]
+    status: Literal["queued", "succeeded", "failed", "refused"]
+    result: MacLookupResult | None = None
+    error: str | None = None
+
+
 # --- Console (Plan 38) ---
 
 class ConsoleRequest(Strict):

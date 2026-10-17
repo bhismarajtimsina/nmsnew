@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import re
 import uuid
+from datetime import datetime, timezone
 from typing import Any
 
 import asyncpg
@@ -199,3 +200,61 @@ async def handle_diagnostic(ctx: Context, message: Message, prober: Any) -> None
                           metadata={"request_id": request_id, "status": record.status, "count": record.count,
                                     "result": record.result, "error": record.error})
     await notify_diagnostic_finished(ctx.redis, request_id)
+
+
+async def handle_mac_lookup(ctx: Context, message: Message) -> None:
+    """Run one MAC lookup (Plan 13): one bounded GET. The requester's account, permission and scope are checked again
+    with fresh data; the device must pass the same guards as polling; the address and credentials come from the
+    database, never from the job."""
+    from app.actions.safety import load_actor
+    from app.core.audit import write_audit
+    from app.diagnostics import mac as lookup
+    from app.polling.transport import TransportDisabled
+    from app.realtime.bus import notify_mac_lookup_finished
+    from app.repositories import devices as device_repo
+    from app.services.mac_lookup import lookup_mac
+
+    request_id = message.fields.get("request_id", "")
+    try:
+        uuid.UUID(request_id)
+    except ValueError as exc:
+        raise Permanent("message has no valid request_id") from exc
+    record = await lookup.load(ctx.redis, request_id)
+    if record is None:
+        raise Skipped("the request expired before it ran")
+    if record.status != "queued":
+        raise Skipped("already run")  # a redelivered message never asks the switch twice
+    async with ctx.pool.acquire() as conn:
+        actor = await load_actor(conn, record.user_id)
+        visible = await device_repo.get_device(conn, actor, record.device_id) if actor is not None else None
+        row = await load_device(conn, record.device_id) if visible is not None else None
+        refusal = None
+        if actor is None:
+            refusal = "the requester's account is no longer active"
+        elif not actor.has_permission(lookup.PERMISSION):
+            refusal = "the requester no longer has permission for MAC lookups"
+        elif row is None:  # only loaded when the device is visible
+            refusal = "the device is no longer inside the requester's scope"
+        elif reason := await pollable_reason(conn, row, require_polling_enabled=False):
+            refusal = reason
+        elif row["breaker_open_until"] is not None and row["breaker_open_until"] > datetime.now(timezone.utc):
+            refusal = "the device's circuit breaker is open after repeated failures"
+        elif ctx.enc is None:
+            refusal = "credential encryption is not configured"
+        if refusal:
+            record.status, record.error = "refused", refusal
+        else:
+            creds = credentials_from(row, ctx.enc)  # type: ignore[arg-type]
+            try:
+                found = await lookup_mac(BoundedTransport(ctx.transport), Target(row["address"], creds), record.mac, record.vlans)
+                record.status, record.result = "succeeded", {"found": [{"vlan": f.vlan, "bridge_port": f.bridge_port} for f in found]}
+            except TransportDisabled as exc:
+                record.status, record.error = "refused", str(exc)
+            except Exception as exc:  # noqa: BLE001 - a device error is reported, not retried
+                record.status, record.error = "failed", scrub(f"the lookup failed: {exc or type(exc).__name__}", creds.secrets())
+        await lookup.save(ctx.redis, request_id, record)
+        await write_audit(conn, action="search.mac", actor_user_id=record.user_id, resource_type="device",
+                          resource_id=record.device_id,
+                          metadata={"request_id": request_id, "mac": record.mac, "vlans": record.vlans, "status": record.status,
+                                    "result": record.result, "error": record.error})
+    await notify_mac_lookup_finished(ctx.redis, request_id)
