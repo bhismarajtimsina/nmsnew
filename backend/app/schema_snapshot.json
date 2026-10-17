@@ -20,7 +20,7 @@
       "compression": true
     },
     "interface_counter_samples": {
-      "compression": false
+      "compression": true
     },
     "interface_status_history": {
       "compression": true
@@ -77,6 +77,13 @@
       },
       "hypertable": "events",
       "job": "policy_retention"
+    },
+    {
+      "config": {
+        "compress_after": "1 day"
+      },
+      "hypertable": "interface_counter_samples",
+      "job": "policy_compression"
     },
     {
       "config": {

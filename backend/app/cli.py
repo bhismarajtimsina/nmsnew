@@ -271,6 +271,17 @@ async def _crypto_reencrypt(apply: bool) -> int:
 OPENAPI_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "src", "api", "openapi.json")
 
 
+async def _retention_report() -> int:
+    from app.operations.retention import render, report
+
+    conn = await _connect()
+    try:
+        print(render(await report(conn)))
+    finally:
+        await conn.close()
+    return 0
+
+
 def openapi_text() -> str:
     """The API's OpenAPI schema, serialized deterministically so the committed copy diffs cleanly. The frontend's
     TypeScript types are generated from that copy (Plan 24), and tests fail when it is out of date."""
@@ -328,6 +339,8 @@ def main(argv: list[str] | None = None) -> int:
     reenc = crypto.add_parser("reencrypt")
     reenc.add_argument("--apply", action="store_true", help="write the re-encrypted values (default is a dry run)")
 
+    sub.add_parser("retention").add_subparsers(dest="command", required=True).add_parser(
+        "report", help="what keeps each history table from growing forever; deletes nothing")
     openapi = sub.add_parser("openapi")
     openapi.add_argument("--write", action="store_true", help="write frontend/src/api/openapi.json")
 
@@ -350,6 +363,8 @@ def main(argv: list[str] | None = None) -> int:
         return asyncio.run(_sessions_cleanup())
     if args.group == "openapi":
         return _openapi(args.write)
+    if args.group == "retention":
+        return asyncio.run(_retention_report())
     if args.group == "crypto":
         if args.command == "status":
             return asyncio.run(_crypto_status())

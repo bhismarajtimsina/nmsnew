@@ -56,3 +56,25 @@ Policies are individually reversible. Never remove a backup policy without a rep
 ## Implementation notes (2026-09-28)
 Done: non-root read-only containers, health checks, pinned images, Redis persistence and password, Nginx timeouts, body limits, headers and login rate limit, `/metrics` and `/ready` not public, migrations and seed on start, the API refusing a schema behind the code, `audit_logs` retention and compression.
 Not done: backups and restore drill, TLS, capacity model, retention for other tables (they do not exist yet), platform alerts, runbooks.
+
+## Implementation notes (2026-10-17): retention report and the per-table check
+
+- **Every table classified:** each table is either history (rows pile up, so something must remove old ones) or
+  reference data (`app/operations/retention.py`). A test fails on a table in neither list, so a new table cannot
+  arrive without that decision.
+- **Plan 40's own check:** a test fails if any hypertable lacks a retention or a compression policy. The one that
+  lacked compression, `interface_counter_samples`, now compresses chunks older than a day (migration `0032`).
+  Utilisation reads at most the last six hours, so never a compressed chunk.
+- **`python -m app.cli retention report`:** for every history table, the row count (approximate for a hypertable),
+  the oldest row, and its retention and compression *as the database holds them*: a TimescaleDB policy, an enabled
+  or disabled `retention` job, or the session cleanup. It deletes nothing; this is the "dry-run report" the risk
+  section asks for before any period is set.
+- **Six history tables have no retention:** console transcripts and sessions, dangerous-action confirmations and
+  results, finished maintenance windows, and worker heartbeats. They are audit-like, so the period is the owner's
+  decision (D-33).
+
+Tests: 7 in `tests/test_retention.py`. 11 mutations checked, all caught.
+
+Still not done: backups and a restore drill, TLS, the capacity model, platform alerts, runbooks, and periods for the
+six tables above.
+
